@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konversi Nilai - Professional Linear Scaler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        :root {
+            --primary: #3730a3;
+            --primary-hover: #312e81;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Scrollbar formal */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        input::-webkit-outer-spin-button, 
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        /* Tampilan kotak tegas (Solid & Sharp) */
+        .sharp-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        
+        .btn-solid {
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .input-precision::placeholder {
+            color: #cbd5e1;
+        }
+
+        .disabled-btn {
+            opacity: 0.2;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-[#f1f5f9] min-h-screen text-slate-900">
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-30 bg-white border-b-2 border-slate-200">
+        <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-indigo-900 rounded flex items-center justify-center text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M5 20V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v12"/><circle cx="12" cy="11" r="2"/><path d="m10 11 1.5 2 1.5-2"/></svg>
+                </div>
+                <h1 class="text-base font-bold text-slate-900 uppercase tracking-tight">Konversi Nilai</h1>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-[10px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded border border-slate-200">VER 2.1.4</span>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-6">
+        <div class="flex flex-col lg:flex-row gap-4 items-start">
+            
+            <!-- LEFT SIDEBAR: CONFIGURATION -->
+            <div class="flex-none space-y-4 lg:sticky lg:top-20">
+                <!-- Rule Card -->
+                <div class="sharp-card p-4 shadow-sm w-fit">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3 gap-4">
+                        <h2 class="text-[10px] font-black text-slate-800 uppercase tracking-[0.15em]">Aturan</h2>
+                        <button onclick="addSegment()" class="px-2 py-1 bg-slate-900 hover:bg-black text-white rounded text-[9px] font-bold transition-all flex items-center gap-1.5 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                            TAMBAH
+                        </button>
+                    </div>
+
+                    <!-- Header Label Grid -->
+                    <div id="segmentHeader" class="grid grid-cols-[48px_48px_48px_48px_24px] gap-1 px-0.5 mb-1.5 text-[7px] font-black text-slate-500 uppercase text-center w-full">
+                        <div>Asli Min</div>
+                        <div>Asli Max</div>
+                        <div class="text-indigo-600">Akhir Min</div>
+                        <div class="text-indigo-600">Akhir Max</div>
+                        <div></div>
+                    </div>
+                    
+                    <!-- Rules Container -->
+                    <div id="segmentsContainer" class="space-y-1 max-h-[45vh] overflow-y-auto scrollbar-hide w-fit pr-1">
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                        <button onclick="calculateConversion()" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-2.5 rounded text-[10px] uppercase tracking-widest transition-all active:scale-95 btn-solid">
+                            Proses Kalkulasi
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Panel: Muncul dari awal -->
+                <div id="statsContainer" class="sharp-card bg-slate-900 p-4 space-y-4 border-slate-800">
+                    <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center border-b border-slate-800 pb-2 text-indigo-400">Ringkasan Statistik</h3>
+                    <div class="grid grid-cols-2 gap-x-6 gap-y-3">
+                        <div>
+                            <span class="block text-[7px] text-slate-500 uppercase font-bold">Asli Terendah</span>
+                            <div id="statMinAsli" class="text-sm font-bold text-white mono">0.00</div>
+                        </div>
+                        <div>
+                            <span class="block text-[7px] text-slate-500 uppercase font-bold">Asli Tertinggi</span>
+                            <div id="statMaxAsli" class="text-sm font-bold text-white mono">0.00</div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800">
+                            <span class="block text-[7px] text-indigo-400 uppercase font-bold">Akhir Terendah</span>
+                            <div id="statMinBaru" class="text-sm font-bold text-indigo-300 mono">0.00</div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800">
+                            <span class="block text-[7px] text-indigo-400 uppercase font-bold">Akhir Tertinggi</span>
+                            <div id="statMaxBaru" class="text-sm font-bold text-indigo-300 mono">0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT CONTENT: TABLE & CHART -->
+            <div class="flex-1 w-full space-y-4 min-w-0">
+                <div class="bg-white p-3 rounded-lg border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-2">
+                        <button onclick="openImportModal()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2 rounded font-bold text-[10px] flex items-center gap-2 transition uppercase tracking-wide">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Import Data Siswa
+                        </button>
+                        <button onclick="clearData()" class="text-slate-400 hover:text-rose-700 px-3 py-2 text-[9px] font-bold uppercase tracking-widest transition">
+                            Hapus Semua
+                        </button>
+                    </div>
+                    
+                    <div id="dataSummary" class="hidden flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded border border-slate-100">
+                        <span class="text-[9px] font-bold text-slate-400 uppercase">Siswa Terdata:</span>
+                        <span id="studentCount" class="text-xs font-black text-slate-900">0</span>
+                    </div>
+                </div>
+
+                <div class="flex flex-col xl:flex-row gap-4">
+                    <!-- Main Table -->
+                    <div class="flex-1 bg-white rounded-lg border border-slate-200 overflow-hidden flex flex-col min-h-[600px]">
+                        <div id="emptyState" class="flex-1 flex flex-col items-center justify-center p-12 text-center bg-slate-50/30">
+                            <div class="w-16 h-16 bg-slate-100 rounded flex items-center justify-center mb-4 border border-slate-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                            </div>
+                            <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wider">Laporan Kosong</h4>
+                            <p class="text-[11px] text-slate-400 mt-1 uppercase font-medium">Impor data untuk memulai proses konversi</p>
+                        </div>
+
+                        <div id="tableContainer" class="hidden h-full flex flex-col">
+                            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                                <h3 class="font-black text-slate-900 text-[10px] uppercase tracking-[0.2em]">Hasil Konversi Presisi</h3>
+                                <button onclick="copyTable()" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[9px] font-bold border border-slate-200 transition uppercase">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                                    Salin ke Excel
+                                </button>
+                            </div>
+                            <div class="overflow-y-auto flex-1">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-slate-50 text-slate-500 text-[8px] font-black uppercase tracking-widest sticky top-0 border-b border-slate-200">
+                                        <tr>
+                                            <th class="px-6 py-3 font-black">Nama Siswa</th>
+                                            <th class="px-6 py-3 text-center w-32 border-l border-slate-100">Nilai Asli</th>
+                                            <th class="px-6 py-3 text-center w-36 border-l border-slate-100 text-indigo-700 bg-indigo-50/30">Skor Akhir</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="studentRows" class="divide-y divide-slate-100 text-xs">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chart Card -->
+                    <div id="chartArea" class="hidden flex-none w-full xl:w-[320px] bg-white p-5 rounded-lg border border-slate-200 flex flex-col h-full max-h-[600px]">
+                        <div class="mb-6 pb-2 border-b border-slate-100">
+                            <h3 class="text-[10px] font-black text-slate-900 uppercase tracking-widest">Visualisasi Kurva</h3>
+                        </div>
+                        <div class="flex-1 min-h-[400px]">
+                            <canvas id="conversionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Import Modal -->
+    <div id="importModal" class="fixed inset-0 z-50 modal-overlay flex items-center justify-center opacity-0 pointer-events-none transition-all duration-200">
+        <div class="bg-white w-full max-w-lg mx-4 rounded-lg shadow-2xl overflow-hidden transform scale-95 transition-all duration-200 border border-slate-300" id="modalContent">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <h3 class="text-xs font-black text-slate-900 uppercase tracking-widest">Import Data Siswa</h3>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-900 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6 12 12"/></svg>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <textarea id="importInput" rows="12" placeholder="Tempel Nama dan Nilai (misal: Budi 80)..." class="w-full px-4 py-3 rounded border border-slate-300 focus:border-indigo-600 outline-none font-mono text-[11px] bg-slate-50 transition-all"></textarea>
+                <button onclick="processImport()" class="w-full bg-slate-900 hover:bg-black text-white font-bold py-3 rounded transition-all uppercase tracking-widest text-[10px]">
+                    Simpan Data
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast UI -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded shadow-xl opacity-0 transition-all z-[100] pointer-events-none flex items-center gap-3 border border-slate-700">
+        <div id="toastIcon" class="w-4 h-4 rounded-full flex items-center justify-center"></div>
+        <span id="toastMsg" class="text-[10px] font-bold uppercase tracking-widest">Berhasil</span>
+    </div>
+
+    <script>
+        let students = [];
+        let myChart = null;
+        let segments = [
+            { aMin: null, aMax: null, nMin: null, nMax: null }
+        ];
+
+        window.onload = () => {
+            renderSegments();
+            updateStats();
+        };
+
+        function renderSegments() {
+            const container = document.getElementById('segmentsContainer');
+            container.innerHTML = '';
+            
+            const gridConfig = "grid-cols-[48px_48px_48px_48px_24px]";
+            
+            segments.forEach((seg, idx) => {
+                const segEl = document.createElement('div');
+                segEl.className = `grid ${gridConfig} gap-1 items-center bg-white p-0.5 rounded border border-slate-200 hover:border-slate-400 transition-all group mb-1 w-full`;
+                
+                const aMinVal = seg.aMin !== null ? seg.aMin : '';
+                const aMaxVal = seg.aMax !== null ? seg.aMax : '';
+                const nMinVal = seg.nMin !== null ? seg.nMin : '';
+                const nMaxVal = seg.nMax !== null ? seg.nMax : '';
+
+                const canDelete = segments.length > 1;
+
+                segEl.innerHTML = `
+                    <input type="number" value="${aMinVal}" placeholder="0" onchange="updateSegData(${idx}, 'aMin', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-slate-50 focus:bg-white outline-none font-mono text-center transition-all" title="Asli Min">
+                    <input type="number" value="${aMaxVal}" placeholder="100" onchange="updateSegData(${idx}, 'aMax', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-slate-50 focus:bg-white outline-none font-mono text-center transition-all" title="Asli Max">
+                    <input type="number" value="${nMinVal}" placeholder="75" onchange="updateSegData(${idx}, 'nMin', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-indigo-50 focus:bg-white outline-none font-mono text-center font-bold text-indigo-700 transition-all" title="Akhir Min">
+                    <input type="number" value="${nMaxVal}" placeholder="100" onchange="updateSegData(${idx}, 'nMax', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-indigo-50 focus:bg-white outline-none font-mono text-center font-bold text-indigo-700 transition-all" title="Akhir Max">
+                    
+                    <div class="flex justify-center items-center">
+                        <button onclick="removeSegment(${idx})" class="text-slate-300 hover:text-rose-700 transition opacity-0 group-hover:opacity-100 p-0.5 ${!canDelete ? 'disabled-btn' : ''}" title="Hapus">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(segEl);
+            });
+        }
+
+        function addSegment() {
+            const last = segments[segments.length - 1];
+            segments.push({
+                aMin: last && last.aMax !== null ? last.aMax : null,
+                aMax: null,
+                nMin: last && last.nMax !== null ? last.nMax : null,
+                nMax: null
+            });
+            renderSegments();
+        }
+
+        function removeSegment(idx) {
+            if (segments.length <= 1) return;
+            segments.splice(idx, 1);
+            renderSegments();
+        }
+
+        function updateSegData(idx, field, val) {
+            segments[idx][field] = val === '' ? null : parseFloat(val);
+        }
+
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            document.getElementById('toastMsg').innerText = msg;
+            
+            if (type === "error") {
+                icon.className = "w-4 h-4 rounded-full flex items-center justify-center bg-rose-600 text-white";
+                icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+            } else {
+                icon.className = "w-4 h-4 rounded-full flex items-center justify-center bg-emerald-600 text-white";
+                icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+            }
+
+            toast.classList.remove('opacity-0');
+            toast.classList.add('-translate-y-2');
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                toast.classList.remove('-translate-y-2');
+            }, 3000);
+        }
+
+        function openImportModal() {
+            const modal = document.getElementById('importModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            content.classList.remove('scale-95');
+        }
+
+        function closeImportModal() {
+            const modal = document.getElementById('importModal');
+            const content = document.getElementById('modalContent');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            content.classList.add('scale-95');
+        }
+
+        function clearData() {
+            if(!confirm("Hapus seluruh data siswa?")) return;
+            students = [];
+            updateUI();
+            updateStats();
+            showToast("DATA DIBERSIHKAN");
+        }
+
+        function processImport() {
+            const input = document.getElementById('importInput').value.trim();
+            if (!input) return;
+            const lines = input.split('\n');
+            let count = 0;
+            lines.forEach(line => {
+                const matches = line.match(/(.*?)(\d+[,.]?\d*)$/);
+                if (matches && matches.length >= 3) {
+                    const name = matches[1].trim().replace(/^[,;\t\s]+|[,;\t\s]+$/g, '') || "Siswa Baru";
+                    const score = parseFloat(matches[2].replace(',', '.'));
+                    if (!isNaN(score)) {
+                        students.push({ name, original: score, converted: null });
+                        count++;
+                    }
+                }
+            });
+            if (count > 0) {
+                updateUI();
+                updateStats(); // Munculkan statistik asli segera setelah import
+                closeImportModal();
+                document.getElementById('importInput').value = '';
+                showToast(`${count} SISWA BERHASIL DIMUAT`);
+            } else {
+                showToast("FORMAT DATA TIDAK VALID", "error");
+            }
+        }
+
+        function calculateConversion() {
+            if (students.length === 0) {
+                showToast("IMPORT DATA SISWA DULU!", "error");
+                return;
+            }
+            for (let seg of segments) {
+                if (seg.aMin === null || seg.aMax === null || seg.nMin === null || seg.nMax === null) {
+                    showToast("LENGKAPI PARAMETER ATURAN!", "error");
+                    return;
+                }
+            }
+
+            students = students.map(student => {
+                let score = student.original;
+                let converted = score;
+                let applied = false;
+                for (let seg of segments) {
+                    if (score >= seg.aMin && score <= seg.aMax) {
+                        if (seg.aMax === seg.aMin) {
+                            converted = seg.nMin;
+                        } else {
+                            converted = ((score - seg.aMin) * (seg.nMax - seg.nMin) / (seg.aMax - seg.aMin)) + seg.nMin;
+                        }
+                        applied = true;
+                        break; 
+                    }
+                }
+                if (!applied) {
+                    const sortedSegments = [...segments].sort((a,b) => a.aMin - b.aMin);
+                    const firstSeg = sortedSegments[0];
+                    const lastSeg = sortedSegments[sortedSegments.length - 1];
+                    if (score < firstSeg.aMin) converted = firstSeg.nMin;
+                    else if (score > lastSeg.aMax) converted = lastSeg.nMax;
+                }
+                return { ...student, converted: parseFloat(converted.toFixed(2)) };
+            });
+            updateUI(true);
+            updateStats(); // Update statistik akhir setelah proses
+            showToast("KONVERSI SELESAI");
+        }
+
+        function updateStats() {
+            const minAsliEl = document.getElementById('statMinAsli');
+            const maxAsliEl = document.getElementById('statMaxAsli');
+            const minBaruEl = document.getElementById('statMinBaru');
+            const maxBaruEl = document.getElementById('statMaxBaru');
+
+            if (students.length === 0) {
+                minAsliEl.innerText = "0.00";
+                maxAsliEl.innerText = "0.00";
+                minBaruEl.innerText = "0.00";
+                maxBaruEl.innerText = "0.00";
+                return;
+            }
+
+            const origs = students.map(s => s.original);
+            minAsliEl.innerText = Math.min(...origs).toFixed(2);
+            maxAsliEl.innerText = Math.max(...origs).toFixed(2);
+
+            const convs = students.filter(s => s.converted !== null).map(s => s.converted);
+            if (convs.length > 0) {
+                minBaruEl.innerText = Math.min(...convs).toFixed(2);
+                maxBaruEl.innerText = Math.max(...convs).toFixed(2);
+            } else {
+                minBaruEl.innerText = "—";
+                maxBaruEl.innerText = "—";
+            }
+        }
+
+        function updateUI(hasConverted = false) {
+            const emptyState = document.getElementById('emptyState');
+            const tableContainer = document.getElementById('tableContainer');
+            const summary = document.getElementById('dataSummary');
+            const chartArea = document.getElementById('chartArea');
+            const tbody = document.getElementById('studentRows');
+
+            if (students.length === 0) {
+                emptyState.classList.remove('hidden');
+                tableContainer.classList.add('hidden');
+                summary.classList.add('hidden');
+                chartArea.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            tableContainer.classList.remove('hidden');
+            summary.classList.remove('hidden');
+            document.getElementById('studentCount').innerText = students.length;
+
+            tbody.innerHTML = '';
+            students.forEach((s) => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 transition-colors";
+                const displayOriginal = s.original.toFixed(2);
+                const displayConverted = s.converted !== null ? s.converted.toFixed(2) : '—';
+                
+                row.innerHTML = `
+                    <td class="px-6 py-3 font-bold text-slate-700 truncate max-w-[300px]">${s.name}</td>
+                    <td class="px-6 py-3 text-center text-slate-400 font-medium mono border-l border-slate-50">${displayOriginal}</td>
+                    <td class="px-6 py-3 text-center font-black ${s.converted !== null ? 'text-indigo-700 bg-indigo-50/20' : 'text-slate-200'} tracking-tight mono border-l border-slate-50">
+                        ${displayConverted}
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            if (hasConverted) {
+                chartArea.classList.remove('hidden');
+                renderChart();
+            }
+        }
+
+        function renderChart() {
+            const ctx = document.getElementById('conversionChart').getContext('2d');
+            const rulePoints = [];
+            const sortedSegs = [...segments].sort((a,b) => a.aMin - b.aMin);
+            sortedSegs.forEach(seg => {
+                rulePoints.push({ x: seg.aMin, y: seg.nMin });
+                rulePoints.push({ x: seg.aMax, y: seg.nMax });
+            });
+            const studentPoints = students.map(s => ({ x: s.original, y: s.converted }));
+            if (myChart) myChart.destroy();
+            
+            myChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Aturan',
+                            data: rulePoints,
+                            showLine: true,
+                            borderColor: '#3730a3',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointBorderColor: '#3730a3',
+                            tension: 0,
+                            zIndex: 1
+                        },
+                        {
+                            label: 'Siswa',
+                            data: studentPoints,
+                            backgroundColor: 'rgba(225, 29, 72, 0.8)',
+                            pointRadius: 4,
+                            pointHoverRadius: 8,
+                            zIndex: 10
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { 
+                            position: 'top', 
+                            align: 'center',
+                            labels: { 
+                                boxWidth: 10, 
+                                font: { size: 9, weight: '700' },
+                                usePointStyle: true
+                            } 
+                        },
+                        tooltip: { 
+                            backgroundColor: '#0f172a',
+                            callbacks: { label: (ctx) => `In: ${ctx.raw.x.toFixed(2)} → Out: ${ctx.raw.y.toFixed(2)}` } 
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            title: { display: true, text: 'OUTPUT', font: { size: 8, weight: '900' }, color: '#94a3b8' }, 
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { size: 9, family: 'JetBrains Mono' } }
+                        },
+                        x: { 
+                            title: { display: true, text: 'INPUT', font: { size: 8, weight: '900' }, color: '#94a3b8' }, 
+                            grid: { color: '#f1f5f9' },
+                            ticks: { font: { size: 9, family: 'JetBrains Mono' } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function copyTable() {
+            if (students.length === 0) return;
+            let csv = "Nama\tNilai Asli\tNilai Akhir\n";
+            students.forEach(s => {
+                const origVal = s.original.toFixed(2);
+                const finalVal = s.converted !== null ? s.converted.toFixed(2) : '';
+                csv += `${s.name}\t${origVal}\t${finalVal}\n`;
+            });
+            const el = document.createElement('textarea');
+            el.value = csv;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("DATA TERSALIN");
+        }
+    </script>
+</body>
+</html>
