@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MikroTik Config Evaluator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+        }
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+        }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        
+        /* Kotak Master (KUNCI - BIRU PASTEL) */
+        .kunci-box {
+            background-color: #f0f7ff;
+            border: 1px solid #e0efff;
+            color: #3b82f6;
+            padding: 0.5rem 1rem;
+            border-radius: 4px; 
+            min-height: 2.8rem; 
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* Kotak Jawaban (KUNING PASTEL) */
+        .jawaban-box {
+            background-color: #fffbeb;
+            border: 1px solid #fef3c7;
+            color: #d97706;
+            padding: 0; 
+            border-radius: 4px; 
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            overflow: hidden;
+            min-height: 2.8rem; 
+        }
+
+        /* Kotak Fatal (MERAH PASTEL) */
+        .jawaban-box-red {
+            background-color: #fef2f2;
+            border: 1px solid #fee2e2;
+            color: #dc2626;
+            padding: 0;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 0.15rem;
+        }
+
+        /* Kotak Abu-abu (ERROR/EXTRA) */
+        .jawaban-box-grey {
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            padding: 0.5rem 1rem; 
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 2.8rem;
+            width: 100%;
+            margin-top: 0.15rem;
+        }
+
+        .jawaban-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.4rem 0.5rem 0.4rem 1rem;
+            gap: 1rem;
+            min-height: 2.8rem;
+        }
+
+        .control-pill {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 0.15rem 0.25rem;
+            border-radius: 4px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            gap: 0.3rem;
+        }
+
+        .score-btn {
+            transition: all 0.2s;
+            width: 1.8rem;
+            height: 1.6rem;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-radius: 2px;
+            border: 1px solid rgba(0,0,0,0.05);
+            background: white;
+            color: #64748b;
+        }
+
+        .score-neg.active { background-color: #475569; color: white; border-color: #475569; }
+        .score-0.active { background-color: #fca5a5; color: white; border-color: #fca5a5; }
+        .score-1.active { background-color: #fcd34d; color: white; border-color: #fcd34d; }
+        .score-2.active { background-color: #86efac; color: white; border-color: #86efac; }
+        
+        .weight-input {
+            width: 28px;
+            text-align: center;
+            font-weight: 800;
+            border: none;
+            background: transparent;
+            font-size: 0.75rem;
+            color: inherit;
+            outline: none;
+        }
+
+        .section-header-spacing {
+            margin-top: 3.5rem;
+        }
+
+        .solid-divider {
+            height: 1px;
+            background-color: #fef3c7;
+            width: 100%;
+        }
+
+        .dash-inner-divider {
+            height: 1px;
+            border-top: 1px dashed #fef3c7;
+            margin: 0;
+            width: 100%;
+        }
+
+        .grid-row {
+            display: grid;
+            align-items: center;
+            width: 100%;
+            gap: 0;
+        }
+        .grid-3-col { grid-template-columns: 80px 15px 140px 15px 1fr; }
+        .grid-dns-col { grid-template-columns: min-content 12px min-content 12px 1fr; }
+        .grid-2-col { grid-template-columns: 1fr 15px 140px; }
+        .grid-nat-col { grid-template-columns: 100px 12px 80px 12px 100px 12px 1fr; }
+
+        .grid-divider {
+            color: rgba(0, 0, 0, 0.05);
+            text-align: center;
+            font-weight: normal;
+        }
+
+        .hidden { display: none !important; }
+        
+        .sub-header-text {
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748b; 
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-left: 0.5rem;
+            margin-bottom: 0.25rem;
+            margin-top: 0.75rem;
+        }
+
+        .icon-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 6px; 
+            transition: all 0.2s;
+            flex-shrink: 0;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        .total-poin-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: #f8fafc;
+            padding: 0 1rem;
+            height: 42px; 
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            min-width: 110px;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-20">
+
+    <nav class="sticky-header border-b border-slate-200 px-4 py-3 shadow-sm">
+        <div class="container mx-auto flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <div class="bg-slate-400 p-1.5 rounded text-white shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                </div>
+                <span class="font-black text-sm tracking-tighter uppercase text-slate-700">UKK KONFIGURASI ROUTER 2026</span>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="openModal()" class="icon-btn bg-slate-100 text-slate-500 hover:bg-slate-200" title="Input Konfigurasi">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </button>
+                
+                <button onclick="exportScore()" class="icon-btn bg-emerald-50 text-emerald-600 hover:bg-emerald-100" title="Download Skor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                </button>
+                
+                <button onclick="processGrading()" class="icon-btn bg-indigo-50 text-indigo-700 hover:bg-indigo-100 active:scale-95" title="Mulai Nilai">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                </button>
+                
+                <div class="total-poin-status">
+                    <span class="text-slate-400 font-bold uppercase tracking-widest text-[9px]">TOTAL POIN</span>
+                    <span id="headerScoreDisplay" class="text-slate-700 font-black text-sm">0</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-4 py-8">
+        <div class="max-w-5xl mx-auto">
+            <div id="dashboard-content" class="space-y-10">
+                
+                <!-- 1. HOSTNAME -->
+                <div class="space-y-1 section-box" data-title="1. HOSTNAME">
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
+                        <span class="bg-slate-500 text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">1</span>
+                        HOSTNAME
+                    </h3>
+                    <div class="grid grid-cols-1 gap-1">
+                        <div class="kunci-box code-font" id="kunci-hostname">-</div>
+                        <div class="jawaban-box">
+                            <div class="jawaban-row code-font">
+                                <div class="flex-1 student-val" id="student-hostname">-</div>
+                                <div class="control-pill shadow-inner">
+                                    <input type="number" id="weight-host" value="0.4" step="0.1" oninput="updateTotalScore()" class="weight-input">
+                                    <div class="flex gap-0.5"><button onclick="setScore('host',0)" id="btn-host-0" class="score-btn score-0 active">0</button><button onclick="setScore('host',1)" id="btn-host-1" class="score-btn score-1">1</button><button onclick="setScore('host',2)" id="btn-host-2" class="score-btn score-2">2</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. DNS SERVER -->
+                <div class="space-y-1 section-header-spacing section-box" data-title="2. DNS SERVER">
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
+                        <span class="bg-slate-500 text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">2</span>
+                        DNS SERVER
+                    </h3>
+                    <div class="grid grid-cols-1 gap-1">
+                        <div class="kunci-box" id="kunci-dns">-</div>
+                        <div class="jawaban-box">
+                            <div class="jawaban-row">
+                                <div class="flex-1 student-val" id="student-dns">-</div>
+                                <div class="control-pill shadow-inner">
+                                    <input type="number" id="weight-dns" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input">
+                                    <div class="flex gap-0.5"><button onclick="setScore('dns',0)" id="btn-dns-0" class="score-btn score-0 active">0</button><button onclick="setScore('dns',1)" id="btn-dns-1" class="score-btn score-1">1</button><button onclick="setScore('dns',2)" id="btn-dns-2" class="score-btn score-2">2</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. IP ADDRESS -->
+                <div class="space-y-1 section-header-spacing section-box" data-title="3. IP ADDRESS">
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
+                        <span class="bg-slate-500 text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">3</span>
+                        IP ADDRESS
+                    </h3>
+                    <div id="ip-rows-container" class="space-y-4"></div>
+                </div>
+
+                <!-- 4. NAT -->
+                <div class="space-y-1 section-header-spacing section-box" data-title="4. NAT">
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
+                        <span class="bg-slate-500 text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">4</span>
+                        NAT (MASQUERADE)
+                    </h3>
+                    <div id="nat-rows-container" class="space-y-4"></div>
+                </div>
+
+                <!-- 5. GATEWAY -->
+                <div class="space-y-1 section-header-spacing section-box" data-title="5. GATEWAY">
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
+                        <span class="bg-slate-500 text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">5</span>
+                        GATEWAY
+                    </h3>
+                    <div id="gateway-container" class="space-y-1"></div>
+                </div>
+
+                <!-- 6. WIRELESS -->
+                <div class="space-y-1 section-header-spacing section-box" data-title="6. WIRELESS">
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
+                        <span class="bg-slate-500 text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">6</span>
+                        WIRELESS
+                    </h3>
+                    <div class="grid grid-cols-1 gap-1">
+                        <div class="kunci-box" id="kunci-wireless">-</div>
+                        <div class="jawaban-box" id="student-wireless-container">
+                            <div class="jawaban-row p-6 text-slate-400 italic">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. DHCP SERVER -->
+                <div class="space-y-1 section-header-spacing section-box" data-title="7. DHCP SERVER">
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
+                        <span class="bg-slate-500 text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">7</span>
+                        DHCP SERVER
+                    </h3>
+                    <div class="space-y-1">
+                        <div class="sub-header-text">DHCP Network</div>
+                        <div id="dhcp-container" class="space-y-1"></div>
+                    </div>
+                    <div class="space-y-1 mt-4">
+                        <div class="sub-header-text">Rentang IP</div>
+                        <div id="pool-container" class="space-y-1"></div>
+                    </div>
+                    <div class="space-y-1 mt-4">
+                        <div class="sub-header-text">SETUP DHCP</div>
+                        <div id="dhcp-server-container" class="space-y-1"></div>
+                    </div>
+                </div>
+
+                <!-- 8. FIREWALL FILTER -->
+                <div class="space-y-1 section-header-spacing section-box" data-title="8. FIREWALL FILTER">
+                    <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
+                        <span class="bg-slate-500 text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">8</span>
+                        FIREWALL FILTER
+                    </h3>
+                    <div id="filter-rows-container" class="space-y-1"></div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Input -->
+    <div id="modalBackdrop" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden z-50 items-center justify-center p-4">
+        <div class="bg-white w-full max-w-[95vw] rounded shadow-2xl flex flex-col h-[92vh]">
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50 rounded-t">
+                <div>
+                    <h2 class="text-xl font-black text-slate-800 tracking-tighter uppercase">Input Konfigurasi</h2>
+                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Tempel skrip Kunci dan Jawaban Siswa</p>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            
+            <div class="flex-1 flex overflow-hidden p-5 gap-6 bg-slate-100">
+                <div class="flex-1 flex flex-col gap-2">
+                    <div class="flex items-center gap-2 ml-1">
+                        <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+                        <label class="text-[11px] font-black text-slate-600 uppercase tracking-widest">Konfigurasi KUNCI</label>
+                    </div>
+                    <textarea id="modalKeyArea" class="flex-1 p-6 code-font focus:ring-2 focus:ring-blue-500 focus:outline-none resize-none bg-white border border-slate-200 rounded shadow-inner text-blue-900" placeholder="Paste script KUNCI di sini..."></textarea>
+                </div>
+                <div class="flex-1 flex flex-col gap-2">
+                    <div class="flex items-center gap-2 ml-1">
+                        <span class="w-3 h-3 bg-amber-500 rounded-full"></span>
+                        <label class="text-[11px] font-black text-slate-600 uppercase tracking-widest">Konfigurasi JAWABAN SISWA</label>
+                    </div>
+                    <textarea id="modalStudentArea" class="flex-1 p-6 code-font focus:ring-2 focus:ring-amber-500 focus:outline-none resize-none bg-white border border-slate-200 rounded shadow-inner text-amber-900" placeholder="Paste script JAWABAN SISWA di sini..."></textarea>
+                </div>
+            </div>
+
+            <div class="p-6 border-t bg-white flex gap-4 rounded-b">
+                <button onclick="saveModalData()" class="flex-1 bg-slate-100 text-slate-700 font-black py-4 rounded text-base uppercase shadow-sm tracking-widest hover:bg-slate-200 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                    Simpan Konfigurasi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dataStore = { key: '', student: '' };
+        let scores = {}; 
+        const ROW_DIVIDER = '<div class="solid-divider opacity-40 h-px bg-yellow-200"></div>';
+
+        function openModal() {
+            document.getElementById('modalKeyArea').value = dataStore.key;
+            document.getElementById('modalStudentArea').value = dataStore.student;
+            const mb = document.getElementById('modalBackdrop');
+            if(mb) { mb.classList.remove('hidden'); mb.style.display = 'flex'; }
+        }
+        function closeModal() { const mb = document.getElementById('modalBackdrop'); if(mb) { mb.classList.add('hidden'); mb.style.display = 'none'; } }
+        
+        function saveModalData() { 
+            dataStore.key = document.getElementById('modalKeyArea').value;
+            dataStore.student = document.getElementById('modalStudentArea').value;
+            closeModal(); 
+        }
+        
+        function setScore(id, value) { 
+            scores[id] = value; 
+            ['-1','0','1','2'].forEach(v => { 
+                const btn = document.getElementById(`btn-${id}-${v}`); 
+                if(btn) btn.classList.toggle('active', v == value); 
+            });
+            updateTotalScore(); 
+        }
+        
+        function updateTotalScore() {
+            let t = 0;
+            document.querySelectorAll('.weight-input').forEach(i => {
+                const id = i.id.replace('weight-', '');
+                const w = parseFloat(i.value) || 0;
+                t += (scores[id] || 0) * w; 
+            });
+            const hDisp = document.getElementById('headerScoreDisplay');
+            if(hDisp) hDisp.innerText = t.toLocaleString('id-ID');
+        }
+
+        function grid(type, parts) {
+            let cls = 'grid-3-col';
+            if(type === 'dns') cls = 'grid-dns-col';
+            if(type === 'gtw') cls = 'grid-2-col';
+            if(type === 'nat') cls = 'grid-nat-col';
+            let h = `<div class="grid-row code-font ${cls}">`;
+            parts.forEach((p, i) => { 
+                h += `<span>${p}</span>`; 
+                if(i < parts.length-1) h += `<span class="grid-divider">|</span>`; 
+            });
+            return h + `</div>`;
+        }
+
+        // --- PARSERS ---
+        const P = {
+            host: t => (t.match(/\/system identity\s+set name="?([^"\s\n]+)"?/)||[0,"-"])[1],
+            dns: t => {
+                const m = t.match(/\/ip dns\s+set\s+.*?servers=([^ "\s\n]+)/);
+                const r = t.match(/allow-remote-requests=(yes|no)/);
+                return m ? { s: m[1], r: r ? r[1] : '?' } : null;
+            },
+            ip: (t, n) => {
+                const res = []; const rx = new RegExp(`add address=([^\\s]+).*?interface=${n}`, 'g');
+                let m; while((m = rx.exec(t)) !== null) res.push(m[1]); return res;
+            },
+            exIp: t => {
+                const res = []; const rx = /add address=([^\s]+).*?interface=([^\s\n]+)/g;
+                let m; while((m = rx.exec(t)) !== null) { if(!['ether1','ether2','wlan1'].includes(m[2])) res.push(`${m[2]}: ${m[1]}`); } return res;
+            },
+            nat: (t, n) => {
+                const res = []; const lines = t.split('\n');
+                let inNat = false;
+                for(let l of lines) {
+                    if(l.includes('/ip firewall nat')) { inNat = true; continue; }
+                    if(inNat && l.trim().startsWith('add ')) {
+                        const outM = l.match(/out-interface=([^ "\s]+)/);
+                        const intM = l.match(/interface=([^ "\s]+)/);
+                        const actualO = (outM ? outM[1] : (intM ? intM[1] : null));
+                        if(actualO === n) {
+                            const a = l.match(/action=([^ "\s]+)/)?.[1] || "?";
+                            const c = l.match(/chain=([^ "\s]+)/)?.[1] || "?";
+                            const params = [...l.matchAll(/([a-z-]+)=([^ "\s]+|"[^"]+")/g)];
+                            let ex = []; 
+                            params.forEach(p => { 
+                                if(!['action','chain','out-interface','interface'].includes(p[1])) {
+                                    ex.push(`${p[1]}=${p[2].replace(/"/g,'')}`); 
+                                }
+                            });
+                            res.push({ a, c, o: actualO, ex: ex.join(' | ') });
+                        }
+                    }
+                    if(inNat && (l.trim().startsWith('/') || l.trim() === "")) inNat = false;
+                }
+                return res;
+            },
+            natExtra: t => {
+                const res = []; const lines = t.split('\n');
+                let inNat = false;
+                for(let l of lines) {
+                    if(l.includes('/ip firewall nat')) { inNat = true; continue; }
+                    if(inNat && l.trim().startsWith('add ')) {
+                        const out = l.match(/out-interface=([^ "\s]+)/)?.[1];
+                        const intr = l.match(/interface=([^ "\s]+)/)?.[1];
+                        const actualInt = out || intr;
+                        if (!actualInt || !['ether1','ether2','wlan1'].includes(actualInt)) res.push(l.trim());
+                    }
+                    if(inNat && (l.trim().startsWith('/'))) inNat = false;
+                }
+                return res;
+            },
+            gtw: t => {
+                const res = []; const lines = t.split('\n');
+                let inRoute = false;
+                for(let l of lines) {
+                    if(l.includes('/ip route')) { inRoute = true; continue; }
+                    if(inRoute && l.trim().startsWith('add ')) {
+                        const gwM = l.match(/gateway=([^ "\s]+|"[^"]+")/);
+                        if(gwM) {
+                            const gateway = gwM[1].replace(/"/g,'');
+                            const params = [...l.matchAll(/([a-z-]+)=([^ "\s]+|"[^"]+")/g)];
+                            let extras = {};
+                            params.forEach(p => { if(p[1] !== 'gateway') extras[p[1]] = p[2].replace(/"/g,''); });
+                            res.push({ g: gateway, ex: extras });
+                        }
+                    }
+                    if(inRoute && (l.trim().startsWith('/') || l.trim() === "")) inRoute = false;
+                }
+                return res;
+            },
+            wl: t => {
+                const mRule = t.match(/set \[ find default-name=wlan1 \](.*)/);
+                if(!mRule) return null;
+                const c = mRule[1];
+                return {
+                    a: c.includes('disabled=no') ? 'aktif' : 'nonaktif',
+                    m: c.match(/mode=([^ "\s]+)/)?.[1] || "-",
+                    s: c.match(/ssid=([^ "\s]+|"[^"]+")/)?.[1]?.replace(/"/g,'') || "-"
+                };
+            },
+            dhcp: t => {
+                const res = []; const lines = t.split('\n'); let inDHCP = false;
+                for(let l of lines) {
+                    if(l.includes('/ip dhcp-server network')) { inDHCP = true; continue; }
+                    if(inDHCP && l.trim().startsWith('add ')) { 
+                        res.push({ a: l.match(/address=([^ "\s]+)/)?.[1] || "-", g: l.match(/gateway=([^ "\s]+)/)?.[1] || "-", d: l.match(/dns-server=([^ "\s]+)/)?.[1] || "-" }); 
+                    }
+                    if(inDHCP && (l.trim().startsWith('/') || l.trim() === "")) inDHCP = false;
+                }
+                return res;
+            },
+            pool: t => {
+                const res = []; const lines = t.split('\n'); let inPool = false;
+                for(let l of lines) {
+                    if(l.includes('/ip pool')) { inPool = true; continue; }
+                    if(inPool && l.trim().startsWith('add ')) {
+                        const nM = l.match(/name=([^ "\s]+|"[^"]+")/);
+                        const rM = l.match(/ranges=([^ "\s]+)/);
+                        if(nM && rM) { res.push({ n: nM[1].replace(/"/g,''), r: rM[1] }); }
+                    }
+                    if(inPool && (l.trim().startsWith('/') || l.trim() === "")) inPool = false;
+                }
+                return res;
+            },
+            dhcpServer: t => {
+                const res = []; const lines = t.split('\n'); let inSrv = false;
+                for(let l of lines) {
+                    if(l.includes('/ip dhcp-server')) {
+                        if(!l.includes('network')) inSrv = true; 
+                        continue; 
+                    }
+                    if(inSrv && l.trim().startsWith('add ')) {
+                        res.push({
+                            i: l.match(/interface=([^ "\s]+)/)?.[1] || "-",
+                            lt: l.match(/lease-time=([^ "\s]+)/)?.[1] || "-",
+                            ap: l.match(/address-pool=([^ "\s]+)/)?.[1] || "-"
+                        });
+                    }
+                    if(inSrv && (l.trim().startsWith('/') || l.trim() === "")) inSrv = false;
+                }
+                return res;
+            },
+            filters: t => {
+                const res = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], extra: []};
+                const rawLines = t.split('\n');
+                const processedLines = [];
+                for (let i = 0; i < rawLines.length; i++) {
+                    let currentLine = rawLines[i].trim();
+                    while (currentLine.endsWith('\\') && i < rawLines.length - 1) {
+                        i++;
+                        currentLine = currentLine.slice(0, -1).trim() + " " + rawLines[i].trim();
+                    }
+                    if (currentLine) processedLines.push(currentLine);
+                }
+                let inFilter = false;
+                for(let l of processedLines) {
+                    if(l.includes('/ip firewall filter')) { inFilter = true; continue; }
+                    if(inFilter && l.startsWith('add ')) {
+                        const commM = l.match(/comment="(filter\s*[1-7].*?)"/i) || l.match(/comment=([^ ]+)/i);
+                        let displayLine = l.replace(/comment=".*?"/i, "").replace(/comment=[^ ]+/i, "").trim();
+                        displayLine = displayLine.replace(/\s+/g, ' ');
+                        if(commM) {
+                            const commentValue = commM[1].replace(/"/g, '');
+                            const numM = commentValue.match(/filter\s*([1-7])/i);
+                            if (numM) {
+                                const num = parseInt(numM[1]);
+                                res[num].push(`${commentValue}: ${displayLine}`);
+                            } else res.extra.push(l);
+                        } else res.extra.push(l);
+                    }
+                    if(inFilter && (l.startsWith('/') || l === "")) inFilter = false;
+                }
+                return res;
+            }
+        };
+
+        function processGrading() {
+            if(!dataStore.key.trim()) return alert("Silakan isi konfigurasi terlebih dahulu!");
+            const safeSet = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
+
+            const hK = P.host(dataStore.key), hS = P.host(dataStore.student);
+            safeSet('student-hostname', hS);
+            if(document.getElementById('kunci-hostname')) document.getElementById('kunci-hostname').innerText = hK;
+            if(hK === hS && hK !== "-") setTimeout(() => setScore('host', 2), 100);
+
+            const kd = P.dns(dataStore.key), sd = P.dns(dataStore.student);
+            safeSet('kunci-dns', kd ? grid('dns', [kd.s, kd.r]) : "-");
+            safeSet('student-dns', sd ? grid('dns', [sd.s, sd.r]) : "-");
+            if(kd && sd && kd.s === sd.s && kd.r === sd.r) setTimeout(() => setScore('dns', 2), 100);
+
+            const ipC = document.getElementById('ip-rows-container'); if(ipC) ipC.innerHTML = "";
+            ['ether1','ether2','wlan1'].forEach(n => {
+                const kArr = P.ip(dataStore.key, n), sArr = P.ip(dataStore.student, n);
+                const kdTxt = kArr.length ? kArr.join(" | ") : "-";
+                let stdContent = sArr.length === 0 ? '<div class="jawaban-row p-6 text-slate-400 italic">-</div>' : "";
+                sArr.forEach((sv, sIdx) => {
+                    const scoreId = `ip-${n}-${sIdx}`;
+                    const isCorrect = kArr.includes(sv);
+                    const svDisplay = isCorrect ? sv : `<span class="text-red-500 font-bold">${sv}</span>`;
+                    let defW = (n === 'ether1' ? 1.8 : 1.5);
+                    stdContent += `<div class="jawaban-row"><div class="flex-1 code-font student-val">${svDisplay}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${scoreId}" value="${defW}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${scoreId}',0)" id="btn-${scoreId}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${scoreId}',1)" id="btn-${scoreId}-1" class="score-btn score-1">1</button><button onclick="setScore('${scoreId}',2)" id="btn-${scoreId}-2" class="score-btn score-2">2</button></div></div></div>${sIdx < sArr.length - 1 ? ROW_DIVIDER : ''}`;
+                    if(isCorrect) setTimeout(() => setScore(scoreId, 2), 100);
+                });
+                if(ipC) ipC.innerHTML += `<div class="space-y-1 section-box" data-title="3. IP ADDRESS (${n})"><span class="text-[10px] font-bold text-slate-400 uppercase ml-2">${n}</span><div class="grid grid-cols-1 gap-1"><div class="kunci-box code-font flex-col items-start py-2 h-auto">${kdTxt}</div><div class="jawaban-box">${stdContent}</div></div></div>`;
+            });
+
+            const natC = document.getElementById('nat-rows-container'); if(natC) natC.innerHTML = "";
+            ['ether1','ether2','wlan1'].forEach(n => {
+                const kEnts = P.nat(dataStore.key, n), sEnts = P.nat(dataStore.student, n);
+                const kdTxt = kEnts.map(x => grid('nat', [x.a, x.c, n, x.ex])).join(" | ") || "-";
+                let stdContent = sEnts.length === 0 ? '<div class="jawaban-row p-6 text-slate-400 italic">-</div>' : "";
+                sEnts.forEach((sv, sIdx) => {
+                    const kv = kEnts.find(entry => entry.o === sv.o) || (kEnts.length > 0 ? kEnts[0] : null);
+                    const matchA = (kv && sv.a === kv.a), matchC = (kv && sv.c === kv.c);
+                    const aT = matchA ? sv.a : `<span class="text-red-500 font-bold">${sv.a}</span>`;
+                    const cT = matchC ? sv.c : `<span class="text-red-500 font-bold">${sv.c}</span>`;
+                    let exP = [], matchEx = true; 
+                    if(sv.ex) sv.ex.split(' | ').forEach(p => { if(!p.trim()) return; const isC = kv && kv.ex.split(' | ').some(kp => kp.trim() === p.trim()); exP.push(isC ? p : `<span class="text-red-500 font-bold">${p}</span>`); if(!isC) matchEx = false; });
+                    const scoreId = `nat-${n}-${sIdx}`;
+                    let defW = (n === 'ether1' ? 1.5 : 1);
+                    stdContent += `<div class="jawaban-row"><div class="flex-1 student-val">${grid('nat', [aT, cT, sv.o, exP.join(' | ')])}</div><div class="control-pill shadow-inner self-start mt-1"><input type="number" id="weight-${scoreId}" value="${defW}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${scoreId}',0)" id="btn-${scoreId}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${scoreId}',1)" id="btn-${scoreId}-1" class="score-btn score-1">1</button><button onclick="setScore('${scoreId}',2)" id="btn-${scoreId}-2" class="score-btn score-2">2</button></div></div></div>${sIdx < sEnts.length - 1 ? ROW_DIVIDER : ''}`;
+                    if(matchA && matchC && matchEx) setTimeout(() => setScore(scoreId, 2), 100);
+                });
+                if(natC) natC.innerHTML += `<div class="space-y-1 section-box" data-title="4. NAT (${n})"><span class="text-[10px] font-bold text-slate-400 uppercase ml-2">${n}</span><div class="grid grid-cols-1 gap-1"><div class="kunci-box">${kdTxt}</div><div class="jawaban-box">${stdContent}</div></div></div>`;
+            });
+            const stdNatExtra = P.natExtra(dataStore.student);
+            if(stdNatExtra.length && natC) natC.innerHTML += `<div class="jawaban-box-grey code-font">${stdNatExtra.join(ROW_DIVIDER)}</div>`;
+
+            const gtwC = document.getElementById('gateway-container'); if(gtwC) gtwC.innerHTML = "";
+            const kgs = P.gtw(dataStore.key), sgs = P.gtw(dataStore.student), usedG = new Set();
+            kgs.forEach((k, idx) => {
+                const si = sgs.findIndex((s, i) => !usedG.has(i) && s.g === k.g);
+                const s = si !== -1 ? sgs[si] : null; if(si !== -1) usedG.add(si);
+                const kStr = k.g + (k.ex['dst-address'] && k.ex['dst-address'] !== '0.0.0.0/0' ? ` | dst-address ${k.ex['dst-address']}` : "");
+                let sStr = s ? s.g : "-";
+                let matchesAll = !!s;
+                if(s) { Object.keys(s.ex).forEach(key => { if(key === 'distance') return; let val = s.ex[key]; if(key === 'dst-address' && val === '0.0.0.0/0' && (!k.ex[key] || k.ex[key] === '0.0.0.0/0')) return; let isErr = !k.ex[key] || k.ex[key] !== val; sStr += isErr ? ` | <span class="text-red-500 font-bold">${key} ${val}</span>` : ` | ${key} ${val}`; if(isErr) matchesAll = false; }); }
+                const scoreId = `gtw-${idx}`;
+                if(gtwC) gtwC.innerHTML += `<div class="grid grid-cols-1 gap-1 section-box" data-title="5. GATEWAY (Route ${idx+1})"><div class="text-[9px] font-black opacity-30 uppercase ml-2">Route ${idx+1}</div><div class="kunci-box code-font">${kStr}</div><div class="jawaban-box"><div class="jawaban-row code-font"><div class="flex-1 student-val">${sStr}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${scoreId}" value="1.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${scoreId}',0)" id="btn-${scoreId}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${scoreId}',1)" id="btn-${scoreId}-1" class="score-btn score-1">1</button><button onclick="setScore('${scoreId}',2)" id="btn-${scoreId}-2" class="score-btn score-2">2</button></div></div></div></div></div>`;
+                if(matchesAll) setTimeout(() => setScore(scoreId, 2), 100);
+            });
+
+            // 6. Wireless (3 rows logic)
+            const kw = P.wl(dataStore.key), sw = P.wl(dataStore.student);
+            safeSet('kunci-wireless', kw ? `${kw.a} | ${kw.m} | ${kw.s}` : "-");
+            let wlHtml = sw ? `
+                <div class="jawaban-row">
+                    <div class="flex flex-col">
+                        <span class="text-[7px] uppercase text-slate-400 font-bold">Status</span>
+                        <span class="code-font student-val ${kw && sw.a !== kw.a ? 'text-red-500 font-bold' : ''}">${sw.a}</span>
+                    </div>
+                </div>
+                <div class="dash-inner-divider opacity-40"></div>
+                <div class="jawaban-row section-box" data-title="6. WIRELESS (Mode)">
+                    <div class="flex flex-col">
+                        <span class="text-[7px] uppercase text-slate-400 font-bold">Mode</span>
+                        <span class="code-font student-val ${kw && sw.m !== kw.m ? 'text-red-500 font-bold' : ''}">${sw.m}</span>
+                    </div>
+                    <div class="control-pill shadow-inner">
+                        <input type="number" id="weight-wl-mode" value="0.8" step="0.1" oninput="updateTotalScore()" class="weight-input">
+                        <div class="flex gap-0.5">
+                            <button onclick="setScore('wl-mode',0)" id="btn-wl-mode-0" class="score-btn score-0 active">0</button>
+                            <button onclick="setScore('wl-mode',1)" id="btn-wl-mode-1" class="score-btn score-1">1</button>
+                            <button onclick="setScore('wl-mode',2)" id="btn-wl-mode-2" class="score-btn score-2">2</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="dash-inner-divider opacity-40"></div>
+                <div class="jawaban-row section-box" data-title="6. WIRELESS (SSID)">
+                    <div class="flex flex-col">
+                        <span class="text-[7px] uppercase text-slate-400 font-bold">SSID</span>
+                        <span class="code-font student-val ${kw && sw.s !== kw.s ? 'text-red-500 font-bold' : ''}">${sw.s}</span>
+                    </div>
+                    <div class="control-pill shadow-inner">
+                        <input type="number" id="weight-wl-ssid" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input">
+                        <div class="flex gap-0.5">
+                            <button onclick="setScore('wl-ssid',0)" id="btn-wl-ssid-0" class="score-btn score-0 active">0</button>
+                            <button onclick="setScore('wl-ssid',1)" id="btn-wl-ssid-1" class="score-btn score-1">1</button>
+                            <button onclick="setScore('wl-ssid',2)" id="btn-wl-ssid-2" class="score-btn score-2">2</button>
+                        </div>
+                    </div>
+                </div>
+            ` : '<div class="p-6 text-slate-400 italic">-</div>';
+            safeSet('student-wireless-container', wlHtml);
+            if(kw && sw) {
+                if(sw.m === kw.m) setTimeout(() => setScore('wl-mode', 2), 100);
+                if(sw.s === kw.s) setTimeout(() => setScore('wl-ssid', 2), 100);
+            }
+
+            const dhcpC = document.getElementById('dhcp-container'); if(dhcpC) dhcpC.innerHTML = "";
+            const kns = P.dhcp(dataStore.key), sns = P.dhcp(dataStore.student), usedD = new Set();
+            kns.forEach((k, idx) => {
+                const matches = sns.filter((s, i) => { if(!usedD.has(i) && (s.a === k.a || s.g === k.g)) { usedD.add(i); return true; } return false; });
+                let stdH = matches.length ? "" : '<div class="p-4 text-slate-400 italic">-</div>';
+                matches.forEach((r, ri) => {
+                    const id = `dhcp-${idx}-r${ri}`; if(ri > 0) stdH += ROW_DIVIDER;
+                    const items = [
+                        {l:'Subnet', v:r.a, k:k.a, id:id+'-a', w:1.5}, 
+                        {l:'Gateway', v:r.g, k:k.g, id:id+'-g', w:1.5}, 
+                        {l:'DNS', v:r.d, k:k.d, id:id+'-d', w:0.5}
+                    ];
+                    items.forEach((it, iIdx) => { 
+                        stdH += `<div class="jawaban-row section-box" data-title="7. DHCP Network (${it.l})"><div class="flex flex-col"><span class="text-[7px] text-slate-400 font-bold uppercase">${it.l}</span><span class="code-font student-val ${it.v!==it.k?'text-red-500 font-bold':''}">${it.v}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${it.id}" value="${it.w}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${it.id}',0)" id="btn-${it.id}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${it.id}',1)" id="btn-${it.id}-1" class="score-btn score-1">1</button><button onclick="setScore('${it.id}',2)" id="btn-${it.id}-2" class="score-btn score-2">2</button></div></div></div>${iIdx < 2 ? '<div class="dash-inner-divider opacity-20"></div>' : ''}`; 
+                        if(it.v === it.k) setTimeout(() => setScore(it.id, 2), 100);
+                    });
+                });
+                if(dhcpC) dhcpC.innerHTML += `<div class="grid grid-cols-1 gap-1"><div class="kunci-box flex-col items-start py-2 gap-0 code-font"><div>${k.a}</div><div class="h-px w-full bg-blue-400/10 my-1"></div><div>${k.g}</div><div class="h-px w-full bg-blue-400/10 my-1"></div><div>${k.d}</div></div><div class="jawaban-box">${stdH}</div></div>`;
+            });
+
+            const poolC = document.getElementById('pool-container'); if(poolC) poolC.innerHTML = "";
+            const kPs = P.pool(dataStore.key), sPs = P.pool(dataStore.student), usedP = new Set();
+            kPs.forEach((k, idx) => {
+                const si = sPs.findIndex((s, i) => !usedP.has(i) && s.r === k.r);
+                const s = si !== -1 ? sPs[si] : null; if(si !== -1) usedP.add(si);
+                const scoreId = `pool-${idx}`;
+                if(poolC) poolC.innerHTML += `<div class="grid grid-cols-1 gap-1 section-box" data-title="7. Rentang IP (${k.n})"><div class="kunci-box code-font">${k.n}: ${k.r}</div><div class="jawaban-box"><div class="jawaban-row code-font"><div class="flex-1 student-val ${s && s.r !== k.r ? 'text-red-500 font-bold' : ''}">${s ? s.n + ': ' + s.r : '-'}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${scoreId}" value="1.4" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-1"><button onclick="setScore('${scoreId}',0)" id="btn-${scoreId}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${scoreId}',1)" id="btn-${scoreId}-1" class="score-btn score-1">1</button><button onclick="setScore('${scoreId}',2)" id="btn-${scoreId}-2" class="score-btn score-2">2</button></div></div></div></div></div>`;
+                if(s && s.r === k.r) setTimeout(() => setScore(scoreId, 2), 100);
+            });
+
+            const dsC = document.getElementById('dhcp-server-container'); if(dsC) dsC.innerHTML = "";
+            const kDs = P.dhcpServer(dataStore.key), sDs = P.dhcpServer(dataStore.student), usedDS = new Set();
+            ['ether2', 'wlan1'].forEach((intName, idx) => {
+                const k = kDs.find(x => x.i === intName);
+                const si = sDs.findIndex((s, i) => !usedDS.has(i) && s.i === intName);
+                const s = si !== -1 ? sDs[si] : null; if(si !== -1) usedDS.add(si);
+                if(!k) return;
+                const scoreId = `ds-${idx}`;
+                let stdH = s ? "" : '<div class="p-6 text-slate-400 italic">-</div>';
+                if(s) { 
+                    const rows = [
+                        { l: 'Interface', v: s.i, id: scoreId + '-i', w: 1.3, k: k.i }, 
+                        { l: 'Lease Time', v: s.lt, id: scoreId + '-lt', w: 1, k: k.lt }, 
+                        { l: 'Address Pool', v: s.ap, id: scoreId + '-ap', w: 0.5, k: k.ap }
+                    ];
+                    rows.forEach((row, rI) => { 
+                        stdH += `<div class="jawaban-row section-box" data-title="7. SETUP DHCP (${intName} - ${row.l})"><div class="flex flex-col"><span class="text-[7px] text-slate-400 font-bold uppercase">${row.l}</span><span class="code-font student-val ${row.v!==row.k?'text-red-500 font-bold':''}">${row.v}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${row.id}" value="${row.w}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${row.id}',0)" id="btn-${row.id}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${row.id}',1)" id="btn-${row.id}-1" class="score-btn score-1">1</button><button onclick="setScore('${row.id}',2)" id="btn-${row.id}-2" class="score-btn score-2">2</button></div></div></div>${rI < rows.length - 1 ? '<div class="dash-inner-divider opacity-20"></div>' : ''}`; 
+                        if(row.v === row.k) setTimeout(() => setScore(row.id, 2), 100);
+                    }); 
+                }
+                if(dsC) dsC.innerHTML += `<div class="grid grid-cols-1 gap-1"><span class="text-[10px] font-bold text-slate-400 uppercase ml-2">${intName}</span><div class="kunci-box flex-col items-start py-2 h-auto"><div>Interface: ${k.i}</div><div class="dash-inner-divider my-1 opacity-10 w-full"></div><div>Lease Time: ${k.lt}</div><div class="dash-inner-divider my-1 opacity-10 w-full"></div><div>Address Pool: ${k.ap}</div></div><div class="jawaban-box">${stdH}</div></div>`;
+            });
+            const e1s = sDs.filter(s => s.i === 'ether1');
+            e1s.forEach((e1, e1I) => { const sId = `ds-fatal-e1-${e1I}`; 
+                if(dsC) dsC.innerHTML += `<div class="grid grid-cols-1 gap-1 mt-2 section-box" data-title="7. SETUP DHCP (FATAL ether1)"><div class="jawaban-box-red"><div class="jawaban-row code-font student-val"><div class="flex-1 font-bold">Int: ${e1.i} | Lease: ${e1.lt} | Pool: ${e1.ap}</div><div class="control-pill shadow-inner border-rose-200"><input type="number" id="weight-${sId}" value="5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="w-px h-4 bg-black/5"></div><div class="flex gap-0.5"><button onclick="setScore('${sId}', -1)" id="btn-${sId}--1" class="score-btn score-neg active">-1</button></div></div></div></div></div>`;
+                setTimeout(() => setScore(sId, -1), 100);
+            });
+
+            const filterC = document.getElementById('filter-rows-container'); if(filterC) filterC.innerHTML = "";
+            const sFilters = P.filters(dataStore.student);
+            const filterWeights = { 1: 0.6, 2: 0.6, 3: 0.7, 4: 0.8, 5: 0.9, 6: 1.2, 7: 1.2 };
+            for(let i=1; i<=7; i++) {
+                const scoreId = `filter-${i}`; const rules = sFilters[i];
+                const defW = filterWeights[i] || 5;
+                let rulesDisplayHtml = rules.length === 0 ? '-' : rules.map(r => `<div class="p-1 code-font whitespace-pre-wrap">${r}</div>`).join('<div class="h-px bg-slate-200/50 w-full"></div>');
+                const stdH = `<div class="jawaban-row items-start section-box" data-title="8. FILTER ${i}"><div class="flex-1 code-font pr-2 student-val">${rulesDisplayHtml}</div><div class="control-pill shadow-inner self-start mt-1"><input type="number" id="weight-${scoreId}" value="${defW}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${scoreId}',0)" id="btn-${scoreId}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${scoreId}',1)" id="btn-${scoreId}-1" class="score-btn score-1">1</button><button onclick="setScore('${scoreId}',2)" id="btn-${scoreId}-2" class="score-btn score-2">2</button></div></div></div>`;
+                if(filterC) filterC.innerHTML += `<div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 uppercase ml-2">FILTER ${i}</span><div class="jawaban-box">${stdH}</div></div>`;
+            }
+
+            updateTotalScore();
+        }
+
+        function exportScore() {
+            if (Object.keys(scores).length === 0) return alert("Silakan mulai penilaian terlebih dahulu!");
+            const studentHost = P.host(dataStore.student);
+            const hostname = (studentHost && studentHost !== "-") ? studentHost : "MikroTik";
+            const cleanHostname = hostname.replace(/[/\\?%*:|"<>]/g, '-');
+            const sections = document.querySelectorAll('.section-box');
+            let columns = [];
+            sections.forEach(box => {
+                const title = box.getAttribute('data-title') || "Lainnya";
+                const detailEls = box.querySelectorAll('.student-val');
+                const weightInput = box.querySelector('.weight-input');
+                if (weightInput) {
+                    const id = weightInput.id.replace('weight-', '');
+                    const weight = parseFloat(weightInput.value) || 0;
+                    const score = scores[id] || 0;
+                    const finalVal = weight * score;
+                    let detailsArr = []; detailEls.forEach(el => { let txt = el.innerText.trim(); if (txt && txt !== "-") detailsArr.push(txt); });
+                    let detailStr = detailsArr.length > 0 ? detailsArr.join(" | ") : "-";
+                    columns.push({
+                        title: title.replace(/;/g, ","),
+                        detail: detailStr.replace(/;/g, ",").replace(/\n/g, " "),
+                        weight: weight,
+                        score: score,
+                        final: finalVal
+                    });
+                }
+            });
+            let csvContent = "sep=;\n";
+            let row1 = "Judul/Subjudul", row2 = "Rincian Konfigurasi", row3 = "Bobot", row4 = "Skor", row5 = "Nilai Akhir";
+            let totalNilai = 0;
+            columns.forEach(col => {
+                row1 += `;"${col.title}"`; row2 += `;"${col.detail}"`; row3 += `;${col.weight.toString().replace('.', ',')}`; row4 += `;${col.score}`; row5 += `;${col.final.toString().replace('.', ',')}`;
+                totalNilai += col.final;
+            });
+            csvContent += `${row1}\n${row2}\n${row3}\n${row4}\n${row5}\n\n`;
+            csvContent += `;;;;TOTAL POIN;${totalNilai.toString().replace('.', ',')}\n`;
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `${cleanHostname}_Skor.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.onload = () => {
+            const ids = ['ip-rows-container', 'nat-rows-container', 'gateway-container', 'pool-container', 'dhcp-server-container', 'filter-rows-container'];
+            const containers = ids.map(id => document.getElementById(id));
+            if (containers.every(c => c)) {
+                ['ether1','ether2','wlan1'].forEach(n => {
+                    containers[0].innerHTML += `<div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 uppercase ml-2">${n}</span><div class="grid grid-cols-1 gap-1"><div class="kunci-box code-font">-</div><div class="jawaban-box"><div class="jawaban-row code-font"><div class="flex-1">-</div></div></div></div></div>`;
+                    containers[1].innerHTML += `<div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 uppercase ml-2">${n}</span><div class="grid grid-cols-1 gap-1"><div class="kunci-box code-font">-</div><div class="jawaban-box"><div class="jawaban-row code-font"><div class="flex-1">-</div></div></div></div></div>`;
+                });
+                containers[2].innerHTML = `<div class="grid grid-cols-1 gap-1"><div class="kunci-box code-font">-</div><div class="jawaban-box"><div class="jawaban-row code-font"><div class="flex-1">-</div></div></div></div>`;
+                containers[3].innerHTML = `<div class="grid grid-cols-1 gap-1"><div class="kunci-box code-font">-</div><div class="jawaban-box"><div class="jawaban-row code-font"><div class="flex-1">-</div></div></div></div>`;
+                containers[4].innerHTML = `<div class="grid grid-cols-1 gap-1"><span class="text-[10px] font-bold text-slate-400 uppercase ml-2">ether2</span><div class="kunci-box code-font flex-col items-start py-2 gap-0"><div>-</div><div class="dash-inner-divider my-1 opacity-10 w-full"></div><div>-</div><div class="dash-inner-divider my-1 opacity-10 w-full"></div><div>-</div></div><div class="jawaban-box"><div class="jawaban-row"><div class="flex-1">-</div></div></div></div>`;
+                for(let i=1; i<=7; i++) {
+                    containers[5].innerHTML += `<div class="space-y-1"><span class="text-[10px] font-bold text-slate-400 uppercase ml-2">FILTER ${i}</span><div class="jawaban-box"><div class="jawaban-row"><div class="flex-1">-</div></div></div></div>`;
+                }
+            }
+        };
+    </script>
+</body>
+</html>
