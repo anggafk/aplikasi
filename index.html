@@ -11,165 +11,197 @@
         
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #0f172a;
-            background-image: radial-gradient(circle at 0% 0%, rgba(30, 58, 138, 0.3) 0%, transparent 50%),
-                              radial-gradient(circle at 100% 100%, rgba(88, 28, 135, 0.2) 0%, transparent 50%);
+            background-color: #f8fafc;
+            color: #334155;
+            overflow-x: hidden;
         }
 
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
+        .file-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .glass-card:hover {
-            transform: translateY(-4px);
-            background: rgba(30, 41, 59, 0.9);
-            border: 1px solid rgba(59, 130, 246, 0.5);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        .file-card:hover {
+            border-color: #94a3b8;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+            transform: translateY(-1px);
         }
 
-        .status-badge {
-            background: linear-gradient(90deg, #1e40af, #3b82f6);
+        /* Scrollbar Styling */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-fade { animation: fadeIn 0.3s ease-out forwards; }
     </style>
 </head>
-<body class="min-h-screen text-slate-300">
+<body class="h-screen flex flex-col">
 
-    <!-- Header Section -->
-    <header class="pt-16 pb-12 px-6">
+    <!-- Header Bersih -->
+    <header class="pt-10 pb-6 px-6 shrink-0 bg-white border-b border-slate-200">
         <div class="container mx-auto max-w-5xl">
-            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div class="flex items-center justify-between gap-4">
                 <div class="animate-fade">
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-900/20">
-                            <i class="fas fa-terminal"></i>
+                    <div class="flex items-center gap-3 mb-1">
+                        <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 border border-slate-200">
+                            <i class="fas fa-folder-tree text-sm"></i>
                         </div>
-                        <h1 class="text-3xl font-bold tracking-tight text-white">System Assets</h1>
+                        <h1 class="text-xl font-semibold tracking-tight text-slate-800">System Directory</h1>
                     </div>
-                    <p class="text-slate-500 font-mono text-sm tracking-wider uppercase">
-                        Directory: <span class="text-blue-400">/anggafk/aplikasi/</span>
+                    <p class="text-[11px] font-medium text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fas fa-hdd text-[10px]"></i>
+                        <span id="display-path">/anggafk/loading...</span>
                     </p>
                 </div>
-                <div class="animate-fade" style="animation-delay: 0.1s;">
-                    <div class="flex items-center gap-2 bg-slate-800/50 border border-slate-700 px-4 py-2 rounded-full text-xs">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-slate-400 font-medium">Live Connection Active</span>
+                <div class="flex items-center gap-3">
+                    <div id="status-container" class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-50 border border-slate-200 text-[10px] font-semibold text-slate-500">
+                        <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                        <span id="status-text">Menghubungkan...</span>
                     </div>
                 </div>
             </div>
-            <div class="h-px w-full bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mt-8 opacity-50"></div>
         </div>
     </header>
 
-    <main class="container mx-auto px-6 max-w-5xl pb-24">
-        <!-- Loading State -->
-        <div id="loading-state" class="flex flex-col items-center justify-center py-24">
-            <div class="flex gap-1 mb-4">
-                <div class="w-2 h-8 bg-blue-500 animate-bounce" style="animation-delay: 0.1s"></div>
-                <div class="w-2 h-8 bg-blue-500 animate-bounce" style="animation-delay: 0.2s"></div>
-                <div class="w-2 h-8 bg-blue-500 animate-bounce" style="animation-delay: 0.3s"></div>
+    <!-- Area Konten Utama -->
+    <main class="flex-1 overflow-hidden flex flex-col container mx-auto max-w-5xl px-6">
+        <div class="flex-1 overflow-y-auto custom-scroll py-8 pr-2">
+            
+            <!-- Grid Container Kompak -->
+            <div id="file-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 hidden">
+                <!-- Data akan dimasukkan di sini oleh JS -->
             </div>
-            <p class="text-slate-500 font-mono text-xs uppercase tracking-widest">Scanning Filesystem...</p>
-        </div>
 
-        <!-- Grid Container -->
-        <div id="file-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 hidden">
-            <!-- Files Injected via JS -->
-        </div>
+            <!-- Loading State -->
+            <div id="loading-state" class="flex flex-col items-center justify-center py-24">
+                <div class="w-7 h-7 border-[3px] border-slate-200 border-t-slate-500 rounded-full animate-spin"></div>
+            </div>
 
-        <!-- Error State -->
-        <div id="error-state" class="hidden text-center p-12 glass-card rounded-2xl max-w-md mx-auto">
-            <i class="fas fa-triangle-exclamation text-4xl text-amber-500 mb-4"></i>
-            <h3 class="text-lg font-bold text-white uppercase tracking-tight">System Error</h3>
-            <p id="error-message" class="text-slate-500 mt-2 text-sm font-mono"></p>
-            <button onclick="location.reload()" class="mt-8 px-6 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-bold uppercase tracking-widest rounded transition-all">
-                Retry Connection
-            </button>
+            <!-- Error State -->
+            <div id="error-state" class="hidden text-center p-10 bg-white border border-slate-200 rounded-2xl max-w-sm mx-auto shadow-sm">
+                <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-exclamation-circle text-xl"></i>
+                </div>
+                <h3 class="text-sm font-bold text-slate-800 uppercase tracking-tight">Koneksi Gagal</h3>
+                <p id="error-message" class="text-slate-500 mt-2 text-[11px] leading-relaxed"></p>
+                <button onclick="location.reload()" class="mt-6 px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-bold uppercase tracking-wider rounded-lg transition-all shadow-sm">
+                    Coba Lagi
+                </button>
+            </div>
         </div>
     </main>
 
-    <footer class="fixed bottom-0 w-full py-4 px-6 flex justify-between items-center text-[10px] font-mono text-slate-600 bg-slate-950/80 backdrop-blur-md border-t border-slate-900">
-        <div>CORE VERSION 4.2.0</div>
-        <div class="uppercase tracking-widest">© 2026 ANGGAFK • SECURE REPOSITORY</div>
-        <div>STATUS: READY</div>
+    <!-- Footer Minimalis -->
+    <footer class="shrink-0 py-3 px-6 flex justify-between items-center text-[10px] font-medium text-slate-400 bg-white border-t border-slate-200">
+        <div class="flex items-center gap-4">
+            <span>VERSION 5.0.0</span>
+            <span class="text-slate-200">|</span>
+            <span id="file-count">0 Files</span>
+        </div>
+        <div class="uppercase tracking-widest font-bold text-slate-500">© 2026 ANGGAFK</div>
+        <div class="flex items-center gap-1">
+            <span class="w-1 h-1 rounded-full bg-slate-300"></span>
+            SYSTEM SECURE
+        </div>
     </footer>
 
     <script>
-        // --- KONFIGURASI ---
+        /**
+         * PENGATURAN REPOSITORY
+         */
         const CONFIG = {
             username: 'anggafk',
-            repo: 'repository-kamu', // <--- GANTI INI DENGAN NAMA REPO KAMU
-            path: 'aplikasi'
+            repo: 'aplikasi', // <--- Ganti dengan nama repo kamu
+            path: '' 
         };
 
-        async function fetchDirectory() {
+        document.getElementById('display-path').innerText = `/${CONFIG.username}/${CONFIG.repo}/${CONFIG.path}`;
+
+        async function fetchFiles() {
             const grid = document.getElementById('file-grid');
             const loading = document.getElementById('loading-state');
             const errorView = document.getElementById('error-state');
             const errorMsg = document.getElementById('error-message');
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const fileCountEl = document.getElementById('file-count');
 
             try {
                 const response = await fetch(`https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${CONFIG.path}`);
-                if (!response.ok) throw new Error(`HTTP_ERROR: ${response.status}`);
+                
+                if (!response.ok) throw new Error(`Gagal memuat data (HTTP ${response.status})`);
                 
                 const data = await response.json();
+                
+                // Update Status Bar
+                statusDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_5px_#10b981]";
+                statusText.innerText = "Terhubung";
+                statusText.className = "text-emerald-600 font-bold";
+
                 loading.classList.add('hidden');
                 grid.classList.remove('hidden');
 
-                data.forEach((file, index) => {
-                    if (file.name === 'index.html' || file.name.startsWith('.')) return;
+                // Filter & Sortir
+                const filteredData = data.filter(file => file.name !== 'index.html' && !file.name.startsWith('.'));
+                fileCountEl.innerText = `${filteredData.length} File Terdeteksi`;
 
+                filteredData.forEach((file, index) => {
                     const card = document.createElement('div');
-                    card.className = "animate-fade";
-                    card.style.animationDelay = `${index * 0.05}s`;
+                    card.className = "animate-fade opacity-0";
+                    card.style.animationDelay = `${index * 0.04}s`;
 
-                    let icon = 'fa-file-code';
-                    let iconColor = 'text-blue-400';
-                    let typeLabel = 'Application File';
+                    let icon = 'fa-file-lines';
+                    let iconBg = 'bg-slate-50';
+                    let iconColor = 'text-slate-400';
                     
                     if (file.type === 'dir') {
                         icon = 'fa-folder';
-                        iconColor = 'text-indigo-400';
-                        typeLabel = 'Directory';
+                        iconBg = 'bg-blue-50';
+                        iconColor = 'text-blue-500';
                     } else if (file.name.endsWith('.html')) {
-                        icon = 'fa-globe';
-                        iconColor = 'text-emerald-400';
-                        typeLabel = 'Web Interface';
+                        icon = 'fa-code';
+                        iconBg = 'bg-emerald-50';
+                        iconColor = 'text-emerald-500';
                     } else if (file.name.match(/\.(png|jpg|jpeg|svg)$/i)) {
-                        icon = 'fa-microchip';
-                        iconColor = 'text-purple-400';
-                        typeLabel = 'Image Resource';
+                        icon = 'fa-image';
+                        iconBg = 'bg-indigo-50';
+                        iconColor = 'text-indigo-500';
                     }
 
                     card.innerHTML = `
-                        <a href="${file.name}" class="glass-card p-5 rounded-xl flex flex-col h-full group">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="w-12 h-12 bg-slate-900/50 rounded-lg flex items-center justify-center text-xl ${iconColor} border border-slate-800 group-hover:border-blue-500/30 transition-colors">
-                                    <i class="fas ${icon}"></i>
-                                </div>
-                                <i class="fas fa-arrow-up-right-from-square text-[10px] text-slate-700 group-hover:text-blue-400 transition-colors"></i>
+                        <a href="${file.name}" class="file-card p-3.5 rounded-xl flex items-center gap-4 group">
+                            <div class="w-11 h-11 ${iconBg} ${iconColor} rounded-lg flex items-center justify-center text-base border border-transparent group-hover:border-current group-hover:border-opacity-10 transition-all">
+                                <i class="fas ${icon}"></i>
                             </div>
-                            <div class="flex-1">
-                                <h4 class="font-semibold text-slate-200 leading-snug mb-1 truncate">${file.name}</h4>
-                                <p class="text-[10px] font-mono uppercase tracking-widest text-slate-500">
-                                    ${typeLabel}
-                                </p>
-                            </div>
-                            <div class="mt-5 flex items-center gap-2">
-                                <div class="flex-1 h-[2px] bg-slate-800 rounded-full overflow-hidden">
-                                    <div class="h-full bg-blue-500/30 w-full"></div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-[13px] font-semibold text-slate-700 truncate group-hover:text-slate-900 transition-colors">${file.name}</h4>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-[9px] font-bold text-slate-300 uppercase tracking-tighter italic">
+                                        ${file.type === 'dir' ? 'Directory' : 'Asset'}
+                                    </span>
+                                    <span class="text-[9px] text-slate-200">•</span>
+                                    <span class="text-[9px] font-mono text-slate-400">
+                                        ${file.type === 'dir' ? '--' : (file.size / 1024).toFixed(1) + ' KB'}
+                                    </span>
                                 </div>
-                                <span class="text-[9px] font-mono text-slate-600 italic">
-                                    ${file.type === 'dir' ? '--' : (file.size / 1024).toFixed(1) + ' KB'}
-                                </span>
+                            </div>
+                            <div class="opacity-0 group-hover:opacity-100 transition-opacity pr-1">
+                                <i class="fas fa-external-link-alt text-[10px] text-slate-300"></i>
                             </div>
                         </a>
                     `;
@@ -180,10 +212,13 @@
                 loading.classList.add('hidden');
                 errorView.classList.remove('hidden');
                 errorMsg.innerText = err.message;
+                statusDot.className = "w-1.5 h-1.5 rounded-full bg-red-400";
+                statusText.innerText = "Terputus";
+                statusText.className = "text-red-400 font-bold";
             }
         }
 
-        document.addEventListener('DOMContentLoaded', fetchDirectory);
+        document.addEventListener('DOMContentLoaded', fetchFiles);
     </script>
 </body>
 </html>
