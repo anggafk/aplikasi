@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar File Aplikasi</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        ul { list-style: none; padding: 0; }
+        li { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        a { text-decoration: none; color: #007bff; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h2>Daftar File di Folder Aplikasi</h2>
+    <ul id="file-list">Memuat file...</ul>
+
+    <script>
+        // Sesuaikan username dan nama repository kamu
+        const username = 'anggafk';
+        const repo = 'nama-repo-kamu'; // Ganti dengan nama repo kamu
+        const path = 'aplikasi';
+
+        async function getFiles() {
+            const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`);
+            const data = await response.json();
+            const listElement = document.getElementById('file-list');
+            listElement.innerHTML = '';
+
+            data.forEach(file => {
+                // Abaikan file index.html itu sendiri
+                if (file.name !== 'index.html') {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<a href="${file.name}">${file.name}</a>`;
+                    listElement.appendChild(li);
+                }
+            });
+        }
+
+        getFiles();
+    </script>
+</body>
+</html>
