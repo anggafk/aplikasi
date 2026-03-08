@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UJI KOMPETENSI KEAHLIAN 2026 - Monitoring Progres</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --timer-font-size: 7.5rem;
+            --student-font-size: 12px;
+            --task-font-size: 20px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e2e8f0; 
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        .status-recorded-success {
+            background-color: #22c55e !important;
+            color: #ffffff !important;
+            border: 1px solid #16a34a !important;
+            font-weight: 900 !important;
+            font-size: var(--task-font-size) !important;
+        }
+
+        .status-recorded-failed {
+            background-color: #ef4444 !important;
+            color: #ffffff !important;
+            border: 1px solid #dc2626 !important;
+            font-weight: 900 !important;
+            font-size: var(--task-font-size) !important;
+        }
+
+        .student-block {
+            background-color: white;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            height: calc((100% / 6) - 0.25rem); 
+            margin-bottom: 0.25rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .student-completed {
+            background-color: #dcfce7 !important; 
+            border-color: #22c55e !important;
+            box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.2);
+        }
+
+        .student-completed-late {
+            background-color: #fef3c7 !important; 
+            border-color: #f59e0b !important;
+            box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2);
+        }
+
+        .student-completed .student-header { background-color: #bbf7d0 !important; border-bottom-color: #86efac; }
+        .student-completed-late .student-header { background-color: #fde68a !important; border-bottom-color: #fcd34d; }
+
+        .block-empty {
+            background-color: rgba(255, 255, 255, 0.3);
+            border: 1px dashed #94a3b8;
+            box-shadow: none;
+        }
+
+        .block-empty .student-progress-row { opacity: 0.1; pointer-events: none; }
+
+        .student-header {
+            background-color: #f8fafc;
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            border-bottom: 1px solid #e2e8f0;
+            flex: 0.8; 
+            transition: background-color 0.3s;
+        }
+
+        .input-no {
+            width: calc(var(--student-font-size) * 2.5);
+            background: transparent;
+            border: none;
+            font-weight: 800;
+            color: #0f172a; 
+            font-size: var(--student-font-size);
+            outline: none;
+        }
+
+        .input-nama {
+            flex: 1;
+            background: transparent;
+            border: none;
+            font-weight: 800;
+            color: #0f172a; 
+            font-size: var(--student-font-size);
+            text-transform: uppercase;
+            outline: none;
+            padding-left: 2px;
+        }
+
+        .student-progress-row {
+            display: flex;
+            flex: 1.2; 
+            background: transparent;
+        }
+
+        .progress-cell {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid rgba(226, 232, 240, 0.8);
+            font-size: calc(var(--task-font-size) * 0.4);
+            font-weight: 900;
+            color: #94a3b8;
+            transition: all 0.1s;
+            cursor: pointer;
+            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+            padding: 0 2px;
+        }
+
+        .progress-cell:last-child { border-right: none; }
+        .progress-cell:hover { background-color: rgba(248, 250, 252, 0.5); }
+
+        .header-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            width: 100%;
+        }
+
+        #exam-timer { font-size: var(--timer-font-size); line-height: 1; }
+        .timer-text { text-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .notif-card, .modal-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: popIn 0.3s ease-out;
+        }
+
+        @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body class="p-0">
+
+    <!-- Notifications Overlay -->
+    <div id="notification-overlay" class="modal-overlay">
+        <div class="notif-card max-w-[500px] w-[90%] text-center">
+            <div id="notif-icon-box" class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i id="notif-icon-lucide" data-lucide="clock-alert" class="w-8 h-8"></i>
+            </div>
+            <h2 id="notif-title" class="text-2xl font-black text-slate-900 mb-2 uppercase">Peringatan</h2>
+            <p id="notif-message" class="text-lg text-slate-500 font-medium mb-6">Waktu tersisa!</p>
+            
+            <div id="notif-actions" class="flex flex-col space-y-2">
+                <button id="btn-close-notif" onclick="closeNotification()" class="hidden w-full bg-slate-900 text-white font-bold py-3 rounded-xl transition-all uppercase text-sm">Tutup</button>
+                <div id="time-up-actions" class="hidden grid grid-cols-2 gap-3">
+                    <button onclick="closeNotification()" class="bg-slate-100 text-slate-600 font-bold py-3 rounded-xl transition-all uppercase text-sm">Selesai</button>
+                    <button onclick="openContinueModal()" class="bg-blue-600 text-white font-bold py-3 rounded-xl transition-all uppercase text-sm shadow-lg shadow-blue-200">Lanjutkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Import -->
+    <div id="modal-import" class="modal-overlay">
+        <div class="modal-card max-w-lg w-full mx-4">
+            <h2 class="text-xl font-bold text-slate-800 uppercase mb-3 flex items-center">
+                <i data-lucide="upload" class="w-5 h-5 mr-2 text-indigo-500"></i>
+                Import Daftar Meja
+            </h2>
+            <textarea id="import-textarea" rows="10" class="w-full p-4 border-2 border-slate-100 rounded-xl font-mono text-xs focus:outline-none mb-4" placeholder="1 BUDI&#10;2 ANI"></textarea>
+            <div class="flex space-x-3">
+                <button onclick="closeModal('modal-import')" class="flex-1 px-4 py-2 border-2 border-slate-100 rounded-lg font-bold text-slate-400 text-xs uppercase">Batal</button>
+                <button onclick="processImport()" class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg font-bold text-xs uppercase shadow-lg shadow-indigo-200">Import Denah</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tasks Config -->
+    <div id="modal-tasks-config" class="modal-overlay">
+        <div class="modal-card w-[550px] mx-4">
+            <h2 class="text-xl font-black text-slate-900 mb-4 uppercase flex items-center">
+                <i data-lucide="settings" class="w-5 h-5 mr-2 text-blue-500"></i>
+                Pengaturan Tugas
+            </h2>
+            <div class="mb-4">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Jumlah Tugas Aktif</label>
+                <select id="config-num-tasks" class="w-full bg-slate-50 border-2 border-slate-100 p-2 rounded-xl font-bold focus:border-blue-500 outline-none text-sm">
+                    <option value="1">1 Tugas</option><option value="2">2 Tugas</option><option value="3">3 Tugas</option><option value="4">4 Tugas</option><option value="5">5 Tugas</option><option value="6">6 Tugas</option><option value="7" selected>7 Tugas</option><option value="8">8 Tugas</option><option value="9">9 Tugas</option><option value="10">10 Tugas</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-12 gap-2 mb-2 px-1">
+                <div class="col-span-4 text-[9px] font-bold text-slate-400 uppercase">Label Kotak (Maks 10)</div>
+                <div class="col-span-8 text-[9px] font-bold text-slate-400 uppercase">Rincian Lengkap (Header)</div>
+            </div>
+            <div id="task-inputs-container" class="max-h-[40vh] overflow-y-auto space-y-2 pr-2 mb-6"></div>
+            <div class="flex space-x-3">
+                <button onclick="closeModal('modal-tasks-config')" class="flex-1 bg-slate-100 text-slate-500 font-bold py-3 rounded-xl transition-all uppercase text-xs">Batal</button>
+                <button onclick="saveTaskConfig()" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl uppercase text-xs shadow-lg shadow-blue-200">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP WRAPPER -->
+    <div class="flex flex-col h-screen w-full overflow-hidden">
+        <header class="flex flex-col bg-[#0f172a] shrink-0 shadow-[0_4px_20px_rgba(0,0,0,0.4)] border-b-2 border-[#1e293b]">
+            <div class="flex justify-between items-center px-10 py-1 min-h-[90px]">
+                <div class="header-grid">
+                    <div class="text-left min-w-0 pr-4">
+                        <h1 class="text-2xl lg:text-3xl font-black tracking-tighter uppercase leading-[0.85] text-blue-400">UJI KOMPETENSI<br>KEAHLIAN 2026</h1>
+                    </div>
+                    <div class="text-center px-4">
+                        <div id="exam-timer" class="font-black tabular-nums tracking-tighter text-white timer-text">00:00</div>
+                    </div>
+                    <div class="flex flex-col items-end pl-4">
+                        <button id="btn-exam-control" onclick="handleExamControl()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-black flex items-center space-x-2 transition-all shadow-lg shadow-blue-500/30 whitespace-nowrap">
+                            <i id="control-icon" data-lucide="play" class="w-5 h-5 fill-current"></i>
+                            <span id="control-text" class="text-sm uppercase">Mulai Ujian</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-300 px-4 py-1.5 border-t border-slate-400 min-h-[32px] flex items-center justify-between shadow-sm">
+                <div onclick="openTaskConfig()" id="btn-open-tasks" class="flex items-center justify-center bg-slate-400 hover:bg-slate-500 px-2 py-0.5 rounded border border-slate-500 cursor-pointer transition-all group mr-3 shrink-0 min-w-[32px]">
+                    <span id="display-num-tasks" class="text-slate-900 text-[10px] font-bold text-center">7</span>
+                </div>
+                <div id="header-task-details" class="flex flex-wrap gap-x-6 gap-y-0.5 text-slate-900 flex-grow font-bold overflow-hidden"></div>
+                <div class="w-10"></div>
+            </div>
+        </header>
+
+        <div class="flex-grow pt-3 px-2 pb-2 overflow-hidden">
+            <div id="tables-container" class="grid grid-cols-3 gap-x-2 h-full">
+                <div id="col-1" class="flex flex-col h-full"></div>
+                <div id="col-2" class="flex flex-col h-full"></div> 
+                <div id="col-3" class="flex flex-col h-full"></div>
+            </div>
+        </div>
+
+        <footer class="flex justify-between items-center bg-white px-2 py-1.5 shrink-0 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] min-h-[42px] border-t border-slate-300">
+            <div class="flex items-center space-x-2">
+                <div class="flex flex-col bg-slate-100 rounded p-0.5 border border-slate-200">
+                    <button onclick="updateScale('timer', 0.5)" class="w-6 h-4 flex items-center justify-center bg-white hover:bg-slate-50 text-blue-600 rounded-t shadow-sm active:scale-90 border-b border-slate-100"><i data-lucide="chevron-up" class="w-3 h-3"></i></button>
+                    <button onclick="updateScale('timer', -0.5)" class="w-6 h-4 flex items-center justify-center bg-white hover:bg-slate-50 text-blue-600 rounded-b shadow-sm active:scale-90"><i data-lucide="chevron-down" class="w-3 h-3"></i></button>
+                </div>
+                <div class="flex flex-col bg-slate-100 rounded p-0.5 border border-slate-200">
+                    <button onclick="updateScale('student', 1)" class="w-6 h-4 flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 rounded-t shadow-sm active:scale-90 border-b border-slate-100"><i data-lucide="chevron-up" class="w-3 h-3"></i></button>
+                    <button onclick="updateScale('student', -1)" class="w-6 h-4 flex items-center justify-center bg-white hover:bg-slate-50 text-slate-700 rounded-b shadow-sm active:scale-90"><i data-lucide="chevron-down" class="w-3 h-3"></i></button>
+                </div>
+                <div class="flex flex-col bg-slate-100 rounded p-0.5 border border-slate-200">
+                    <button onclick="updateScale('task', 2)" class="w-6 h-4 flex items-center justify-center bg-white hover:bg-slate-50 text-green-600 rounded-t shadow-sm active:scale-90 border-b border-slate-100"><i data-lucide="chevron-up" class="w-3 h-3"></i></button>
+                    <button onclick="updateScale('task', -2)" class="w-6 h-4 flex items-center justify-center bg-white hover:bg-slate-50 text-green-600 rounded-b shadow-sm active:scale-90"><i data-lucide="chevron-down" class="w-3 h-3"></i></button>
+                </div>
+            </div>
+            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] hidden md:block">Panel Monitoring Praktik</div>
+            <div class="flex space-x-2 shrink-0">
+                <button onclick="openImportModal()" class="text-[10px] font-bold bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-md uppercase flex items-center border border-indigo-200"><i data-lucide="upload" class="w-3 h-3 mr-1.5"></i> Import Nama</button>
+                <button onclick="exportData()" class="text-[10px] font-bold bg-green-600 text-white px-3 py-1.5 rounded-md transition-all uppercase flex items-center shadow-sm"><i data-lucide="download" class="w-3 h-3 mr-1.5"></i> Ekspor CSV</button>
+                <button onclick="requestClearAll()" class="text-[10px] font-bold bg-red-50 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-md transition-all uppercase flex items-center border border-red-100"><i data-lucide="trash-2" class="w-3 h-3 mr-1.5"></i> Hapus Daftar</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal-start" class="modal-overlay"><div class="modal-card max-w-sm w-full text-center"><div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="play" class="w-8 h-8 fill-current"></i></div><h2 class="text-xl font-bold mb-2 uppercase">Mulai Ujian</h2><div class="mb-6"><div class="relative max-w-[120px] mx-auto"><input type="number" id="modal-input-duration" min="1" max="999" placeholder="0" class="w-full bg-slate-50 border-2 border-slate-200 p-4 rounded-2xl text-center text-2xl font-black focus:border-blue-500 outline-none"><span class="absolute -bottom-5 left-0 right-0 text-[10px] font-bold text-slate-400 uppercase">Menit</span></div></div><button onclick="confirmStart()" class="w-full px-4 py-3 bg-blue-600 text-white rounded-xl font-bold mb-2 text-sm">Konfirmasi & Mulai</button><button onclick="closeModal('modal-start')" class="w-full px-4 py-2 text-slate-400 font-bold text-xs uppercase">Batal</button></div></div>
+    
+    <div id="modal-exam-stop" class="modal-overlay">
+        <div class="modal-card max-w-sm w-full text-center">
+            <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="stop-circle" class="w-6 h-6"></i></div>
+            <h2 class="text-xl font-bold mb-2 uppercase">Hentikan Ujian?</h2>
+            <p class="text-xs text-slate-500 mb-6">Pilih opsi penyelesaian di bawah ini.</p>
+            <div class="space-y-3">
+                <button onclick="finishExamNow()" class="w-full px-4 py-3 bg-green-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-green-200">Selesai & Rekap Gagal</button>
+                <button onclick="confirmReset()" class="w-full px-4 py-3 bg-red-600 text-white rounded-xl font-bold text-sm">Reset & Hapus Progres</button>
+                <button onclick="closeModal('modal-exam-stop')" class="w-full px-4 py-2 text-slate-400 font-bold text-xs uppercase">Kembali</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-continue" class="modal-overlay"><div class="modal-card max-w-sm w-full text-center border-t-4 border-orange-500"><div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="clock-plus" class="w-8 h-8"></i></div><h2 class="text-xl font-bold mb-2 uppercase">Lanjutkan</h2><div class="mb-6"><div class="relative max-w-[120px] mx-auto"><input type="number" id="modal-input-extra" min="1" max="999" placeholder="0" class="w-full bg-slate-50 border-2 border-orange-200 p-4 rounded-2xl text-center text-2xl font-black focus:border-orange-500 outline-none"><span class="absolute -bottom-5 left-0 right-0 text-[10px] font-bold text-slate-400 uppercase">Menit Tambahan</span></div></div><button onclick="confirmContinue()" class="w-full px-4 py-3 bg-orange-600 text-white rounded-xl font-bold mb-2 text-sm">Lanjutkan Sekarang</button><button onclick="closeModal('modal-continue')" class="w-full px-4 py-2 text-slate-400 font-bold text-xs uppercase">Batal</button></div></div>
+    <div id="modal-clear-all" class="modal-overlay"><div class="modal-card max-w-xs w-full text-center"><h2 class="text-xl font-bold text-red-600 mb-4 uppercase">Hapus Daftar?</h2><button onclick="confirmClearAll()" class="w-full px-4 py-3 bg-red-600 text-white rounded-xl font-bold mb-2 text-sm">Ya, Hapus</button><button onclick="closeModal('modal-clear-all')" class="w-full px-4 py-2 text-slate-400 font-bold text-xs uppercase">Batal</button></div></div>
+
+    <script>
+        let isExamStarted = false;
+        let isExamFinished = false; 
+        let numTasks = 7;
+        let taskConfig = Array.from({length: 10}, (_, i) => ({ label: `T${i+1}`, detail: "" }));
+        let elapsedSeconds = 0;
+        let targetSeconds = 0;
+        let timerInterval = null;
+        let notifTenSent = false;
+        let notifFiveSent = false;
+        let students = [];
+        let timerScaleRem = 7.5;
+        let studentFontSize = 12;
+        let taskFontSize = 20;
+
+        function loadFromLocal() {
+            const savedData = localStorage.getItem('monitoring_ujian_praktik');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                numTasks = data.numTasks || 7;
+                if (data.taskConfig) taskConfig = data.taskConfig;
+                isExamStarted = data.isExamStarted || false;
+                isExamFinished = data.isExamFinished || false;
+                elapsedSeconds = data.elapsedSeconds || 0;
+                targetSeconds = data.targetSeconds || 0;
+                students = data.students || [];
+                notifTenSent = data.notifTenSent || false;
+                notifFiveSent = data.notifFiveSent || false;
+                timerScaleRem = data.timerScaleRem || 7.5;
+                studentFontSize = data.studentFontSize || 12;
+                taskFontSize = data.taskFontSize || 20;
+                if (isExamStarted && !isExamFinished) resumeExam();
+            } else {
+                initializeDefaultStudents();
+            }
+            applyScales();
+            updateUI();
+        }
+
+        function saveToLocal() {
+            const data = { numTasks, taskConfig, isExamStarted, isExamFinished, elapsedSeconds, targetSeconds, students, notifTenSent, notifFiveSent, timerScaleRem, studentFontSize, taskFontSize };
+            localStorage.setItem('monitoring_ujian_praktik', JSON.stringify(data));
+        }
+
+        function initializeDefaultStudents() {
+            students = Array.from({length: 18}, (_, i) => ({
+                id: i + 1,
+                displayNo: i + 1,
+                name: `SISWA ${String(i + 1).padStart(2, '0')}`,
+                endTime: null,
+                wallClockFinish: null,
+                progress: Array(10).fill(null),
+                finishedLate: false 
+            }));
+            saveToLocal();
+        }
+
+        function applyScales() {
+            document.documentElement.style.setProperty('--timer-font-size', timerScaleRem + 'rem');
+            document.documentElement.style.setProperty('--student-font-size', studentFontSize + 'px');
+            document.documentElement.style.setProperty('--task-font-size', taskFontSize + 'px');
+        }
+
+        function resumeExam() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (isExamStarted && !isExamFinished) {
+                    elapsedSeconds++;
+                    const remainingSeconds = Math.max(0, targetSeconds - elapsedSeconds);
+                    document.getElementById('exam-timer').textContent = formatDurationDisplay(remainingSeconds);
+                    if (remainingSeconds === 600 && !notifTenSent) { showNotification("Waktu tersisa 10 menit lagi!", 10); notifTenSent = true; }
+                    if (remainingSeconds === 300 && !notifFiveSent) { showNotification("Waktu tersisa 5 menit lagi!", 10); notifFiveSent = true; }
+                    if (elapsedSeconds >= targetSeconds) {
+                        isExamFinished = true;
+                        handleExamEndAuto(); 
+                        saveToLocal();
+                        showNotification("WAKTU UJIAN TELAH HABIS!", 0, true);
+                    }
+                    saveToLocal();
+                }
+            }, 1000);
+        }
+
+        function handleExamEndAuto() {
+            students.forEach(s => {
+                let changed = false;
+                for (let i = 0; i < numTasks; i++) {
+                    if (s.progress[i] === null) {
+                        s.progress[i] = { time: null, status: 'failed', auto: true };
+                        changed = true;
+                    }
+                }
+                if (changed) checkStudentFinish(s);
+            });
+            renderTable();
+        }
+
+        window.finishExamNow = () => {
+            isExamFinished = true;
+            handleExamEndAuto();
+            if (timerInterval) clearInterval(timerInterval);
+            saveToLocal();
+            updateUI();
+            closeModal('modal-exam-stop');
+        }
+
+        window.confirmStart = () => {
+            const durInput = document.getElementById('modal-input-duration');
+            const duration = parseInt(durInput.value);
+            if (!duration || duration <= 0) {
+                durInput.classList.add('shake', 'border-red-500');
+                setTimeout(() => durInput.classList.remove('shake'), 400);
+                return;
+            }
+            targetSeconds = duration * 60;
+            elapsedSeconds = 0;
+            isExamStarted = true;
+            isExamFinished = false;
+            notifTenSent = notifFiveSent = false;
+            saveToLocal();
+            resumeExam();
+            updateUI();
+            closeModal('modal-start');
+        };
+
+        window.confirmReset = () => {
+            if (timerInterval) clearInterval(timerInterval);
+            isExamStarted = false;
+            isExamFinished = false;
+            elapsedSeconds = 0;
+            students.forEach(s => {
+                s.endTime = null;
+                s.wallClockFinish = null;
+                s.progress = Array(10).fill(null);
+                s.finishedLate = false;
+            });
+            saveToLocal();
+            updateUI();
+            closeNotification();
+            closeModal('modal-exam-stop');
+        };
+
+        window.toggleTest = (sIdx, tIdx) => {
+            if (!isExamStarted || isExamFinished) return;
+            const s = students[sIdx];
+            if (!s.name && !s.displayNo) return;
+            const cur = s.progress[tIdx];
+            const recordTime = elapsedSeconds;
+            if (cur === null) {
+                s.progress[tIdx] = { time: recordTime, status: 'success', auto: false };
+            } else {
+                s.progress[tIdx].status = s.progress[tIdx].status === 'success' ? 'failed' : 'success';
+                if (cur.time === null) { s.progress[tIdx].time = recordTime; s.progress[tIdx].auto = false; }
+            }
+            checkStudentFinish(s);
+            saveToLocal();
+            renderTable();
+        };
+
+        window.deleteTest = (e, sIdx, tIdx) => {
+            if (e) e.preventDefault();
+            if (!isExamStarted || isExamFinished) return;
+            students[sIdx].progress[tIdx] = null;
+            checkStudentFinish(students[sIdx]);
+            saveToLocal();
+            renderTable();
+        };
+
+        function checkStudentFinish(student) {
+            const activeSlots = student.progress.slice(0, numTasks);
+            const isAllFilled = activeSlots.every(p => p !== null);
+            if (isAllFilled) {
+                student.endTime = Math.max(...activeSlots.map(p => p.time || 0));
+                if (!student.wallClockFinish) {
+                    student.wallClockFinish = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                }
+                student.finishedLate = activeSlots.some(p => (p.time === null && p.auto) || (p.time !== null && p.time >= targetSeconds));
+            } else {
+                student.endTime = null;
+                student.wallClockFinish = null;
+                student.finishedLate = false;
+            }
+        }
+
+        window.updateStudentData = (idx, field, value) => {
+            students[idx][field] = field === 'name' ? value.toUpperCase() : value;
+            saveToLocal();
+        };
+
+        window.saveTaskConfig = () => {
+            numTasks = parseInt(document.getElementById('config-num-tasks').value);
+            const labelInputs = document.querySelectorAll('.task-label-input');
+            const detailInputs = document.querySelectorAll('.task-detail-input');
+            taskConfig = Array.from({length: 10}, (_, i) => ({
+                label: labelInputs[i].value.trim() || `T${i+1}`,
+                detail: detailInputs[i].value.trim()
+            }));
+            saveToLocal();
+            updateUI();
+            closeModal('modal-tasks-config');
+        };
+
+        window.processImport = () => {
+            const raw = document.getElementById('import-textarea').value;
+            const lines = raw.split('\n').slice(0, 18);
+            lines.forEach((line, i) => {
+                const trimmed = line.trim();
+                if (trimmed === "") {
+                    students[i] = { ...students[i], name: "", displayNo: "", endTime: null, wallClockFinish: null, progress: Array(10).fill(null), finishedLate: false };
+                } else {
+                    let parts = trimmed.split(/\t|\s{2,}/);
+                    let no = !isNaN(parts[0]) ? parts[0] : i + 1;
+                    let nama = parts.length >= 2 && !isNaN(parts[0]) ? parts.slice(1).join(" ") : trimmed;
+                    students[i] = { ...students[i], name: nama.toUpperCase(), displayNo: no, endTime: null, wallClockFinish: null, progress: Array(10).fill(null), finishedLate: false };
+                }
+            });
+            saveToLocal();
+            renderTable();
+            closeModal('modal-import');
+        };
+
+        window.confirmContinue = () => {
+            const extraInput = document.getElementById('modal-input-extra');
+            const extra = parseInt(extraInput.value);
+            if (!extra || extra <= 0) { extraInput.classList.add('shake', 'border-red-500'); return; }
+            targetSeconds += (extra * 60);
+            isExamFinished = false;
+            notifTenSent = notifFiveSent = false;
+            saveToLocal();
+            resumeExam();
+            closeModal('modal-continue');
+            closeNotification();
+        }
+
+        function updateUI() {
+            document.getElementById('display-num-tasks').textContent = numTasks;
+            const remaining = isExamStarted ? Math.max(0, targetSeconds - elapsedSeconds) : 0;
+            document.getElementById('exam-timer').textContent = formatDurationDisplay(remaining);
+            const btn = document.getElementById('btn-exam-control');
+            const text = document.getElementById('control-text');
+            const icon = document.getElementById('control-icon');
+            if (isExamStarted) {
+                text.textContent = isExamFinished ? "Ujian Berakhir" : "Stop Ujian";
+                btn.classList.replace('bg-blue-600', 'bg-red-600');
+                icon.setAttribute('data-lucide', 'stop-circle');
+            } else {
+                text.textContent = "Mulai Ujian";
+                btn.classList.replace('bg-red-600', 'bg-blue-600');
+                icon.setAttribute('data-lucide', 'play');
+            }
+            renderTable();
+            renderTaskDetailsInHeader();
+            lucide.createIcons();
+        }
+
+        function renderTable() {
+            const cols = [document.getElementById('col-1'), document.getElementById('col-2'), document.getElementById('col-3')];
+            cols.forEach(c => c.innerHTML = '');
+            students.forEach((s, i) => {
+                const isEmpty = !s.name && !s.displayNo;
+                let cellsHtml = '';
+                for (let t = 0; t < numTasks; t++) {
+                    const p = s.progress[t];
+                    let content = taskConfig[t].label;
+                    let cls = '';
+                    if (p !== null) {
+                        if (p.time !== null && p.time < targetSeconds) {
+                            let remainingAtRecord = targetSeconds - p.time;
+                            content = Math.floor(remainingAtRecord / 60);
+                        } else {
+                            content = p.status === 'success' ? "✓" : "X";
+                        }
+                        cls = p.status === 'success' ? 'status-recorded-success' : 'status-recorded-failed';
+                    }
+                    cellsHtml += `<div onclick="toggleTest(${i}, ${t})" oncontextmenu="deleteTest(event, ${i}, ${t})" class="progress-cell ${cls}">${content}</div>`;
+                }
+                let cardClass = '';
+                if (s.endTime !== null) cardClass = s.finishedLate ? 'student-completed-late' : 'student-completed';
+                const html = `<div class="student-block ${isEmpty ? 'block-empty' : ''} ${cardClass}"><div class="student-header"><input type="text" class="input-no" value="${s.displayNo || ''}" oninput="updateStudentData(${i}, 'displayNo', this.value)"><input type="text" class="input-nama" value="${s.name || ''}" oninput="updateStudentData(${i}, 'name', this.value)"></div><div class="student-progress-row">${cellsHtml}</div></div>`;
+                cols[Math.floor(i / 6)].insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        function renderTaskDetailsInHeader() {
+            const headerEl = document.getElementById('header-task-details');
+            let content = taskConfig.slice(0, numTasks).map((config) => config.detail ? `<div class="flex items-center space-x-1 whitespace-normal"><span class="text-[9px] font-black text-slate-900 shrink-0">${config.label}:</span><span class="text-[10px] text-slate-900 uppercase">${config.detail}</span></div>` : "").join("");
+            headerEl.innerHTML = content || `<span class="text-[10px] text-slate-600 italic font-bold">Belum ada rincian tugas.</span>`;
+        }
+
+        window.formatDurationDisplay = (s) => {
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            return [m, sec].map(v => v.toString().padStart(2, '0')).join(':');
+        };
+
+        window.updateScale = (type, delta) => {
+            if (type === 'timer') timerScaleRem = Math.max(2, Math.min(15, timerScaleRem + delta));
+            else if (type === 'student') studentFontSize = Math.max(6, Math.min(48, studentFontSize + delta));
+            else if (type === 'task') taskFontSize = Math.max(8, Math.min(60, taskFontSize + delta));
+            applyScales(); saveToLocal();
+        };
+
+        window.handleExamControl = () => {
+            if (!isExamStarted) { document.getElementById('modal-input-duration').value = ""; document.getElementById('modal-start').style.display = 'flex'; }
+            else { document.getElementById('modal-exam-stop').style.display = 'flex'; }
+        };
+
+        window.openTaskConfig = () => {
+            if (isExamStarted && !isExamFinished) return;
+            const container = document.getElementById('task-inputs-container');
+            container.innerHTML = "";
+            for (let i = 0; i < 10; i++) {
+                container.innerHTML += `<div class="grid grid-cols-12 gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-200"><div class="col-span-4"><input type="text" value="${taskConfig[i].label}" placeholder="T${i+1}" maxlength="10" class="task-label-input w-full bg-white border border-slate-300 rounded px-2 py-1 text-center font-black text-xs text-blue-600 focus:border-blue-500 outline-none uppercase"></div><div class="col-span-8"><input type="text" value="${taskConfig[i].detail}" placeholder="Rincian tugas..." class="task-detail-input w-full bg-transparent border-b border-slate-300 py-1 text-xs font-bold focus:border-blue-500 outline-none"></div></div>`;
+            }
+            document.getElementById('config-num-tasks').value = numTasks;
+            document.getElementById('modal-tasks-config').style.display = 'flex';
+            lucide.createIcons();
+        };
+
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        window.closeNotification = () => document.getElementById('notification-overlay').style.display = 'none';
+        window.openContinueModal = () => { closeNotification(); document.getElementById('modal-input-extra').value = ""; document.getElementById('modal-continue').style.display = 'flex'; };
+        window.requestClearAll = () => { if (!isExamStarted) document.getElementById('modal-clear-all').style.display = 'flex'; };
+        window.confirmClearAll = () => { localStorage.removeItem('monitoring_ujian_praktik'); initializeDefaultStudents(); closeModal('modal-clear-all'); updateUI(); };
+        window.openImportModal = () => { if (isExamStarted && !isExamFinished) return; document.getElementById('modal-import').style.display = 'flex'; document.getElementById('import-textarea').value = students.map(s => s.name ? `${s.displayNo}\t${s.name}` : "").join('\n'); };
+
+        window.exportData = () => {
+            if (students.length === 0) return;
+            let csvContent = "No,Nama Siswa," + taskConfig.slice(0, numTasks).map(c => c.label).join(',') + ",Jam Selesai,Sisa Waktu (Menit)\n";
+            students.forEach(s => {
+                if (!s.name && !s.displayNo) return;
+                let row = [s.displayNo, `"${s.name}"`];
+                for(let i=0; i<numTasks; i++) { 
+                    const p = s.progress[i]; 
+                    if (!p) row.push("-");
+                    else if (p.time === null) row.push(`"X"`);
+                    else {
+                        let statusText = p.status === 'success' ? '✓' : 'X';
+                        let val = p.time < targetSeconds ? Math.floor((targetSeconds - p.time)/60) : statusText;
+                        row.push(`"${val}${p.time >= targetSeconds ? ' [L]' : ''}"`); 
+                    }
+                }
+                row.push(`"${s.wallClockFinish || '-'}"`);
+                row.push(`"${s.endTime !== null ? Math.floor((targetSeconds - s.endTime)/60) : '-'}"`);
+                csvContent += row.join(",") + "\n";
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a"); link.href = URL.createObjectURL(blob);
+            link.download = `Rekap_UKK_${new Date().toLocaleDateString()}.csv`; link.click();
+        };
+
+        function showNotification(msg, duration, isPermanent = false) {
+            const overlay = document.getElementById('notification-overlay');
+            const msgEl = document.getElementById('notif-message');
+            const titleEl = document.getElementById('notif-title');
+            const closeBtn = document.getElementById('btn-close-notif');
+            const timeUpActions = document.getElementById('time-up-actions');
+            const iconBox = document.getElementById('notif-icon-box');
+            msgEl.textContent = msg; overlay.style.display = 'flex';
+            if (isPermanent) {
+                titleEl.textContent = "WAKTU HABIS"; titleEl.className = "text-2xl font-black text-red-600 mb-2 uppercase";
+                iconBox.className = "w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4";
+                closeBtn.classList.add('hidden'); timeUpActions.classList.remove('hidden');
+            } else {
+                titleEl.textContent = "PERINGATAN"; titleEl.className = "text-2xl font-black text-orange-600 mb-2 uppercase";
+                iconBox.className = "w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mx-auto mb-4";
+                closeBtn.classList.remove('hidden'); timeUpActions.classList.add('hidden');
+                if (duration > 0) setTimeout(() => { if (overlay.style.display === 'flex') closeNotification(); }, duration * 1000);
+            }
+            lucide.createIcons();
+        }
+
+        window.onload = loadFromLocal;
+    </script>
+</body>
+</html>
