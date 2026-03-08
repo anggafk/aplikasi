@@ -3,42 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar File Aplikasi</title>
+    <title>Repository Manager - Anggafk</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; }
-        ul { list-style: none; padding: 0; }
-        li { margin-bottom: 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
-        a { text-decoration: none; color: #007bff; font-weight: bold; }
-        a:hover { text-decoration: underline; }
-    </style>
-</head>
-<body>
-    <h2>Daftar File di Folder Aplikasi</h2>
-    <ul id="file-list">Memuat file...</ul>
-
-    <script>
-        // Sesuaikan username dan nama repository kamu
-        const username = 'anggafk';
-        const repo = 'nama-repo-kamu'; // Ganti dengan nama repo kamu
-        const path = 'aplikasi';
-
-        async function getFiles() {
-            const response = await fetch(`https://api.github.com/repos/${username}/${repo}/contents/${path}`);
-            const data = await response.json();
-            const listElement = document.getElementById('file-list');
-            listElement.innerHTML = '';
-
-            data.forEach(file => {
-                // Abaikan file index.html itu sendiri
-                if (file.name !== 'index.html') {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<a href="${file.name}">${file.name}</a>`;
-                    listElement.appendChild(li);
-                }
-            });
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #0f172a;
+            background-image: radial-gradient(circle at 0% 0%, rgba(30, 58, 138, 0.3) 0%, transparent 50%),
+                              radial-gradient(circle at 100% 100%, rgba(88, 28, 135, 0.2) 0%, transparent 50%);
         }
 
-        getFiles();
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-4px);
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-badge {
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-300">
+
+    <!-- Header Section -->
+    <header class="pt-16 pb-12 px-6">
+        <div class="container mx-auto max-w-5xl">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div class="animate-fade">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-900/20">
+                            <i class="fas fa-terminal"></i>
+                        </div>
+                        <h1 class="text-3xl font-bold tracking-tight text-white">System Assets</h1>
+                    </div>
+                    <p class="text-slate-500 font-mono text-sm tracking-wider uppercase">
+                        Directory: <span class="text-blue-400">/anggafk/aplikasi/</span>
+                    </p>
+                </div>
+                <div class="animate-fade" style="animation-delay: 0.1s;">
+                    <div class="flex items-center gap-2 bg-slate-800/50 border border-slate-700 px-4 py-2 rounded-full text-xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-slate-400 font-medium">Live Connection Active</span>
+                    </div>
+                </div>
+            </div>
+            <div class="h-px w-full bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 mt-8 opacity-50"></div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 max-w-5xl pb-24">
+        <!-- Loading State -->
+        <div id="loading-state" class="flex flex-col items-center justify-center py-24">
+            <div class="flex gap-1 mb-4">
+                <div class="w-2 h-8 bg-blue-500 animate-bounce" style="animation-delay: 0.1s"></div>
+                <div class="w-2 h-8 bg-blue-500 animate-bounce" style="animation-delay: 0.2s"></div>
+                <div class="w-2 h-8 bg-blue-500 animate-bounce" style="animation-delay: 0.3s"></div>
+            </div>
+            <p class="text-slate-500 font-mono text-xs uppercase tracking-widest">Scanning Filesystem...</p>
+        </div>
+
+        <!-- Grid Container -->
+        <div id="file-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 hidden">
+            <!-- Files Injected via JS -->
+        </div>
+
+        <!-- Error State -->
+        <div id="error-state" class="hidden text-center p-12 glass-card rounded-2xl max-w-md mx-auto">
+            <i class="fas fa-triangle-exclamation text-4xl text-amber-500 mb-4"></i>
+            <h3 class="text-lg font-bold text-white uppercase tracking-tight">System Error</h3>
+            <p id="error-message" class="text-slate-500 mt-2 text-sm font-mono"></p>
+            <button onclick="location.reload()" class="mt-8 px-6 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs font-bold uppercase tracking-widest rounded transition-all">
+                Retry Connection
+            </button>
+        </div>
+    </main>
+
+    <footer class="fixed bottom-0 w-full py-4 px-6 flex justify-between items-center text-[10px] font-mono text-slate-600 bg-slate-950/80 backdrop-blur-md border-t border-slate-900">
+        <div>CORE VERSION 4.2.0</div>
+        <div class="uppercase tracking-widest">© 2026 ANGGAFK • SECURE REPOSITORY</div>
+        <div>STATUS: READY</div>
+    </footer>
+
+    <script>
+        // --- KONFIGURASI ---
+        const CONFIG = {
+            username: 'anggafk',
+            repo: 'repository-kamu', // <--- GANTI INI DENGAN NAMA REPO KAMU
+            path: 'aplikasi'
+        };
+
+        async function fetchDirectory() {
+            const grid = document.getElementById('file-grid');
+            const loading = document.getElementById('loading-state');
+            const errorView = document.getElementById('error-state');
+            const errorMsg = document.getElementById('error-message');
+
+            try {
+                const response = await fetch(`https://api.github.com/repos/${CONFIG.username}/${CONFIG.repo}/contents/${CONFIG.path}`);
+                if (!response.ok) throw new Error(`HTTP_ERROR: ${response.status}`);
+                
+                const data = await response.json();
+                loading.classList.add('hidden');
+                grid.classList.remove('hidden');
+
+                data.forEach((file, index) => {
+                    if (file.name === 'index.html' || file.name.startsWith('.')) return;
+
+                    const card = document.createElement('div');
+                    card.className = "animate-fade";
+                    card.style.animationDelay = `${index * 0.05}s`;
+
+                    let icon = 'fa-file-code';
+                    let iconColor = 'text-blue-400';
+                    let typeLabel = 'Application File';
+                    
+                    if (file.type === 'dir') {
+                        icon = 'fa-folder';
+                        iconColor = 'text-indigo-400';
+                        typeLabel = 'Directory';
+                    } else if (file.name.endsWith('.html')) {
+                        icon = 'fa-globe';
+                        iconColor = 'text-emerald-400';
+                        typeLabel = 'Web Interface';
+                    } else if (file.name.match(/\.(png|jpg|jpeg|svg)$/i)) {
+                        icon = 'fa-microchip';
+                        iconColor = 'text-purple-400';
+                        typeLabel = 'Image Resource';
+                    }
+
+                    card.innerHTML = `
+                        <a href="${file.name}" class="glass-card p-5 rounded-xl flex flex-col h-full group">
+                            <div class="flex items-start justify-between mb-4">
+                                <div class="w-12 h-12 bg-slate-900/50 rounded-lg flex items-center justify-center text-xl ${iconColor} border border-slate-800 group-hover:border-blue-500/30 transition-colors">
+                                    <i class="fas ${icon}"></i>
+                                </div>
+                                <i class="fas fa-arrow-up-right-from-square text-[10px] text-slate-700 group-hover:text-blue-400 transition-colors"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-semibold text-slate-200 leading-snug mb-1 truncate">${file.name}</h4>
+                                <p class="text-[10px] font-mono uppercase tracking-widest text-slate-500">
+                                    ${typeLabel}
+                                </p>
+                            </div>
+                            <div class="mt-5 flex items-center gap-2">
+                                <div class="flex-1 h-[2px] bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-blue-500/30 w-full"></div>
+                                </div>
+                                <span class="text-[9px] font-mono text-slate-600 italic">
+                                    ${file.type === 'dir' ? '--' : (file.size / 1024).toFixed(1) + ' KB'}
+                                </span>
+                            </div>
+                        </a>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (err) {
+                loading.classList.add('hidden');
+                errorView.classList.remove('hidden');
+                errorMsg.innerText = err.message;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchDirectory);
     </script>
 </body>
 </html>
