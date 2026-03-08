@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mikrotik Config Viewer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .config-area {
+            min-height: 550px;
+            transition: all 0.2s ease;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 2px;
+        }
+        
+        /* Animasi Feedback */
+        .btn-feedback {
+            animation: pulse 0.5s ease-in-out;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-5xl mx-auto">
+        <!-- Navigasi Tombol Alfabet (Grid 12 Kolom) -->
+        <div class="bg-white p-4 rounded-md shadow-sm border border-slate-300 mb-6">
+            <div id="button-container" class="grid grid-cols-12 gap-2">
+                <!-- Tombol akan di-generate oleh JS -->
+            </div>
+        </div>
+
+        <!-- Area Tampilan Konfigurasi (Terminal) -->
+        <div class="bg-slate-900 rounded-md shadow-lg overflow-hidden border border-slate-800">
+            <div class="flex items-center justify-between px-5 py-3 bg-slate-800 border-b border-slate-700">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-sm bg-slate-600"></div>
+                    <div class="w-3 h-3 rounded-sm bg-slate-600"></div>
+                    <div class="w-3 h-3 rounded-sm bg-slate-600"></div>
+                    <span class="ml-4 text-xs font-medium text-slate-400 uppercase tracking-widest" id="config-title">
+                        Terminal - Ready
+                    </span>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Tombol Salin Baru -->
+                    <button id="copy-btn" onclick="copyScript()" class="text-[10px] uppercase font-bold text-emerald-500 hover:text-emerald-400 transition-colors tracking-tighter flex items-center">
+                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                        Salin Script
+                    </button>
+                    
+                    <button onclick="clearConfig()" class="text-[10px] uppercase font-bold text-slate-500 hover:text-white transition-colors tracking-tighter">
+                        Reset View
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <textarea 
+                    id="config-textarea" 
+                    class="mono w-full bg-transparent text-emerald-400 outline-none resize-none leading-relaxed config-area text-sm" 
+                    placeholder="[admin@MikroTik] > Klik tombol huruf (A-Z) untuk melihat konfigurasi..."
+                    readonly
+                ></textarea>
+            </div>
+        </div>
+
+        <footer class="mt-6 text-right text-slate-400 text-[10px] uppercase tracking-widest font-bold">
+            Mikrotik Config Engine v1.6
+        </footer>
+    </div>
+
+    <script>
+        const buttonContainer = document.getElementById('button-container');
+        const configTextarea = document.getElementById('config-textarea');
+        const configTitle = document.getElementById('config-title');
+        const copyBtn = document.getElementById('copy-btn');
+
+        // Data Penyimpanan Script (A-Z kecuali I dan O)
+        const scripts = {
+            'A': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-A-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.1/24 interface=ether1 network=123.45.67.0\nadd address=94.105.218.170/27 interface=ether2 network=94.105.218.160\nadd address=108.99.75.188/28 interface=wlan1 network=108.99.75.176\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=94.105.218.161-94.105.218.190\nadd name=pool2 ranges=108.99.75.177-108.99.75.190\n\n/ip dhcp-server network\nadd address=94.105.218.160/27 dns-server=1.1.1.1 gateway=94.105.218.170\nadd address=108.99.75.176/28 dns-server=1.1.1.1 gateway=108.99.75.188\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'B': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-B-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.2/24 interface=ether1 network=123.45.67.0\nadd address=188.87.126.39/27 interface=ether2 network=188.87.126.32\nadd address=125.78.123.60/28 interface=wlan1 network=125.78.123.48\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=188.87.126.33-188.87.126.62\nadd name=pool2 ranges=125.78.123.49-125.78.123.62\n\n/ip dhcp-server network\nadd address=188.87.126.32/27 dns-server=1.1.1.1 gateway=188.87.126.50\nadd address=125.78.123.48/28 dns-server=1.1.1.1 gateway=125.78.123.60\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'C': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-C-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.3/24 interface=ether1 network=123.45.67.0\nadd address=103.93.99.71/27 interface=ether2 network=103.93.99.64\nadd address=170.52.101.37/28 interface=wlan1 network=170.52.101.32\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=103.93.99.65-103.93.99.94\nadd name=pool2 ranges=170.52.101.33-170.52.101.46\n\n/ip dhcp-server network\nadd address=103.93.99.64/27 dns-server=1.1.1.1 gateway=103.93.99.72\nadd address=170.52.101.32/28 dns-server=1.1.1.1 gateway=170.52.101.37\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'D': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-D-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.4/24 interface=ether1 network=123.45.67.0\nadd address=72.143.121.40/27 interface=ether2 network=72.143.121.32\nadd address=163.155.130.129/28 interface=wlan1 network=163.155.130.128\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=72.143.121.33-72.143.121.62\nadd name=pool2 ranges=163.155.130.129-163.155.130.142\n\n/ip dhcp-server network\nadd address=72.143.121.32/27 dns-server=1.1.1.1 gateway=72.143.121.50\nadd address=163.155.130.128/28 dns-server=1.1.1.1 gateway=163.155.130.129\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'E': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-E-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.5/24 interface=ether1 network=123.45.67.0\nadd address=62.66.60.162/27 interface=ether2 network=62.66.60.160\nadd address=80.62.195.77/28 interface=wlan1 network=80.62.195.64\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=62.66.60.161-62.66.60.190\nadd name=pool2 ranges=80.62.195.65-80.62.195.78\n\n/ip dhcp-server network\nadd address=62.66.60.160/27 dns-server=1.1.1.1 gateway=62.66.60.168\nadd address=80.62.195.64/28 dns-server=1.1.1.1 gateway=80.62.195.77\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'F': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-F-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.6/24 interface=ether1 network=123.45.67.0\nadd address=96.80.206.210/27 interface=ether2 network=96.80.206.192\nadd address=181.110.79.57/28 interface=wlan1 network=181.110.79.48\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=96.80.206.193-96.80.206.222\nadd name=pool2 ranges=181.110.79.49-181.110.79.62\n\n/ip dhcp-server network\nadd address=96.80.206.192/27 dns-server=1.1.1.1 gateway=96.80.206.211\nadd address=181.110.79.48/28 dns-server=1.1.1.1 gateway=181.110.79.57\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'G': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-G-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.7/24 interface=ether1 network=123.45.67.0\nadd address=170.159.191.152/27 interface=ether2 network=170.159.191.128\nadd address=65.209.121.214/28 interface=wlan1 network=65.209.121.208\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=170.159.191.129-170.159.191.158\nadd name=pool2 ranges=65.209.121.209-65.209.121.222\n\n/ip dhcp-server network\nadd address=170.159.191.128/27 dns-server=1.1.1.1 gateway=170.159.191.147\nadd address=65.209.121.208/28 dns-server=1.1.1.1 gateway=65.209.121.214\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'H': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-H-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.8/24 interface=ether1 network=123.45.67.0\nadd address=173.170.159.105/27 interface=ether2 network=173.170.159.96\nadd address=107.59.164.132/28 interface=wlan1 network=107.59.164.128\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=173.170.159.97-173.170.159.126\nadd name=pool2 ranges=107.59.164.129-107.59.164.142\n\n/ip dhcp-server network\nadd address=173.170.159.96/27 dns-server=1.1.1.1 gateway=173.170.159.106\nadd address=107.59.164.128/28 dns-server=1.1.1.1 gateway=107.59.164.132\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'J': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-J-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.9/24 interface=ether1 network=123.45.67.0\nadd address=101.227.193.154/27 interface=ether2 network=101.227.193.128\nadd address=74.106.217.81/28 interface=wlan1 network=74.106.217.80\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=101.227.193.129-101.227.193.158\nadd name=pool2 ranges=74.106.217.81-74.106.217.94\n\n/ip dhcp-server network\nadd address=101.227.193.128/27 dns-server=1.1.1.1 gateway=101.227.193.137\nadd address=74.106.217.80/28 dns-server=1.1.1.1 gateway=74.106.217.81\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'K': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-K-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.10/24 interface=ether1 network=123.45.67.0\nadd address=216.97.114.179/27 interface=ether2 network=216.97.114.160\nadd address=211.56.201.161/28 interface=wlan1 network=211.56.201.160\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=216.97.114.161-216.97.114.190\nadd name=pool2 ranges=211.56.201.161-211.56.201.174\n\n/ip dhcp-server network\nadd address=216.97.114.160/27 dns-server=1.1.1.1 gateway=216.97.114.181\nadd address=211.56.201.160/28 dns-server=1.1.1.1 gateway=211.56.201.161\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'L': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-L-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.11/24 interface=ether1 network=123.45.67.0\nadd address=132.204.69.90/27 interface=ether2 network=132.204.69.64\nadd address=75.152.231.155/28 interface=wlan1 network=75.152.231.144\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=132.204.69.65-132.204.69.94\nadd name=pool2 ranges=75.152.231.145-75.152.231.158\n\n/ip dhcp-server network\nadd address=132.204.69.64/27 dns-server=1.1.1.1 gateway=132.204.69.74\nadd address=75.152.231.144/28 dns-server=1.1.1.1 gateway=75.152.231.155\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'M': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-M-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.12/24 interface=ether1 network=123.45.67.0\nadd address=80.109.69.114/27 interface=ether2 network=80.109.69.96\nadd address=189.208.160.109/28 interface=wlan1 network=189.208.160.96\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=80.109.69.97-80.109.69.126\nadd name=pool2 ranges=189.208.160.97-189.208.160.110\n\n/ip dhcp-server network\nadd address=80.109.69.96/27 dns-server=1.1.1.1 gateway=80.109.69.105\nadd address=189.208.160.96/28 dns-server=1.1.1.1 gateway=189.208.160.109\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'N': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-N-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.13/24 interface=ether1 network=123.45.67.0\nadd address=60.190.156.77/27 interface=ether2 network=60.190.156.64\nadd address=153.227.134.86/28 interface=wlan1 network=153.227.134.80\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=60.190.156.65-60.190.156.94\nadd name=pool2 ranges=153.227.134.81-153.227.134.94\n\n/ip dhcp-server network\nadd address=60.190.156.64/27 dns-server=1.1.1.1 gateway=60.190.156.80\nadd address=153.227.134.80/28 dns-server=1.1.1.1 gateway=153.227.134.86\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'P': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-P-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.14/24 interface=ether1 network=123.45.67.0\nadd address=109.93.123.48/27 interface=ether2 network=109.93.123.32\nadd address=183.69.238.187/28 interface=wlan1 network=183.69.238.176\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=109.93.123.33-109.93.123.62\nadd name=pool2 ranges=183.69.238.177-183.69.238.190\n\n/ip dhcp-server network\nadd address=109.93.123.32/27 dns-server=1.1.1.1 gateway=109.93.123.51\nadd address=183.69.238.176/28 dns-server=1.1.1.1 gateway=183.69.238.187\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'Q': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-Q-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.15/24 interface=ether1 network=123.45.67.0\nadd address=206.67.211.218/27 interface=ether2 network=206.67.211.192\nadd address=130.119.201.161/28 interface=wlan1 network=130.119.201.160\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=206.67.211.193-206.67.211.222\nadd name=pool2 ranges=130.119.201.161-130.119.201.174\n\n/ip dhcp-server network\nadd address=206.67.211.192/27 dns-server=1.1.1.1 gateway=206.67.211.222\nadd address=130.119.201.160/28 dns-server=1.1.1.1 gateway=130.119.201.161\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'R': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-R-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.16/24 interface=ether1 network=123.45.67.0\nadd address=207.67.176.198/27 interface=ether2 network=207.67.176.192\nadd address=216.59.53.195/28 interface=wlan1 network=216.59.53.192\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=207.67.176.193-207.67.176.222\nadd name=pool2 ranges=216.59.53.193-216.59.53.206\n\n/ip dhcp-server network\nadd address=207.67.176.192/27 dns-server=1.1.1.1 gateway=207.67.176.204\nadd address=216.59.53.192/28 dns-server=1.1.1.1 gateway=216.59.53.195\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'S': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-S-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.17/24 interface=ether1 network=123.45.67.0\nadd address=176.137.57.211/27 interface=ether2 network=176.137.57.192\nadd address=105.60.155.121/28 interface=wlan1 network=105.60.155.112\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=176.137.57.193-176.137.57.222\nadd name=pool2 ranges=105.60.155.113-105.60.155.126\n\n/ip dhcp-server network\nadd address=176.137.57.192/27 dns-server=1.1.1.1 gateway=176.137.57.199\nadd address=105.60.155.112/28 dns-server=1.1.1.1 gateway=105.60.155.121\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'T': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-T-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.18/24 interface=ether1 network=123.45.67.0\nadd address=201.187.108.151/27 interface=ether2 network=201.187.108.128\nadd address=173.87.169.102/28 interface=wlan1 network=173.87.169.96\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=201.187.108.129-201.187.108.158\nadd name=pool2 ranges=173.87.169.97-173.87.169.110\n\n/ip dhcp-server network\nadd address=201.187.108.128/27 dns-server=1.1.1.1 gateway=201.187.108.136\nadd address=173.87.169.96/28 dns-server=1.1.1.1 gateway=173.87.169.102\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'U': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-U-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.19/24 interface=ether1 network=123.45.67.0\nadd address=92.102.145.56/27 interface=ether2 network=92.102.145.32\nadd address=198.237.145.38/28 interface=wlan1 network=198.237.145.32\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=92.102.145.33-92.102.145.62\nadd name=pool2 ranges=198.237.145.33-198.237.145.46\n\n/ip dhcp-server network\nadd address=92.102.145.32/27 dns-server=1.1.1.1 gateway=92.102.145.42\nadd address=198.237.145.32/28 dns-server=1.1.1.1 gateway=198.237.145.38\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'V': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-V-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.20/24 interface=ether1 network=123.45.67.0\nadd address=105.236.104.116/27 interface=ether2 network=105.236.104.96\nadd address=195.73.187.149/28 interface=wlan1 network=195.73.187.144\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=105.236.104.97-105.236.104.126\nadd name=pool2 ranges=195.73.187.145-195.73.187.158\n\n/ip dhcp-server network\nadd address=105.236.104.96/27 dns-server=1.1.1.1 gateway=105.236.104.125\nadd address=195.73.187.144/28 dns-server=1.1.1.1 gateway=195.73.187.149\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'W': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-W-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.21/24 interface=ether1 network=123.45.67.0\nadd address=173.163.89.148/27 interface=ether2 network=173.163.89.128\nadd address=207.223.154.199/28 interface=wlan1 network=207.223.154.192\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=173.163.89.129-173.163.89.158\nadd name=pool2 ranges=207.223.154.193-207.223.154.206\n\n/ip dhcp-server network\nadd address=173.163.89.128/27 dns-server=1.1.1.1 gateway=173.163.89.146\nadd address=207.223.154.192/28 dns-server=1.1.1.1 gateway=207.223.154.199\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'X': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-X-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.22/24 interface=ether1 network=123.45.67.0\nadd address=120.170.65.115/27 interface=ether2 network=120.170.65.96\nadd address=196.126.124.214/28 interface=wlan1 network=196.126.124.208\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=120.170.65.97-120.170.65.126\nadd name=pool2 ranges=196.126.124.209-196.126.124.222\n\n/ip dhcp-server network\nadd address=120.170.65.96/27 dns-server=1.1.1.1 gateway=120.170.65.106\nadd address=196.126.124.208/28 dns-server=1.1.1.1 gateway=196.126.124.214\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'Y': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-Y-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.23/24 interface=ether1 network=123.45.67.0\nadd address=112.235.208.182/27 interface=ether2 network=112.235.208.160\nadd address=206.201.94.72/28 interface=wlan1 network=206.201.94.64\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=112.235.208.161-112.235.208.190\nadd name=pool2 ranges=206.201.94.65-206.201.94.78\n\n/ip dhcp-server network\nadd address=112.235.208.160/27 dns-server=1.1.1.1 gateway=112.235.208.168\nadd address=206.201.94.64/28 dns-server=1.1.1.1 gateway=206.201.94.72\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`,
+            'Z': `# 1. Konfigurasi Hostname\n/system identity\nset name=UKK-Z-NAMA\n\n# 2. Konfigurasi DNS\n/ip dns set\nservers=1.1.1.1 allow-remote-requests=yes\n\n# 3. Konfigurasi IP Address\n/ip address\nadd address=123.45.67.24/24 interface=ether1 network=123.45.67.0\nadd address=200.212.161.87/27 interface=ether2 network=200.212.161.64\nadd address=178.225.99.116/28 interface=wlan1 network=178.225.99.112\n\n# 4. Konfigurasi NAT\n/ip firewall nat\nadd action=masquerade chain=srcnat out-interface=ether1\nadd action=masquerade chain=srcnat out-interface=ether2\nadd action=masquerade chain=srcnat out-interface=wlan1\n\n# 5. Konfigurasi Wireless\n/interface wireless set [ find default-name=wlan1 ] mode=ap-bridge ssid="UKK2026@NAMA" disabled=no\n\n# 6. Konfigurasi Gateway\n/ip route\nadd gateway=123.45.67.89\n\n# 7. Konfigurasi DHCP Server\n/ip pool\nadd name=pool1 ranges=200.212.161.65-200.212.161.94\nadd name=pool2 ranges=178.225.99.113-178.225.99.126\n\n/ip dhcp-server network\nadd address=200.212.161.64/27 dns-server=1.1.1.1 gateway=200.212.161.83\nadd address=178.225.99.112/28 dns-server=1.1.1.1 gateway=178.225.99.116\n\n/ip dhcp-server\nadd address-pool=pool1 interface=ether2 lease-time=8h name=server1 disabled=no\nadd address-pool=pool2 interface=wlan1 lease-time=1h30m name=server2 disabled=no`
+        };
+
+        // Inisialisasi Alfabet (A-Z minus I, O)
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        const excluded = ["I", "O"];
+        const filteredAlphabet = alphabet.filter(letter => !excluded.includes(letter));
+
+        // Generate tombol alfabet
+        filteredAlphabet.forEach(letter => {
+            const btn = document.createElement('button');
+            btn.textContent = letter;
+            btn.className = `w-full aspect-square flex items-center justify-center rounded-sm 
+                             bg-slate-50 border border-slate-300 text-slate-600 font-bold text-sm
+                             hover:border-slate-800 hover:bg-slate-800 hover:text-white transition-all duration-100`;
+            
+            btn.onclick = () => loadConfiguration(letter);
+            buttonContainer.appendChild(btn);
+        });
+
+        /**
+         * Fungsi untuk memuat konfigurasi ke textarea
+         */
+        function loadConfiguration(letter) {
+            // Reset gaya tombol
+            document.querySelectorAll('#button-container button').forEach(b => {
+                b.classList.remove('bg-slate-800', 'text-white', 'border-slate-800');
+                b.classList.add('bg-slate-50', 'text-slate-600', 'border-slate-300');
+            });
+            
+            // Highlight tombol aktif
+            const activeBtn = Array.from(document.querySelectorAll('#button-container button'))
+                                  .find(b => b.textContent === letter);
+            
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-50', 'text-slate-600', 'border-slate-300');
+                activeBtn.classList.add('bg-slate-800', 'text-white', 'border-slate-800');
+            }
+
+            // Update judul panel
+            configTitle.textContent = `Viewing Script: UKK-${letter}`;
+
+            // Tampilkan script
+            if (scripts[letter]) {
+                configTextarea.value = scripts[letter];
+            } else {
+                configTextarea.value = `# Konfigurasi untuk huruf [${letter}] belum tersedia.`;
+            }
+        }
+
+        /**
+         * Fungsi untuk menyalin isi textarea ke clipboard
+         */
+        function copyScript() {
+            const textToCopy = configTextarea.value;
+            
+            if (!textToCopy || textToCopy.trim() === "" || textToCopy.startsWith("[admin@MikroTik]")) {
+                // Jangan salin jika kosong atau teks placeholder
+                return;
+            }
+
+            // Gunakan metode execCommand('copy') untuk kompatibilitas iframe
+            configTextarea.select();
+            configTextarea.setSelectionRange(0, 99999); // Untuk perangkat mobile
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showCopyFeedback();
+                }
+            } catch (err) {
+                console.error('Gagal menyalin:', err);
+            }
+            
+            // Deselect teks setelah menyalin
+            window.getSelection().removeAllRanges();
+        }
+
+        /**
+         * Memberikan feedback visual saat berhasil menyalin
+         */
+        function showCopyFeedback() {
+            const originalText = copyBtn.innerHTML;
+            copyBtn.classList.add('btn-feedback', 'text-white');
+            copyBtn.innerHTML = `
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Tersalin!
+            `;
+            
+            setTimeout(() => {
+                copyBtn.classList.remove('btn-feedback', 'text-white');
+                copyBtn.innerHTML = originalText;
+            }, 2000);
+        }
+
+        /**
+         * Mereset tampilan terminal
+         */
+        function clearConfig() {
+            configTextarea.value = "";
+            configTitle.textContent = "Terminal - Ready";
+            document.querySelectorAll('#button-container button').forEach(b => {
+                b.classList.remove('bg-slate-800', 'text-white', 'border-slate-800');
+                b.classList.add('bg-slate-50', 'text-slate-600', 'border-slate-300');
+            });
+        }
+    </script>
+</body>
+</html>
