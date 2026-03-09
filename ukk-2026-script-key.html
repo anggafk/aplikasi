@@ -10,7 +10,7 @@
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f1f5f9;
+            background-color: #f5f7f9;
         }
 
         .mono {
@@ -30,7 +30,7 @@
             background: #e2e8f0;
         }
         ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
+            background: #bdc3c7;
             border-radius: 2px;
         }
         
@@ -43,39 +43,47 @@
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
+
+        /* Palet Warna Kustom */
+        .bg-navy-dark { background-color: #2c3e50; }
+        .bg-navy-light { background-color: #34495e; }
+        .bg-primary-blue { background-color: #3498db; }
+        .text-primary-blue { color: #3498db; }
+        .border-primary-blue { border-color: #3498db; }
     </style>
 </head>
 <body class="p-4 md:p-10">
 
+    <!-- Lebar container disesuaikan ke max-w-5xl agar lebih luas -->
     <div class="max-w-5xl mx-auto">
-        <!-- Navigasi Tombol Alfabet (Grid 12 Kolom) -->
-        <div class="bg-white p-4 rounded-md shadow-sm border border-slate-300 mb-6">
-            <div id="button-container" class="grid grid-cols-12 gap-2">
+        <!-- Navigasi Tombol Alfabet (Grid 12 Kolom - Melebar penuh) -->
+        <div class="bg-white p-2 rounded-md shadow-sm border border-slate-200 mb-6">
+            <div id="button-container" class="grid grid-cols-12 gap-1">
                 <!-- Tombol akan di-generate oleh JS -->
             </div>
         </div>
 
         <!-- Area Tampilan Konfigurasi (Terminal) -->
-        <div class="bg-slate-900 rounded-md shadow-lg overflow-hidden border border-slate-800">
-            <div class="flex items-center justify-between px-5 py-3 bg-slate-800 border-b border-slate-700">
+        <div class="bg-slate-900 rounded-md shadow-xl overflow-hidden border border-[#2c3e50]">
+            <div class="flex items-center justify-between px-5 py-3 bg-navy-dark border-b border-[#34495e]">
                 <div class="flex items-center space-x-2">
-                    <div class="w-3 h-3 rounded-sm bg-slate-600"></div>
-                    <div class="w-3 h-3 rounded-sm bg-slate-600"></div>
-                    <div class="w-3 h-3 rounded-sm bg-slate-600"></div>
-                    <span class="ml-4 text-xs font-medium text-slate-400 uppercase tracking-widest" id="config-title">
+                    <div class="w-2.5 h-2.5 rounded-sm bg-[#34495e]"></div>
+                    <div class="w-2.5 h-2.5 rounded-sm bg-[#34495e]"></div>
+                    <div class="w-2.5 h-2.5 rounded-sm bg-[#34495e]"></div>
+                    <span class="ml-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest" id="config-title">
                         Terminal - Ready
                     </span>
                 </div>
                 
                 <div class="flex items-center space-x-4">
-                    <!-- Tombol Salin Baru -->
-                    <button id="copy-btn" onclick="copyScript()" class="text-[10px] uppercase font-bold text-emerald-500 hover:text-emerald-400 transition-colors tracking-tighter flex items-center">
+                    <!-- Tombol Salin -->
+                    <button id="copy-btn" onclick="copyScript()" class="text-[10px] uppercase font-bold text-primary-blue hover:text-blue-300 transition-colors tracking-tighter flex items-center">
                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-                        Salin Script
+                        Salin
                     </button>
                     
-                    <button onclick="clearConfig()" class="text-[10px] uppercase font-bold text-slate-500 hover:text-white transition-colors tracking-tighter">
-                        Reset View
+                    <button onclick="clearConfig()" class="text-[10px] uppercase font-bold text-slate-400 hover:text-white transition-colors tracking-tighter">
+                        Reset
                     </button>
                 </div>
             </div>
@@ -83,15 +91,22 @@
             <div class="p-6">
                 <textarea 
                     id="config-textarea" 
-                    class="mono w-full bg-transparent text-emerald-400 outline-none resize-none leading-relaxed config-area text-sm" 
-                    placeholder="[admin@MikroTik] > Klik tombol huruf (A-Z) untuk melihat konfigurasi..."
+                    class="mono w-full bg-transparent text-slate-100 outline-none resize-none leading-relaxed config-area text-xs sm:text-sm" 
+                    placeholder="[admin@MikroTik] > Klik tombol alfabet di atas..."
                     readonly
                 ></textarea>
             </div>
         </div>
 
-        <footer class="mt-6 text-right text-slate-400 text-[10px] uppercase tracking-widest font-bold">
-            Mikrotik Config Engine v1.6
+        <!-- Footer -->
+        <footer class="mt-6 flex justify-between items-center px-2">
+            <div class="flex space-x-1">
+                <div class="w-3 h-1 bg-primary-blue"></div>
+                <div class="w-8 h-1 bg-navy-dark"></div>
+            </div>
+            <div class="text-navy-dark text-[10px] uppercase tracking-widest font-black italic opacity-50">
+                Mikrotik Config Engine v2.2
+            </div>
         </footer>
     </div>
 
@@ -134,26 +149,23 @@
         const excluded = ["I", "O"];
         const filteredAlphabet = alphabet.filter(letter => !excluded.includes(letter));
 
-        // Generate tombol alfabet
+        // Generate tombol alfabet (Dibuat w-full agar mengisi lebar sel grid secara merata)
         filteredAlphabet.forEach(letter => {
             const btn = document.createElement('button');
             btn.textContent = letter;
-            btn.className = `w-full aspect-square flex items-center justify-center rounded-sm 
-                             bg-slate-50 border border-slate-300 text-slate-600 font-bold text-sm
-                             hover:border-slate-800 hover:bg-slate-800 hover:text-white transition-all duration-100`;
+            btn.className = `w-full h-8 flex items-center justify-center rounded-sm 
+                             bg-white border border-slate-200 text-navy-dark font-bold text-xs
+                             hover:border-primary-blue hover:text-primary-blue transition-all duration-100 shadow-sm`;
             
             btn.onclick = () => loadConfiguration(letter);
             buttonContainer.appendChild(btn);
         });
 
-        /**
-         * Fungsi untuk memuat konfigurasi ke textarea
-         */
         function loadConfiguration(letter) {
             // Reset gaya tombol
             document.querySelectorAll('#button-container button').forEach(b => {
-                b.classList.remove('bg-slate-800', 'text-white', 'border-slate-800');
-                b.classList.add('bg-slate-50', 'text-slate-600', 'border-slate-300');
+                b.classList.remove('bg-primary-blue', 'text-white', 'border-primary-blue', 'shadow-md');
+                b.classList.add('bg-white', 'text-navy-dark', 'border-slate-200', 'shadow-sm');
             });
             
             // Highlight tombol aktif
@@ -161,14 +173,12 @@
                                   .find(b => b.textContent === letter);
             
             if (activeBtn) {
-                activeBtn.classList.remove('bg-slate-50', 'text-slate-600', 'border-slate-300');
-                activeBtn.classList.add('bg-slate-800', 'text-white', 'border-slate-800');
+                activeBtn.classList.remove('bg-white', 'text-navy-dark', 'border-slate-200', 'shadow-sm');
+                activeBtn.classList.add('bg-primary-blue', 'text-white', 'border-primary-blue', 'shadow-md');
             }
 
-            // Update judul panel
             configTitle.textContent = `Viewing Script: UKK-${letter}`;
 
-            // Tampilkan script
             if (scripts[letter]) {
                 configTextarea.value = scripts[letter];
             } else {
@@ -176,60 +186,41 @@
             }
         }
 
-        /**
-         * Fungsi untuk menyalin isi textarea ke clipboard
-         */
         function copyScript() {
             const textToCopy = configTextarea.value;
-            
-            if (!textToCopy || textToCopy.trim() === "" || textToCopy.startsWith("[admin@MikroTik]")) {
-                // Jangan salin jika kosong atau teks placeholder
-                return;
-            }
+            if (!textToCopy || textToCopy.trim() === "" || textToCopy.startsWith("[admin@MikroTik]")) return;
 
-            // Gunakan metode execCommand('copy') untuk kompatibilitas iframe
             configTextarea.select();
-            configTextarea.setSelectionRange(0, 99999); // Untuk perangkat mobile
+            configTextarea.setSelectionRange(0, 99999);
 
             try {
                 const successful = document.execCommand('copy');
-                if (successful) {
-                    showCopyFeedback();
-                }
+                if (successful) showCopyFeedback();
             } catch (err) {
                 console.error('Gagal menyalin:', err);
             }
-            
-            // Deselect teks setelah menyalin
             window.getSelection().removeAllRanges();
         }
 
-        /**
-         * Memberikan feedback visual saat berhasil menyalin
-         */
         function showCopyFeedback() {
             const originalText = copyBtn.innerHTML;
             copyBtn.classList.add('btn-feedback', 'text-white');
             copyBtn.innerHTML = `
                 <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                Tersalin!
+                OK
             `;
-            
             setTimeout(() => {
                 copyBtn.classList.remove('btn-feedback', 'text-white');
                 copyBtn.innerHTML = originalText;
             }, 2000);
         }
 
-        /**
-         * Mereset tampilan terminal
-         */
         function clearConfig() {
             configTextarea.value = "";
             configTitle.textContent = "Terminal - Ready";
             document.querySelectorAll('#button-container button').forEach(b => {
-                b.classList.remove('bg-slate-800', 'text-white', 'border-slate-800');
-                b.classList.add('bg-slate-50', 'text-slate-600', 'border-slate-300');
+                b.classList.remove('bg-primary-blue', 'text-white', 'border-primary-blue', 'shadow-md');
+                b.classList.add('bg-white', 'text-navy-dark', 'border-slate-200', 'shadow-sm');
             });
         }
     </script>
