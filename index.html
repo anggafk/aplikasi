@@ -26,15 +26,54 @@
         .file-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-left: 4px solid var(--petronas-cyan);
             border-radius: 2px;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        /* Pseudo-element untuk efek fill warna Petronas Cyan dari kiri */
+        .file-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px; /* Lebar awal sebagai border kiri */
+            height: 100%;
+            background-color: var(--petronas-cyan);
+            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: -1;
         }
 
         .file-card:hover {
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(0, 45, 114, 0.1);
+            transform: translateY(-4px);
             border-color: var(--petronas-cyan);
+            color: white; /* Mengubah teks utama jadi putih saat BG jadi cyan */
+        }
+
+        .file-card:hover::before {
+            width: 100%; /* Melebar memenuhi seluruh kartu */
+        }
+
+        /* Penyesuaian konten saat hover agar tetap terbaca */
+        .file-card:hover h4 { color: white !important; }
+        .file-card:hover p { color: rgba(255,255,255,0.7) !important; }
+        .file-card:hover i.fa-chevron-right { color: white !important; }
+
+        .icon-container {
+            transition: all 0.3s ease;
+        }
+
+        .file-card:hover .icon-container {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        /* Ikon di dalam container saat hover */
+        .file-card:hover .icon-container i {
+            color: white !important;
         }
 
         .custom-scroll::-webkit-scrollbar {
@@ -56,7 +95,7 @@
 </head>
 <body class="h-screen flex flex-col">
 
-    <!-- Header: Tinggi diperkecil & teks rata kiri -->
+    <!-- Header -->
     <header class="py-4 px-6 shrink-0 bg-[#002D72] text-[#FDFDFD] border-b-4 border-[#00A19C]">
         <div class="container mx-auto max-w-5xl">
             <div class="animate-fade">
@@ -104,7 +143,7 @@
         </div>
     </main>
 
-    <!-- Footer: Sauber Blue & Petronas Accent -->
+    <!-- Footer -->
     <footer class="shrink-0 py-4 px-6 bg-[#002D72] text-[#FDFDFD] border-t-4 border-[#00A19C]">
         <div class="container mx-auto max-w-5xl flex flex-col sm:flex-row justify-between items-center gap-3 text-[9px] font-bold">
             <div class="flex items-center gap-3">
@@ -168,18 +207,18 @@
 
                     card.innerHTML = `
                         <a href="${file.name}" target="_blank" rel="noopener noreferrer" class="file-card p-4 flex items-center gap-4 group">
-                            <div class="w-10 h-10 bg-[#FDFDFD] flex items-center justify-center text-lg border border-gray-100 rounded group-hover:bg-[#f0f9ff] transition-all">
-                                <i class="fas ${icon} ${iconColor}"></i>
+                            <div class="icon-container w-10 h-10 bg-[#FDFDFD] flex items-center justify-center text-lg border border-gray-100 rounded z-10">
+                                <i class="fas ${icon} ${iconColor} transition-colors"></i>
                             </div>
-                            <div class="flex-1 min-w-0">
-                                <h4 class="text-[10px] font-black text-[#002D72] tracking-tight truncate group-hover:text-[#00A19C] transition-colors">
+                            <div class="flex-1 min-w-0 z-10">
+                                <h4 class="text-[10px] font-black text-[#002D72] tracking-tight truncate transition-colors">
                                     ${formatDisplayName(file.name)}
                                 </h4>
-                                <p class="text-[7px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+                                <p class="text-[7px] font-bold text-gray-400 uppercase tracking-widest mt-0.5 transition-colors">
                                     ${file.type === 'dir' ? 'ENGINE_MODULE' : 'CORE_APPLICATION'}
                                 </p>
                             </div>
-                            <i class="fas fa-chevron-right text-[8px] text-gray-300 group-hover:text-[#00A19C] transition-all"></i>
+                            <i class="fas fa-chevron-right text-[8px] text-gray-300 transition-all transform group-hover:translate-x-1 z-10"></i>
                         </a>
                     `;
                     grid.appendChild(card);
