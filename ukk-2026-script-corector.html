@@ -82,6 +82,7 @@
             margin-top: 0.15rem;
         }
 
+        /* Kotak Konfigurasi Keliru / Ekstra */
         .jawaban-box-grey {
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
@@ -596,7 +597,7 @@
             const isFormatValidH = formatRegexH.test(hS);
             const isMatchPrefixH = (prefixK === prefixS) && prefixK !== "";
             const hSDisp = isFormatValidH ? hS : `<span class="text-red-600 font-bold">${hS}</span>`;
-            document.getElementById('k-host').innerText = "-";
+            document.getElementById('k-host').innerText = hK; 
             document.getElementById('s-host').innerHTML = hSDisp;
             if(isMatchPrefixH && isFormatValidH) setTimeout(()=>setScore('host', 2), 50);
 
@@ -636,7 +637,7 @@
             const exN = P.natExtra(sScript); if(exN.length) natH += `<div class="jawaban-box-grey code-font text-xs">${exN.join("<br>")}</div>`;
             document.getElementById('nat-rows-container').innerHTML = natH;
 
-            // 5. GTW
+            // 5. GATEWAY
             const gK = P.gtw(kScript), gS = P.gtw(sScript);
             document.getElementById('k-gtw').innerText = gK[0]?.g || "-"; document.getElementById('s-gtw').innerText = gS[0]?.g || "-";
             if(gK.length && gS.length && gK[0].g === gS[0].g) setScore('gtw', 2);
@@ -645,7 +646,6 @@
             const wK = P.wl(kScript), wS = P.wl(sScript);
             document.getElementById('k-wl').innerText = wK ? `${wK.a} | ${wK.m} | ${wK.s}` : "-";
             
-            // SSID Prefix Logic: UKK2026@
             const ssidPrefix = "UKK2026@";
             const isMatchSSID = wS && wS.s && wS.s.toUpperCase().startsWith(ssidPrefix);
             
