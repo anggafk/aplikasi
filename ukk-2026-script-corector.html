@@ -41,6 +41,7 @@
             -moz-appearance: textfield;
         }
         
+        /* Kartu Konfigurasi */
         .kunci-box {
             background-color: var(--speed-white);
             border: 1px solid #cbd5e1;
@@ -81,6 +82,7 @@
             margin-top: 0.15rem;
         }
 
+        /* Kotak Konfigurasi Keliru / Ekstra */
         .jawaban-box-grey {
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
@@ -151,15 +153,13 @@
 
         .sub-header-text {
             font-size: 10px;
-            font-weight: 800;
-            color: #002D72; 
+            font-weight: 700;
+            color: #334155; 
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-left: 0.5rem;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
             margin-top: 1.5rem;
-            border-bottom: 1px solid #cbd5e1;
-            display: inline-block;
         }
 
         .icon-btn {
@@ -206,7 +206,7 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <button onclick="openModal()" class="icon-btn bg-slate-600 text-white hover:bg-slate-500" title="Input Konfigurasi">
+                <button onclick="openModal()" class="icon-btn bg-slate-500 text-white hover:bg-slate-400" title="Input Konfigurasi">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 </button>
                 <button onclick="exportScore()" class="icon-btn bg-[#00A19C] text-white hover:opacity-90" title="Download Skor">
@@ -224,14 +224,14 @@
     </nav>
 
     <main class="container mx-auto px-4 py-8">
-        <div class="max-w-5xl mx-auto space-y-10" id="main-container">
+        <div class="max-w-5xl mx-auto space-y-10" id="main-content">
             
             <!-- 1. HOSTNAME -->
-            <section class="space-y-1">
+            <section class="space-y-1 section-box" data-title="1. HOSTNAME">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">1</span> HOSTNAME
                 </h3>
-                <div class="grid grid-cols-1 gap-1" id="box-host">
+                <div class="grid grid-cols-1 gap-1">
                     <div class="kunci-box code-font" id="k-host">-</div>
                     <div class="jawaban-box"><div class="jawaban-row">
                         <div class="flex-1 code-font student-val" id="s-host">-</div>
@@ -244,11 +244,11 @@
             </section>
 
             <!-- 2. DNS -->
-            <section class="space-y-1">
+            <section class="space-y-1 section-box" data-title="2. DNS SERVER">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">2</span> DNS SERVER
                 </h3>
-                <div class="grid grid-cols-1 gap-1" id="box-dns">
+                <div class="grid grid-cols-1 gap-1">
                     <div class="kunci-box code-font" id="k-dns">-</div>
                     <div class="jawaban-box"><div class="jawaban-row">
                         <div class="flex-1 code-font student-val" id="s-dns">-</div>
@@ -261,7 +261,7 @@
             </section>
 
             <!-- 3. IP ADDRESS -->
-            <section class="space-y-1">
+            <section class="space-y-1 section-box" data-title="3. IP ADDRESS">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">3</span> IP ADDRESS
                 </h3>
@@ -269,7 +269,7 @@
             </section>
 
             <!-- 4. NAT -->
-            <section class="space-y-1">
+            <section class="space-y-1 section-box" data-title="4. NAT">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">4</span> NAT (MASQUERADE)
                 </h3>
@@ -277,7 +277,7 @@
             </section>
 
             <!-- 5. GATEWAY -->
-            <section class="space-y-1">
+            <section class="space-y-1 section-box" data-title="5. GATEWAY">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">5</span> GATEWAY
                 </h3>
@@ -294,7 +294,7 @@
             </section>
 
             <!-- 6. WIRELESS -->
-            <section class="space-y-1">
+            <section class="space-y-1 section-box" data-title="6. WIRELESS">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">6</span> WIRELESS
                 </h3>
@@ -307,26 +307,26 @@
             </section>
 
             <!-- 7. DHCP SERVER -->
-            <section class="space-y-1">
+            <section class="space-y-1 section-box" data-title="7. DHCP SERVER">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">7</span> DHCP SERVER
                 </h3>
-                <div id="dhcp-network-section">
+                <div id="dhcp-network-main">
                     <div class="sub-header-text">DHCP Network</div>
                     <div id="dhcp-net-rows" class="space-y-2"></div>
                 </div>
-                <div id="pool-section">
+                <div id="pool-main">
                     <div class="sub-header-text">Rentang IP (Pool)</div>
                     <div id="pool-rows" class="space-y-1"></div>
                 </div>
-                <div id="dhcp-setup-section">
+                <div id="dhcp-setup-main">
                     <div class="sub-header-text">SETUP DHCP</div>
                     <div id="dhcp-setup-rows" class="space-y-2"></div>
                 </div>
             </section>
 
             <!-- 8. FIREWALL FILTER -->
-            <section class="space-y-1">
+            <section class="space-y-1 section-box" data-title="8. FIREWALL FILTER">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">8</span> FIREWALL FILTER
                 </h3>
@@ -342,9 +342,9 @@
             <div class="p-6 border-b flex justify-between items-center bg-slate-50">
                 <div>
                     <h2 class="text-xl font-black text-slate-800 tracking-tighter uppercase">Input Konfigurasi</h2>
-                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Pilih file atau drag file .rsc / .txt</p>
+                    <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Pilih file atau drag & drop file .rsc / .txt</p>
                 </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-2 hover:bg-slate-100 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-2 hover:bg-slate-100 rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
             <div class="flex-1 flex overflow-hidden p-5 gap-6 bg-slate-100">
                 <div class="flex-1 flex flex-col gap-2">
@@ -467,8 +467,8 @@
             },
             filters: t => {
                 const res = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], extra: []};
-                const rawLines = t.split('\n');
                 const processedLines = [];
+                const rawLines = t.split('\n');
                 for (let i = 0; i < rawLines.length; i++) {
                     let currentLine = rawLines[i].trim();
                     while (currentLine.endsWith('\\') && i < rawLines.length - 1) {
@@ -481,7 +481,7 @@
                 for(let l of processedLines) {
                     if(l.includes('/ip firewall filter')) { inFilter = true; continue; }
                     if(inFilter && l.startsWith('add ')) {
-                        const cm = l.match(/comment="(filter\s*([1-7]).*?)"/i);
+                        const cm = l.match(/comment="(filter\s*([1-7])\*?.*?)"/i);
                         if(cm) res[cm[2]].push(l.trim()); else res.extra.push(l.trim());
                     }
                     if(inFilter && (l.startsWith('/') || l === "")) inFilter = false;
@@ -515,47 +515,54 @@
             if(!dataStore.key.trim()) return alert("Input Konfigurasi terlebih dahulu!");
             scores = {};
 
+            // 1. Hostname
             const hK = P.host(dataStore.key), hS = P.host(dataStore.student);
             document.getElementById('k-host').innerText = hK; document.getElementById('s-host').innerText = hS;
             if(hK === hS && hK !== "-") setScore('host', 2);
 
+            // 2. DNS
             const dK = P.dns(dataStore.key), dS = P.dns(dataStore.student);
             document.getElementById('k-dns').innerText = dK ? `${dK.s} | Rem: ${dK.r}` : "-"; 
             document.getElementById('s-dns').innerText = dS ? `${dS.s} | Rem: ${dS.r}` : "-";
             if(dK && dS && dK.s === dS.s) setScore('dns', 2);
 
+            // 3. IP
             let ipH = ""; ['ether1','ether2','wlan1'].forEach(n => {
                 const k = P.ip(dataStore.key, n), s = P.ip(dataStore.student, n);
-                const w = (n==='ether1'?1.8:1.5);
-                ipH += renderRowTemplate(n, k.join(" | ") || "-", s.join(" | ") || "-", `ip-${n}`, w);
+                ipH += renderRowTemplate(n, k.join(" | ") || "-", s.join(" | ") || "-", `ip-${n}`, (n==='ether1'?1.8:1.5));
                 if(k.length && s.length && k[0] === s[0]) setTimeout(()=>setScore(`ip-${n}`,2), 50);
             });
             const exIP = P.exIp(dataStore.student); if(exIP.length) ipH += `<div class="jawaban-box-grey code-font text-xs">${exIP.join("<br>")}</div>`;
-            document.getElementById('ip-rows-container').innerHTML = ipH;
+            const elIp = document.getElementById('ip-rows-container'); if(elIp) elIp.innerHTML = ipH;
 
+            // 4. NAT
             let natH = ""; ['ether1','ether2','wlan1'].forEach(n => {
                 const k = P.nat(dataStore.key, n), s = P.nat(dataStore.student, n);
-                const w = (n==='ether1'?1.5:1);
-                natH += renderRowTemplate(n, k.map(x=>x.a).join(" | ") || "-", s.map(x=>x.a).join(" | ") || "-", `nat-${n}`, w);
+                natH += renderRowTemplate(n, k.map(x=>x.a).join(" | ") || "-", s.map(x=>x.a).join(" | ") || "-", `nat-${n}`, (n==='ether1'?1.5:1));
                 if(k.length && s.length && k[0].a === s[0].a) setTimeout(()=>setScore(`nat-${n}`,2), 50);
             });
             const exN = P.natExtra(dataStore.student); if(exN.length) natH += `<div class="jawaban-box-grey code-font text-xs">${exN.join("<br>")}</div>`;
-            document.getElementById('nat-rows-container').innerHTML = natH;
+            const elNat = document.getElementById('nat-rows-container'); if(elNat) elNat.innerHTML = natH;
 
+            // 5. GTW
             const gK = P.gtw(dataStore.key), gS = P.gtw(dataStore.student);
             document.getElementById('k-gtw').innerText = gK[0]?.g || "-"; document.getElementById('s-gtw').innerText = gS[0]?.g || "-";
             if(gK.length && gS.length && gK[0].g === gS[0].g) setScore('gtw', 2);
 
+            // 6. Wireless
             const wK = P.wl(dataStore.key), wS = P.wl(dataStore.student);
             document.getElementById('k-wl').innerText = wK ? `${wK.a} | ${wK.m} | ${wK.s}` : "-";
-            document.getElementById('s-wl-container').innerHTML = `
-                <div class="jawaban-row"><span>Status: ${wS?.a || "-"}</span></div><div class="dash-inner-divider opacity-20"></div>
-                <div class="jawaban-row"><span>Mode: ${wS?.m || "-"}</span><div class="control-pill"><input type="number" id="weight-wl-mode" value="0.8" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-mode',0)" id="btn-wl-mode-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-mode',1)" id="btn-wl-mode-1" class="score-btn score-1">1</button><button onclick="setScore('wl-mode',2)" id="btn-wl-mode-2" class="score-btn score-2">2</button></div></div></div><div class="dash-inner-divider opacity-20"></div>
-                <div class="jawaban-row"><span>SSID: ${wS?.s || "-"}</span><div class="control-pill"><input type="number" id="weight-wl-ssid" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-ssid',0)" id="btn-wl-ssid-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-ssid',1)" id="btn-wl-ssid-1" class="score-btn score-1">1</button><button onclick="setScore('wl-ssid',2)" id="btn-wl-ssid-2" class="score-btn score-2">2</button></div></div></div>`;
+            const elWl = document.getElementById('s-wl-container');
+            if(elWl) {
+                elWl.innerHTML = `
+                    <div class="jawaban-row"><span>Status: ${wS?.a || "-"}</span></div><div class="dash-inner-divider opacity-20"></div>
+                    <div class="jawaban-row"><span>Mode: ${wS?.m || "-"}</span><div class="control-pill"><input type="number" id="weight-wl-mode" value="0.8" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-mode',0)" id="btn-wl-mode-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-mode',1)" id="btn-wl-mode-1" class="score-btn score-1">1</button><button onclick="setScore('wl-mode',2)" id="btn-wl-mode-2" class="score-btn score-2">2</button></div></div></div><div class="dash-inner-divider opacity-20"></div>
+                    <div class="jawaban-row"><span>SSID: ${wS?.s || "-"}</span><div class="control-pill"><input type="number" id="weight-wl-ssid" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-ssid',0)" id="btn-wl-ssid-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-ssid',1)" id="btn-wl-ssid-1" class="score-btn score-1">1</button><button onclick="setScore('wl-ssid',2)" id="btn-wl-ssid-2" class="score-btn score-2">2</button></div></div></div>`;
+            }
             if(wK && wS && wK.m === wS.m) setTimeout(()=>setScore('wl-mode',2), 50);
             if(wK && wS && wK.s === wS.s) setTimeout(()=>setScore('wl-ssid',2), 50);
 
-            // 7. DHCP Network
+            // 7. DHCP
             const dnk = P.dhcp(dataStore.key), dns = P.dhcp(dataStore.student);
             let dhNetH = ""; dnk.forEach((k, i) => { 
                 const s = dns[i]; const id = `dh-n-${i}`;
@@ -570,7 +577,7 @@
                 if(s && k.g === s.g) setTimeout(()=>setScore(`${id}-g`, 2), 50);
                 if(s && k.d === s.d) setTimeout(()=>setScore(`${id}-d`, 2), 50);
             });
-            document.getElementById('dhcp-net-rows').innerHTML = dhNetH;
+            const elDhcpNet = document.getElementById('dhcp-net-rows'); if(elDhcpNet) elDhcpNet.innerHTML = dhNetH;
 
             // Pool (Match by Range)
             const pk = P.pool(dataStore.key), ps = P.pool(dataStore.student);
@@ -585,18 +592,18 @@
             });
             let extraPool = []; unmatchedSIdx.forEach(idx => extraPool.push(`${ps[idx].n}: ${ps[idx].r}`));
             if(extraPool.length) poolH += `<div class="jawaban-box-grey code-font text-xs mt-2">${extraPool.join("<br>")}</div>`;
-            document.getElementById('pool-rows').innerHTML = poolH;
+            const elPool = document.getElementById('pool-rows'); if(elPool) elPool.innerHTML = poolH;
 
             // Setup
             const sk = P.dhcpServer(dataStore.key), ss = P.dhcpServer(dataStore.student);
             let sH = ""; sk.forEach((k, i) => {
                 const s = ss.find(x => x.i === k.i); const id = `ds-${i}`;
                 sH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1">${k.i}</h4><div class="grid grid-cols-1 gap-1"><div class="kunci-box text-xs code-font">INT: ${k.i} | Lease: ${k.lt} | Pool: ${k.ap}</div><div class="jawaban-box">
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400">INTERFACE</span><span class="code-font">${s?.i || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-i" value="1.3" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-i',0)" id="btn-${id}-i-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-i',1)" id="btn-${id}-i-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-i',2)" id="btn-${id}-i-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Interface</span><span class="code-font">${s?.i || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-i" value="1.3" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-i',0)" id="btn-${id}-i-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-i',1)" id="btn-${id}-i-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-i',2)" id="btn-${id}-i-2" class="score-btn score-2">2</button></div></div></div>
                     <div class="dash-inner-divider opacity-20"></div>
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400">LEASE TIME</span><span class="code-font">${s?.lt || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-lt" value="1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-lt',0)" id="btn-${id}-lt-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-lt',1)" id="btn-${id}-lt-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-lt',2)" id="btn-${id}-lt-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Lease Time</span><span class="code-font">${s?.lt || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-lt" value="1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-lt',0)" id="btn-${id}-lt-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-lt',1)" id="btn-${id}-lt-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-lt',2)" id="btn-${id}-lt-2" class="score-btn score-2">2</button></div></div></div>
                     <div class="dash-inner-divider opacity-20"></div>
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400">ADDRESS POOL</span><span class="code-font">${s?.ap || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-ap" value="0.5" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-ap',0)" id="btn-${id}-ap-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-ap',1)" id="btn-${id}-ap-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-ap',2)" id="btn-${id}-ap-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Pool Name</span><span class="code-font">${s?.ap || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-ap" value="0.5" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-ap',0)" id="btn-${id}-ap-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-ap',1)" id="btn-${id}-ap-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-ap',2)" id="btn-${id}-ap-2" class="score-btn score-2">2</button></div></div></div>
                 </div></div></div>`;
                 if(s && k.i === s.i) setTimeout(()=>setScore(`${id}-i`, 2), 50);
                 if(s && k.lt === s.lt) setTimeout(()=>setScore(`${id}-lt`, 2), 50);
@@ -606,7 +613,7 @@
                 sH += `<div class="jawaban-box-red p-3 flex justify-between items-center mt-2"><div class="text-xs">FATAL: DHCP di ether1!</div><div class="control-pill border-rose-200"><input type="number" id="weight-f-${i}" value="5" oninput="updateTotalScore()" class="weight-input"><button onclick="setScore('f-${i}',-1)" id="btn-f-${i}--1" class="score-btn score-neg active">-1</button></div></div>`;
                 setTimeout(()=>setScore(`f-${i}`, -1), 50);
             });
-            document.getElementById('dhcp-setup-rows').innerHTML = sH;
+            const elDhcpSetup = document.getElementById('dhcp-setup-rows'); if(elDhcpSetup) elDhcpSetup.innerHTML = sH;
 
             // 8. Filters
             const fS = P.filters(dataStore.student); const fW = {1:0.6, 2:0.6, 3:0.7, 4:0.8, 5:0.9, 6:1.2, 7:1.2};
@@ -615,7 +622,7 @@
                 fiH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">FILTER ${i}</h4><div class="jawaban-box"><div class="jawaban-row"><div class="flex-1 code-font text-xs">${fS[i].join("<br>") || "-"}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}" value="${fW[i]}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}',0)" id="btn-${id}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}',1)" id="btn-${id}-1" class="score-btn score-1">1</button><button onclick="setScore('${id}',2)" id="btn-${id}-2" class="score-btn score-2">2</button></div></div></div></div></div>`;
             }
             if(fS.extra.length) fiH += `<div class="jawaban-box-grey code-font text-xs mt-2">${fS.extra.join("<br>")}</div>`;
-            document.getElementById('filter-rows-container').innerHTML = fiH;
+            const elFilter = document.getElementById('filter-rows-container'); if(elFilter) elFilter.innerHTML = fiH;
 
             updateTotalScore();
         }
@@ -632,7 +639,7 @@
             });
             let csv = "sep=;\nJudul;Bobot;Skor;Nilai\n";
             rows.forEach(r => { csv += `"${r.id}";${r.w.toString().replace('.',',')};${r.s};${r.v.toString().replace('.',',')}\n`; });
-            csv += `\n;;TOTAL POIN;${total.toString().replace('.',',')}`;
+            csv += `\n;;TOTAL POIN;${total.toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 1})}`;
             const b = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(b);
