@@ -41,6 +41,7 @@
             -moz-appearance: textfield;
         }
         
+        /* Kartu Konfigurasi */
         .kunci-box {
             background-color: var(--speed-white);
             border: 1px solid #cbd5e1;
@@ -81,6 +82,7 @@
             margin-top: 0.15rem;
         }
 
+        /* Kotak Konfigurasi Keliru / Ekstra */
         .jawaban-box-grey {
             background-color: #f8fafc;
             border: 1px solid #cbd5e1;
@@ -182,7 +184,7 @@
             height: 42px; 
             border-radius: 6px;
             border: 1px solid var(--petronas-cyan);
-            width: 160px;
+            width: 170px;
             flex-shrink: 0;
         }
 
@@ -213,7 +215,7 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <button onclick="openModal()" class="icon-btn bg-slate-400 text-white hover:bg-slate-300" title="Input Konfigurasi">
+                <button onclick="openModal()" class="icon-btn bg-slate-500 text-white hover:bg-slate-400" title="Input Konfigurasi">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 </button>
                 <button onclick="showRecap()" class="icon-btn bg-[#00A19C] text-white hover:opacity-90" title="Download & Rekap">
@@ -267,7 +269,7 @@
                 </div>
             </section>
 
-            <!-- 3. IP ADDRESS -->
+            <!-- 3. IP -->
             <section class="space-y-1 section-box" data-title="3. IP ADDRESS">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">3</span> IP ADDRESS
@@ -301,7 +303,7 @@
             </section>
 
             <!-- 6. WIRELESS -->
-            <section class="space-y-1 section-box" data-title="6. WIRELESS">
+            <section class="space-y-1">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">6</span> WIRELESS
                 </h3>
@@ -313,8 +315,8 @@
                 </div>
             </section>
 
-            <!-- 7. DHCP SERVER -->
-            <section class="space-y-1 section-box" data-title="7. DHCP SERVER">
+            <!-- 7. DHCP -->
+            <section class="space-y-1">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">7</span> DHCP SERVER
                 </h3>
@@ -333,7 +335,7 @@
             </section>
 
             <!-- 8. FIREWALL FILTER -->
-            <section class="space-y-1 section-box" data-title="8. FIREWALL FILTER">
+            <section class="space-y-1">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">8</span> FIREWALL FILTER
                 </h3>
@@ -371,7 +373,7 @@
 
     <!-- Modal Recap -->
     <div id="recapModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md hidden z-50 items-center justify-center p-4">
-        <div class="bg-white w-full max-w-4xl rounded-lg shadow-2xl flex flex-col max-h-[90vh]">
+        <div class="bg-white w-full max-w-5xl rounded-lg shadow-2xl flex flex-col max-h-[90vh]">
             <div class="p-6 border-b flex justify-between items-center bg-slate-50 rounded-t-lg">
                 <div>
                     <h2 class="text-xl font-black text-slate-800 tracking-tighter uppercase">Rekap Hasil Penilaian</h2>
@@ -381,10 +383,10 @@
             </div>
             <div class="flex-1 overflow-y-auto p-6 bg-slate-50">
                 <div class="recap-table-container overflow-x-auto border rounded-lg bg-white shadow-sm">
-                    <table class="w-full text-left border-collapse min-w-[600px]">
+                    <table class="w-full text-left border-collapse min-w-[700px]">
                         <thead class="bg-slate-800 text-white text-[11px] uppercase tracking-wider">
                             <tr>
-                                <th class="p-3 border-b border-slate-700">Kategori</th>
+                                <th class="p-3 border-b border-slate-700">Poin Penilaian</th>
                                 <th class="p-3 border-b border-slate-700">Rincian Konfigurasi</th>
                                 <th class="p-3 border-b border-slate-700 text-center">Bobot</th>
                                 <th class="p-3 border-b border-slate-700 text-center">Skor</th>
@@ -560,7 +562,7 @@
         function handleDrop(e, id) { e.preventDefault(); e.currentTarget.classList.remove('drag-hover'); const f = e.dataTransfer.files[0]; if(f) { const r = new FileReader(); r.onload=(ev)=>document.getElementById(id).value=ev.target.result; r.readAsText(f); } }
 
         function renderRowTemplate(title, k, s, id, w) {
-            return `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">${title}</h4><div class="grid grid-cols-1 gap-1"><div class="kunci-box text-xs code-font">${k}</div><div class="jawaban-box"><div class="jawaban-row"><div class="flex-1 code-font student-val">${s}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}" value="${w}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}',0)" id="btn-${id}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}',1)" id="btn-${id}-1" class="score-btn score-1">1</button><button onclick="setScore('${id}',2)" id="btn-${id}-2" class="score-btn score-2">2</button></div></div></div></div></div></div>`;
+            return `<div class="mt-2" data-title="${title}"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">${title}</h4><div class="grid grid-cols-1 gap-1"><div class="kunci-box text-xs code-font">${k}</div><div class="jawaban-box"><div class="jawaban-row"><div class="flex-1 code-font student-val">${s}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}" value="${w}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}',0)" id="btn-${id}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}',1)" id="btn-${id}-1" class="score-btn score-1">1</button><button onclick="setScore('${id}',2)" id="btn-${id}-2" class="score-btn score-2">2</button></div></div></div></div></div></div>`;
         }
 
         function processGrading() {
@@ -579,7 +581,7 @@
             let ipH = ""; ['ether1','ether2','wlan1'].forEach(n => {
                 const k = P.ip(dataStore.key, n), s = P.ip(dataStore.student, n);
                 const w = (n==='ether1'?1.8:1.5);
-                ipH += renderRowTemplate(n, k.join(" | ") || "-", s.join(" | ") || "-", `ip-${n}`, w);
+                ipH += renderRowTemplate(`IP ${n.toUpperCase()}`, k.join(" | ") || "-", s.join(" | ") || "-", `ip-${n}`, w);
                 if(k.length && s.length && k[0] === s[0]) setTimeout(()=>setScore(`ip-${n}`,2), 50);
             });
             const exIP = P.exIp(dataStore.student); if(exIP.length) ipH += `<div class="jawaban-box-grey code-font text-xs">${exIP.join("<br>")}</div>`;
@@ -588,7 +590,7 @@
             let natH = ""; ['ether1','ether2','wlan1'].forEach(n => {
                 const k = P.nat(dataStore.key, n), s = P.nat(dataStore.student, n);
                 const w = (n==='ether1'?1.5:1);
-                natH += renderRowTemplate(n, k.map(x=>x.a).join(" | ") || "-", s.map(x=>x.a).join(" | ") || "-", `nat-${n}`, w);
+                natH += renderRowTemplate(`NAT ${n.toUpperCase()}`, k.map(x=>x.a).join(" | ") || "-", s.map(x=>x.a).join(" | ") || "-", `nat-${n}`, w);
                 if(k.length && s.length && k[0].a === s[0].a) setTimeout(()=>setScore(`nat-${n}`,2), 50);
             });
             const exN = P.natExtra(dataStore.student); if(exN.length) natH += `<div class="jawaban-box-grey code-font text-xs">${exN.join("<br>")}</div>`;
@@ -602,32 +604,27 @@
             document.getElementById('k-wl').innerText = wK ? `${wK.a} | ${wK.m} | ${wK.s}` : "-";
             document.getElementById('s-wl-container').innerHTML = `
                 <div class="jawaban-row"><span>Status: ${wS?.a || "-"}</span></div><div class="dash-inner-divider opacity-20"></div>
-                <div class="jawaban-row section-box" data-title="WLAN MODE"><span>Mode: ${wS?.m || "-"}</span><div class="student-val hidden">${wS?.m || "-"}</div><div class="control-pill"><input type="number" id="weight-wl-mode" value="0.8" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-mode',0)" id="btn-wl-mode-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-mode',1)" id="btn-wl-mode-1" class="score-btn score-1">1</button><button onclick="setScore('wl-mode',2)" id="btn-wl-mode-2" class="score-btn score-2">2</button></div></div></div><div class="dash-inner-divider opacity-20"></div>
-                <div class="jawaban-row section-box" data-title="WLAN SSID"><span>SSID: ${wS?.s || "-"}</span><div class="student-val hidden">${wS?.s || "-"}</div><div class="control-pill"><input type="number" id="weight-wl-ssid" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-ssid',0)" id="btn-wl-ssid-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-ssid',1)" id="btn-wl-ssid-1" class="score-btn score-1">1</button><button onclick="setScore('wl-ssid',2)" id="btn-wl-ssid-2" class="score-btn score-2">2</button></div></div></div>`;
+                <div class="jawaban-row" data-title="WLAN MODE"><span>Mode: <span class="student-val">${wS?.m || "-"}</span></span><div class="control-pill"><input type="number" id="weight-wl-mode" value="0.8" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-mode',0)" id="btn-wl-mode-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-mode',1)" id="btn-wl-mode-1" class="score-btn score-1">1</button><button onclick="setScore('wl-mode',2)" id="btn-wl-mode-2" class="score-btn score-2">2</button></div></div></div><div class="dash-inner-divider opacity-20"></div>
+                <div class="jawaban-row" data-title="WLAN SSID"><span>SSID: <span class="student-val">${wS?.s || "-"}</span></span><div class="control-pill"><input type="number" id="weight-wl-ssid" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-ssid',0)" id="btn-wl-ssid-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-ssid',1)" id="btn-wl-ssid-1" class="score-btn score-1">1</button><button onclick="setScore('wl-ssid',2)" id="btn-wl-ssid-2" class="score-btn score-2">2</button></div></div></div>`;
             if(wK && wS && wK.m === wS.m) setTimeout(()=>setScore('wl-mode',2), 50);
             if(wK && wS && wK.s === wS.s) setTimeout(()=>setScore('wl-ssid',2), 50);
 
-            // 7. DHCP
             const dnk = P.dhcp(dataStore.key), dns = P.dhcp(dataStore.student);
             const dsk = P.dhcpServer(dataStore.key), dss = P.dhcpServer(dataStore.student);
-            
-            let dhNetH = "";
-            let unmatchedNetS = [...dns];
+            let dhNetH = ""; let unmatchedNetS = [...dns];
             dnk.forEach((k, i) => { 
                 const sIdx = unmatchedNetS.findIndex(s => s.a === k.a || s.g === k.g);
                 const s = sIdx !== -1 ? unmatchedNetS.splice(sIdx, 1)[0] : null;
                 const id = `dh-n-${i}`;
-
                 const netDisp = s ? (s.a === k.a ? s.a : `<span class="text-red-600 font-bold">${s.a}</span>`) : "-";
                 const gtwDisp = s ? (s.g === k.g ? s.g : `<span class="text-red-600 font-bold">${s.g}</span>`) : "-";
                 const dnsDisp = s ? (s.d === k.d ? s.d : `<span class="text-red-600 font-bold">${s.d}</span>`) : "-";
-
                 dhNetH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">${k.a}</h4><div class="grid grid-cols-1 gap-1"><div class="kunci-box text-xs code-font">NW: ${k.a} | GW: ${k.g} | DNS: ${k.d}</div><div class="jawaban-box">
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Network</span><span class="code-font student-val">${netDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-a" value="1.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-a',0)" id="btn-${id}-a-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-a',1)" id="btn-${id}-a-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-a',2)" id="btn-${id}-a-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row" data-title="NETWORK ${k.a}"><div class="flex flex-col"><span class="text-[7px] text-slate-400">NETWORK</span><span class="code-font student-val">${netDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-a" value="1.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-a',0)" id="btn-${id}-a-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-a',1)" id="btn-${id}-a-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-a',2)" id="btn-${id}-a-2" class="score-btn score-2">2</button></div></div></div>
                     <div class="dash-inner-divider opacity-20"></div>
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Gateway</span><span class="code-font student-val">${gtwDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-g" value="1.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-g',0)" id="btn-${id}-g-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-g',1)" id="btn-${id}-g-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-g',2)" id="btn-${id}-g-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row" data-title="GATEWAY ${k.a}"><div class="flex flex-col"><span class="text-[7px] text-slate-400">GATEWAY</span><span class="code-font student-val">${gtwDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-g" value="1.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-g',0)" id="btn-${id}-g-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-g',1)" id="btn-${id}-g-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-g',2)" id="btn-${id}-g-2" class="score-btn score-2">2</button></div></div></div>
                     <div class="dash-inner-divider opacity-20"></div>
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Dns Server</span><span class="code-font student-val">${dnsDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-d" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-d',0)" id="btn-${id}-d-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-d',1)" id="btn-${id}-d-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-d',2)" id="btn-${id}-d-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row" data-title="DNS ${k.a}"><div class="flex flex-col"><span class="text-[7px] text-slate-400">DNS SERVER</span><span class="code-font student-val">${dnsDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-d" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-d',0)" id="btn-${id}-d-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-d',1)" id="btn-${id}-d-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-d',2)" id="btn-${id}-d-2" class="score-btn score-2">2</button></div></div></div>
                 </div></div></div>`;
                 if(s && k.a === s.a) setTimeout(()=>setScore(`${id}-a`, 2), 50);
                 if(s && k.g === s.g) setTimeout(()=>setScore(`${id}-g`, 2), 50);
@@ -643,7 +640,7 @@
                 const matchIdx = ps.findIndex((s, idx) => unmatchedSIdx.has(idx) && s.r === k.r);
                 const s = matchIdx !== -1 ? ps[matchIdx] : null;
                 if(matchIdx !== -1) unmatchedSIdx.delete(matchIdx);
-                poolH += renderRowTemplate(k.n, k.r, s ? `${s.n}: ${s.r}` : "-", id, 1.4);
+                poolH += renderRowTemplate(`POOL ${k.n}`, k.r, s ? `${s.n}: ${s.r}` : "-", id, 1.4);
                 if(s) setTimeout(()=>setScore(id, 2), 50);
             });
             let extraPool = []; unmatchedSIdx.forEach(idx => extraPool.push(`${ps[idx].n}: ${ps[idx].r}`));
@@ -656,13 +653,12 @@
                 const iDisp = s ? (s.i === k.i ? s.i : `<span class="text-red-600 font-bold">${s.i}</span>`) : "-";
                 const ltDisp = s ? (s.lt === k.lt ? s.lt : `<span class="text-red-600 font-bold">${s.lt}</span>`) : "-";
                 const apDisp = s ? (s.ap === k.ap ? s.ap : `<span class="text-red-600 font-bold">${s.ap}</span>`) : "-";
-
                 sH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">${k.i}</h4><div class="grid grid-cols-1 gap-1"><div class="kunci-box text-xs code-font">INT: ${k.i} | Lease: ${k.lt} | Pool: ${k.ap}</div><div class="jawaban-box">
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Interface</span><span class="code-font student-val">${iDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-i" value="1.3" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-i',0)" id="btn-${id}-i-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-i',1)" id="btn-${id}-i-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-i',2)" id="btn-${id}-i-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row" data-title="INTERFACE ${k.i}"><div class="flex flex-col"><span class="text-[7px] text-slate-400">INTERFACE</span><span class="code-font student-val">${iDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-i" value="1.3" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-i',0)" id="btn-${id}-i-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-i',1)" id="btn-${id}-i-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-i',2)" id="btn-${id}-i-2" class="score-btn score-2">2</button></div></div></div>
                     <div class="dash-inner-divider opacity-20"></div>
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Lease Time</span><span class="code-font student-val">${ltDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-lt" value="1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-lt',0)" id="btn-${id}-lt-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-lt',1)" id="btn-${id}-lt-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-lt',2)" id="btn-${id}-lt-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row" data-title="LEASE ${k.i}"><div class="flex flex-col"><span class="text-[7px] text-slate-400">LEASE TIME</span><span class="code-font student-val">${ltDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-lt" value="1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-lt',0)" id="btn-${id}-lt-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-lt',1)" id="btn-${id}-lt-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-lt',2)" id="btn-${id}-lt-2" class="score-btn score-2">2</button></div></div></div>
                     <div class="dash-inner-divider opacity-20"></div>
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Pool Name</span><span class="code-font student-val">${apDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-ap" value="0.5" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-ap',0)" id="btn-${id}-ap-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-ap',1)" id="btn-${id}-ap-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-ap',2)" id="btn-${id}-ap-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row" data-title="POOL ${k.i}"><div class="flex flex-col"><span class="text-[7px] text-slate-400">ADDRESS POOL</span><span class="code-font student-val">${apDisp}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-ap" value="0.5" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-ap',0)" id="btn-${id}-ap-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-ap',1)" id="btn-${id}-ap-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-ap',2)" id="btn-${id}-ap-2" class="score-btn score-2">2</button></div></div></div>
                 </div></div></div>`;
                 if(s && k.i === s.i) setTimeout(()=>setScore(`${id}-i`, 2), 50);
                 if(s && k.lt === s.lt) setTimeout(()=>setScore(`${id}-lt`, 2), 50);
@@ -677,7 +673,7 @@
             const fS = P.filters(dataStore.student); const fW = {1:0.6, 2:0.6, 3:0.7, 4:0.8, 5:0.9, 6:1.2, 7:1.2};
             let fiH = ""; for(let i=1; i<=7; i++){ 
                 const id = `f-${i}`;
-                fiH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">FILTER ${i}</h4><div class="jawaban-box"><div class="jawaban-row"><div class="flex-1 code-font text-xs student-val">${fS[i].join("<br>") || "-"}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}" value="${fW[i]}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}',0)" id="btn-${id}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}',1)" id="btn-${id}-1" class="score-btn score-1">1</button><button onclick="setScore('${id}',2)" id="btn-${id}-2" class="score-btn score-2">2</button></div></div></div></div></div>`;
+                fiH += `<div class="mt-2" data-title="FILTER ${i}"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">FILTER ${i}</h4><div class="jawaban-box"><div class="jawaban-row"><div class="flex-1 code-font text-xs student-val">${fS[i].join("<br>") || "-"}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}" value="${fW[i]}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}',0)" id="btn-${id}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}',1)" id="btn-${id}-1" class="score-btn score-1">1</button><button onclick="setScore('${id}',2)" id="btn-${id}-2" class="score-btn score-2">2</button></div></div></div></div></div>`;
             }
             if(fS.extra.length) fiH += `<div class="jawaban-box-grey code-font text-xs mt-2">${fS.extra.join("<br>")}</div>`;
             document.getElementById('filter-rows-container').innerHTML = fiH;
@@ -692,23 +688,36 @@
             document.getElementById('recapStudentName').innerText = `Siswa: ${hS || "MikroTik"}`;
             const tbody = document.getElementById('recapTableBody');
             tbody.innerHTML = "";
-            const sections = document.querySelectorAll('.section-box');
-            sections.forEach(sec => {
-                const title = sec.getAttribute('data-title');
-                const weights = sec.querySelectorAll('.weight-input');
-                const studentVals = sec.querySelectorAll('.student-val');
-                weights.forEach((wInput, idx) => {
-                    const id = wInput.id.replace('weight-', '');
-                    const w = parseFloat(wInput.value) || 0;
-                    const s = scores[id] || 0;
-                    const finalVal = w * s;
-                    const detail = studentVals[idx] ? studentVals[idx].innerText.trim().replace(/\n/g, " | ") : "-";
-                    tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3 font-semibold text-blue-900">${title}</td><td class="p-3 text-slate-500 italic truncate max-w-xs" title="${detail}">${detail}</td><td class="p-3 text-center font-bold text-slate-400">${w.toString().replace('.',',')}</td><td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-white font-black ${s == 2 ? 'bg-emerald-500' : s == 1 ? 'bg-amber-500' : s == -1 ? 'bg-slate-600' : 'bg-rose-500'}">${s}</span></td><td class="p-3 text-right font-black text-slate-900">${finalVal.toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 1})}</td></tr>`;
-                });
+            
+            // Loop through all weight inputs to build the recap table
+            const weightInputs = document.querySelectorAll('.weight-input');
+            weightInputs.forEach(wInput => {
+                const id = wInput.id.replace('weight-', '');
+                const w = parseFloat(wInput.value) || 0;
+                const s = scores[id] || 0;
+                const finalVal = w * s;
+                
+                // Find nearest title and value
+                const row = wInput.closest('.jawaban-row') || wInput.closest('.jawaban-box-red') || wInput.closest('[data-title]');
+                const title = row ? (row.getAttribute('data-title') || row.closest('[data-title]')?.getAttribute('data-title') || "Item") : "Item";
+                const studentValEl = row ? row.querySelector('.student-val') : null;
+                const detail = studentValEl ? studentValEl.innerText.trim().replace(/\n/g, " | ") : "-";
+
+                tbody.innerHTML += `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td class="p-3 font-semibold text-blue-900">${title}</td>
+                        <td class="p-3 text-slate-500 italic truncate max-w-xs" title="${detail}">${detail}</td>
+                        <td class="p-3 text-center font-bold text-slate-400">${w.toLocaleString('id-ID')}</td>
+                        <td class="p-3 text-center"><span class="px-2 py-0.5 rounded text-white font-black text-[10px] ${s == 2 ? 'bg-emerald-500' : s == 1 ? 'bg-amber-500' : s == -1 ? 'bg-slate-600' : 'bg-rose-500'}">${s}</span></td>
+                        <td class="p-3 text-right font-black text-slate-900">${finalVal.toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 1})}</td>
+                    </tr>
+                `;
             });
+
             document.getElementById('recapTotalDisplay').innerText = currentTotal.toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 1});
             document.getElementById('recapModal').classList.remove('hidden');
         }
+
         function closeRecap() { document.getElementById('recapModal').classList.add('hidden'); }
         function copyRecapToClipboard() {
             const hS = P.host(dataStore.student) || "MikroTik";
@@ -720,25 +729,27 @@
             const textarea = document.createElement('textarea'); textarea.value = text; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); document.body.removeChild(textarea);
             alert("Rekap berhasil disalin ke clipboard!");
         }
+
         function downloadCsvFromRecap() {
             const hS = P.host(dataStore.student) || "MikroTik";
-            const sections = document.querySelectorAll('.section-box');
-            let dataForCsv = []; let total = 0;
-            sections.forEach(sec => {
-                const title = sec.getAttribute('data-title');
-                const weights = sec.querySelectorAll('.weight-input');
-                const students = sec.querySelectorAll('.student-val');
-                weights.forEach((wInput, idx) => {
-                    const id = wInput.id.replace('weight-', '');
-                    const w = parseFloat(wInput.value) || 0;
-                    const s = scores[id] || 0;
-                    const f = w * s;
-                    const d = students[idx] ? students[idx].innerText.replace(/\n/g, " | ") : "-";
-                    dataForCsv.push({ title, d, w, s, f }); total += f;
-                });
-            });
+            let total = 0;
             let csv = "sep=;\nJudul/Subjudul;Rincian Konfigurasi;Bobot;Skor;Nilai Akhir";
-            dataForCsv.forEach(d => { csv += `\n"${d.title}";"${d.d}";${d.w.toString().replace('.',',')};${d.s};${d.f.toString().replace('.',',')}`; });
+            
+            const weightInputs = document.querySelectorAll('.weight-input');
+            weightInputs.forEach(wInput => {
+                const id = wInput.id.replace('weight-', '');
+                const w = parseFloat(wInput.value) || 0;
+                const s = scores[id] || 0;
+                const f = w * s;
+                const row = wInput.closest('.jawaban-row') || wInput.closest('.jawaban-box-red') || wInput.closest('[data-title]');
+                const title = row ? (row.getAttribute('data-title') || row.closest('[data-title]')?.getAttribute('data-title') || "Item") : "Item";
+                const studentValEl = row ? row.querySelector('.student-val') : null;
+                const d = studentValEl ? studentValEl.innerText.trim().replace(/\n/g, " | ") : "-";
+                
+                csv += `\n"${title}";"${d}";${w.toString().replace('.',',')};${s};${f.toString().replace('.',',')}`;
+                total += f;
+            });
+            
             csv += `\n\n;;;;TOTAL POIN;${total.toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 1})}`;
             const b = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a"); link.href = URL.createObjectURL(b); link.download = `${hS}_Skor.csv`; link.click();
