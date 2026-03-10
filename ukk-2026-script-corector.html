@@ -269,7 +269,7 @@
                 </div>
             </section>
 
-            <!-- 3. IP -->
+            <!-- 3. IP ADDRESS -->
             <section class="space-y-1 section-box" data-title="3. IP ADDRESS">
                 <h3 class="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-2 mb-1">
                     <span class="bg-[#002D72] text-white w-5 h-5 rounded flex items-center justify-center text-[9px]">3</span> IP ADDRESS
@@ -415,6 +415,10 @@
         let scores = {}; 
         const ROW_DIVIDER = '<div class="dash-inner-divider opacity-20"></div>';
 
+        // --- UTILS ---
+        // MikroTik scripts use backslash to continue commands on next line
+        const cleanScript = (t) => t.replace(/\\\s*[\r\n]+\s*/g, '');
+
         // --- PARSERS ---
         const P = {
             host: t => (t.match(/\/system identity\s+set name="?([^"\s\n]+)"?/)||[0,"-"])[1],
@@ -515,8 +519,8 @@
             },
             filters: t => {
                 const res = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], extra: []};
-                const processedLines = [];
                 const rawLines = t.split('\n');
+                const processedLines = [];
                 for (let i = 0; i < rawLines.length; i++) {
                     let currentLine = rawLines[i].trim();
                     while (currentLine.endsWith('\\') && i < rawLines.length - 1) {
@@ -567,50 +571,60 @@
 
         function processGrading() {
             if(!dataStore.key.trim()) return alert("Input Konfigurasi terlebih dahulu!");
+            
+            // Clean scripts to handle backslash continuation
+            const kScript = cleanScript(dataStore.key);
+            const sScript = cleanScript(dataStore.student);
+            
             scores = {};
 
-            const hK = P.host(dataStore.key), hS = P.host(dataStore.student);
+            const hK = P.host(kScript), hS = P.host(sScript);
             document.getElementById('k-host').innerText = hK; document.getElementById('s-host').innerText = hS;
             if(hK === hS && hK !== "-") setScore('host', 2);
 
-            const dK = P.dns(dataStore.key), dS = P.dns(dataStore.student);
+            const dK = P.dns(kScript), dS = P.dns(sScript);
             document.getElementById('k-dns').innerText = dK ? `${dK.s} | Rem: ${dK.r}` : "-"; 
             document.getElementById('s-dns').innerText = dS ? `${dS.s} | Rem: ${dS.r}` : "-";
             if(dK && dS && dK.s === dS.s) setScore('dns', 2);
 
             let ipH = ""; ['ether1','ether2','wlan1'].forEach(n => {
-                const k = P.ip(dataStore.key, n), s = P.ip(dataStore.student, n);
+                const k = P.ip(kScript, n), s = P.ip(sScript, n);
                 const w = (n==='ether1'?1.8:1.5);
                 ipH += renderRowTemplate(`IP ${n.toUpperCase()}`, k.join(" | ") || "-", s.join(" | ") || "-", `ip-${n}`, w);
                 if(k.length && s.length && k[0] === s[0]) setTimeout(()=>setScore(`ip-${n}`,2), 50);
             });
-            const exIP = P.exIp(dataStore.student); if(exIP.length) ipH += `<div class="jawaban-box-grey code-font text-xs">${exIP.join("<br>")}</div>`;
-            document.getElementById('ip-rows-container').innerHTML = ipH;
+            const exIP = P.exIp(sScript); if(exIP.length) ipH += `<div class="jawaban-box-grey code-font text-xs">${exIP.join("<br>")}</div>`;
+            const elIp = document.getElementById('ip-rows-container'); if(elIp) elIp.innerHTML = ipH;
 
             let natH = ""; ['ether1','ether2','wlan1'].forEach(n => {
-                const k = P.nat(dataStore.key, n), s = P.nat(dataStore.student, n);
+                const k = P.nat(kScript, n), s = P.nat(sScript, n);
                 const w = (n==='ether1'?1.5:1);
                 natH += renderRowTemplate(`NAT ${n.toUpperCase()}`, k.map(x=>x.a).join(" | ") || "-", s.map(x=>x.a).join(" | ") || "-", `nat-${n}`, w);
                 if(k.length && s.length && k[0].a === s[0].a) setTimeout(()=>setScore(`nat-${n}`,2), 50);
             });
-            const exN = P.natExtra(dataStore.student); if(exN.length) natH += `<div class="jawaban-box-grey code-font text-xs">${exN.join("<br>")}</div>`;
-            document.getElementById('nat-rows-container').innerHTML = natH;
+            const exN = P.natExtra(sScript); if(exN.length) natH += `<div class="jawaban-box-grey code-font text-xs">${exN.join("<br>")}</div>`;
+            const elNat = document.getElementById('nat-rows-container'); if(elNat) elNat.innerHTML = natH;
 
-            const gK = P.gtw(dataStore.key), gS = P.gtw(dataStore.student);
+            const gK = P.gtw(kScript), gS = P.gtw(sScript);
             document.getElementById('k-gtw').innerText = gK[0]?.g || "-"; document.getElementById('s-gtw').innerText = gS[0]?.g || "-";
             if(gK.length && gS.length && gK[0].g === gS[0].g) setScore('gtw', 2);
 
-            const wK = P.wl(dataStore.key), wS = P.wl(dataStore.student);
+            const wK = P.wl(kScript), wS = P.wl(sScript);
             document.getElementById('k-wl').innerText = wK ? `${wK.a} | ${wK.m} | ${wK.s}` : "-";
-            document.getElementById('s-wl-container').innerHTML = `
-                <div class="jawaban-row"><span>Status: ${wS?.a || "-"}</span></div><div class="dash-inner-divider opacity-20"></div>
-                <div class="jawaban-row" data-title="WLAN MODE"><span>Mode: <span class="student-val">${wS?.m || "-"}</span></span><div class="control-pill"><input type="number" id="weight-wl-mode" value="0.8" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-mode',0)" id="btn-wl-mode-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-mode',1)" id="btn-wl-mode-1" class="score-btn score-1">1</button><button onclick="setScore('wl-mode',2)" id="btn-wl-mode-2" class="score-btn score-2">2</button></div></div></div><div class="dash-inner-divider opacity-20"></div>
-                <div class="jawaban-row" data-title="WLAN SSID"><span>SSID: <span class="student-val">${wS?.s || "-"}</span></span><div class="control-pill"><input type="number" id="weight-wl-ssid" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-ssid',0)" id="btn-wl-ssid-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-ssid',1)" id="btn-wl-ssid-1" class="score-btn score-1">1</button><button onclick="setScore('wl-ssid',2)" id="btn-wl-ssid-2" class="score-btn score-2">2</button></div></div></div>`;
+            const elWl = document.getElementById('s-wl-container');
+            if(elWl) {
+                elWl.innerHTML = `
+                    <div class="jawaban-row"><span>Status: ${wS?.a || "-"}</span></div><div class="dash-inner-divider opacity-20"></div>
+                    <div class="jawaban-row section-box" data-title="WLAN MODE"><span>Mode: <span class="student-val">${wS?.m || "-"}</span></span><div class="control-pill"><input type="number" id="weight-wl-mode" value="0.8" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-mode',0)" id="btn-wl-mode-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-mode',1)" id="btn-wl-mode-1" class="score-btn score-1">1</button><button onclick="setScore('wl-mode',2)" id="btn-wl-mode-2" class="score-btn score-2">2</button></div></div></div><div class="dash-inner-divider opacity-20"></div>
+                    <div class="jawaban-row section-box" data-title="WLAN SSID"><span>SSID: <span class="student-val">${wS?.s || "-"}</span></span><div class="control-pill"><input type="number" id="weight-wl-ssid" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('wl-ssid',0)" id="btn-wl-ssid-0" class="score-btn score-0 active">0</button><button onclick="setScore('wl-ssid',1)" id="btn-wl-ssid-1" class="score-btn score-1">1</button><button onclick="setScore('wl-ssid',2)" id="btn-wl-ssid-2" class="score-btn score-2">2</button></div></div></div>`;
+            }
             if(wK && wS && wK.m === wS.m) setTimeout(()=>setScore('wl-mode',2), 50);
             if(wK && wS && wK.s === wS.s) setTimeout(()=>setScore('wl-ssid',2), 50);
 
-            const dnk = P.dhcp(dataStore.key), dns = P.dhcp(dataStore.student);
-            const dsk = P.dhcpServer(dataStore.key), dss = P.dhcpServer(dataStore.student);
+            // 7. DHCP
+            const dnk = P.dhcp(kScript), dns = P.dhcp(sScript);
+            const dsk = P.dhcpServer(kScript), dss = P.dhcpServer(sScript);
+            
             let dhNetH = ""; let unmatchedNetS = [...dns];
             dnk.forEach((k, i) => { 
                 const sIdx = unmatchedNetS.findIndex(s => s.a === k.a || s.g === k.g);
@@ -633,7 +647,7 @@
             if(unmatchedNetS.length) dhNetH += `<div class="jawaban-box-grey code-font text-xs mt-2">${unmatchedNetS.map(u => `NW: ${u.a} | GW: ${u.g} | DNS: ${u.d}`).join("<br>")}</div>`;
             document.getElementById('dhcp-net-rows').innerHTML = dhNetH;
 
-            const pk = P.pool(dataStore.key), ps = P.pool(dataStore.student);
+            const pk = P.pool(kScript), ps = P.pool(sScript);
             let poolH = ""; let unmatchedSIdx = new Set(ps.map((_, idx) => idx));
             pk.forEach((k, i) => {
                 const id = `po-${i}`;
@@ -647,7 +661,7 @@
             if(extraPool.length) poolH += `<div class="jawaban-box-grey code-font text-xs mt-2">${extraPool.join("<br>")}</div>`;
             document.getElementById('pool-rows').innerHTML = poolH;
 
-            const sk = P.dhcpServer(dataStore.key), ss = P.dhcpServer(dataStore.student);
+            const sk = P.dhcpServer(kScript), ss = P.dhcpServer(sScript);
             let sH = ""; sk.forEach((k, i) => {
                 const s = ss.find(x => x.i === k.i); const id = `ds-${i}`;
                 const iDisp = s ? (s.i === k.i ? s.i : `<span class="text-red-600 font-bold">${s.i}</span>`) : "-";
@@ -670,7 +684,7 @@
             });
             document.getElementById('dhcp-setup-rows').innerHTML = sH;
 
-            const fS = P.filters(dataStore.student); const fW = {1:0.6, 2:0.6, 3:0.7, 4:0.8, 5:0.9, 6:1.2, 7:1.2};
+            const fS = P.filters(sScript); const fW = {1:0.6, 2:0.6, 3:0.7, 4:0.8, 5:0.9, 6:1.2, 7:1.2};
             let fiH = ""; for(let i=1; i<=7; i++){ 
                 const id = `f-${i}`;
                 fiH += `<div class="mt-2" data-title="FILTER ${i}"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">FILTER ${i}</h4><div class="jawaban-box"><div class="jawaban-row"><div class="flex-1 code-font text-xs student-val">${fS[i].join("<br>") || "-"}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}" value="${fW[i]}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}',0)" id="btn-${id}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}',1)" id="btn-${id}-1" class="score-btn score-1">1</button><button onclick="setScore('${id}',2)" id="btn-${id}-2" class="score-btn score-2">2</button></div></div></div></div></div>`;
@@ -689,7 +703,6 @@
             const tbody = document.getElementById('recapTableBody');
             tbody.innerHTML = "";
             
-            // Loop through all weight inputs to build the recap table
             const weightInputs = document.querySelectorAll('.weight-input');
             weightInputs.forEach(wInput => {
                 const id = wInput.id.replace('weight-', '');
@@ -697,7 +710,6 @@
                 const s = scores[id] || 0;
                 const finalVal = w * s;
                 
-                // Find nearest title and value
                 const row = wInput.closest('.jawaban-row') || wInput.closest('.jawaban-box-red') || wInput.closest('[data-title]');
                 const title = row ? (row.getAttribute('data-title') || row.closest('[data-title]')?.getAttribute('data-title') || "Item") : "Item";
                 const studentValEl = row ? row.querySelector('.student-val') : null;
