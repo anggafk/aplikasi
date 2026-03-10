@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MikroTik Config Evaluator - Racing Edition</title>
+    <title>MikroTik Config Evaluator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;600;700;900&display=swap');
@@ -184,7 +184,7 @@
             height: 42px; 
             border-radius: 6px;
             border: 1px solid var(--petronas-cyan);
-            width: 170px;
+            width: 160px;
             flex-shrink: 0;
         }
 
@@ -206,12 +206,15 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <button onclick="openModal()" class="icon-btn bg-slate-500 text-white hover:bg-slate-400" title="Input Konfigurasi">
+                <!-- KONFIG -->
+                <button onclick="openModal()" class="icon-btn bg-slate-400 text-white hover:bg-slate-300" title="Input Konfigurasi">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                 </button>
+                <!-- DOWNLOAD -->
                 <button onclick="exportScore()" class="icon-btn bg-[#00A19C] text-white hover:opacity-90" title="Download Skor">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                 </button>
+                <!-- MULAI -->
                 <button onclick="processGrading()" class="icon-btn bg-[#E10600] text-white hover:opacity-90 active:scale-95" title="Mulai Nilai">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </button>
@@ -467,8 +470,8 @@
             },
             filters: t => {
                 const res = {1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], extra: []};
-                const processedLines = [];
                 const rawLines = t.split('\n');
+                const processedLines = [];
                 for (let i = 0; i < rawLines.length; i++) {
                     let currentLine = rawLines[i].trim();
                     while (currentLine.endsWith('\\') && i < rawLines.length - 1) {
@@ -481,8 +484,13 @@
                 for(let l of processedLines) {
                     if(l.includes('/ip firewall filter')) { inFilter = true; continue; }
                     if(inFilter && l.startsWith('add ')) {
-                        const cm = l.match(/comment="(filter\s*([1-7])\*?.*?)"/i);
-                        if(cm) res[cm[2]].push(l.trim()); else res.extra.push(l.trim());
+                        const cm = l.match(/comment=(?:"?)(filter\s*([1-7])[\s\*]?[^"\s]*)(?:"?)/i);
+                        if(cm) {
+                            const filterNum = cm[2];
+                            res[filterNum].push(l.trim());
+                        } else {
+                            res.extra.push(l.trim());
+                        }
                     }
                     if(inFilter && (l.startsWith('/') || l === "")) inFilter = false;
                 }
@@ -515,41 +523,37 @@
             if(!dataStore.key.trim()) return alert("Input Konfigurasi terlebih dahulu!");
             scores = {};
 
-            // 1. Hostname
             const hK = P.host(dataStore.key), hS = P.host(dataStore.student);
             document.getElementById('k-host').innerText = hK; document.getElementById('s-host').innerText = hS;
             if(hK === hS && hK !== "-") setScore('host', 2);
 
-            // 2. DNS
             const dK = P.dns(dataStore.key), dS = P.dns(dataStore.student);
             document.getElementById('k-dns').innerText = dK ? `${dK.s} | Rem: ${dK.r}` : "-"; 
             document.getElementById('s-dns').innerText = dS ? `${dS.s} | Rem: ${dS.r}` : "-";
             if(dK && dS && dK.s === dS.s) setScore('dns', 2);
 
-            // 3. IP
             let ipH = ""; ['ether1','ether2','wlan1'].forEach(n => {
                 const k = P.ip(dataStore.key, n), s = P.ip(dataStore.student, n);
-                ipH += renderRowTemplate(n, k.join(" | ") || "-", s.join(" | ") || "-", `ip-${n}`, (n==='ether1'?1.8:1.5));
+                const w = (n==='ether1'?1.8:1.5);
+                ipH += renderRowTemplate(n, k.join(" | ") || "-", s.join(" | ") || "-", `ip-${n}`, w);
                 if(k.length && s.length && k[0] === s[0]) setTimeout(()=>setScore(`ip-${n}`,2), 50);
             });
             const exIP = P.exIp(dataStore.student); if(exIP.length) ipH += `<div class="jawaban-box-grey code-font text-xs">${exIP.join("<br>")}</div>`;
             const elIp = document.getElementById('ip-rows-container'); if(elIp) elIp.innerHTML = ipH;
 
-            // 4. NAT
             let natH = ""; ['ether1','ether2','wlan1'].forEach(n => {
                 const k = P.nat(dataStore.key, n), s = P.nat(dataStore.student, n);
-                natH += renderRowTemplate(n, k.map(x=>x.a).join(" | ") || "-", s.map(x=>x.a).join(" | ") || "-", `nat-${n}`, (n==='ether1'?1.5:1));
+                const w = (n==='ether1'?1.5:1);
+                natH += renderRowTemplate(n, k.map(x=>x.a).join(" | ") || "-", s.map(x=>x.a).join(" | ") || "-", `nat-${n}`, w);
                 if(k.length && s.length && k[0].a === s[0].a) setTimeout(()=>setScore(`nat-${n}`,2), 50);
             });
             const exN = P.natExtra(dataStore.student); if(exN.length) natH += `<div class="jawaban-box-grey code-font text-xs">${exN.join("<br>")}</div>`;
             const elNat = document.getElementById('nat-rows-container'); if(elNat) elNat.innerHTML = natH;
 
-            // 5. GTW
             const gK = P.gtw(dataStore.key), gS = P.gtw(dataStore.student);
             document.getElementById('k-gtw').innerText = gK[0]?.g || "-"; document.getElementById('s-gtw').innerText = gS[0]?.g || "-";
             if(gK.length && gS.length && gK[0].g === gS[0].g) setScore('gtw', 2);
 
-            // 6. Wireless
             const wK = P.wl(dataStore.key), wS = P.wl(dataStore.student);
             document.getElementById('k-wl').innerText = wK ? `${wK.a} | ${wK.m} | ${wK.s}` : "-";
             const elWl = document.getElementById('s-wl-container');
@@ -566,12 +570,12 @@
             const dnk = P.dhcp(dataStore.key), dns = P.dhcp(dataStore.student);
             let dhNetH = ""; dnk.forEach((k, i) => { 
                 const s = dns[i]; const id = `dh-n-${i}`;
-                dhNetH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1">${k.a}</h4><div class="grid grid-cols-1 gap-1"><div class="kunci-box text-xs code-font">NW: ${k.a} | GW: ${k.g} | DNS: ${k.d}</div><div class="jawaban-box">
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400">NETWORK</span><span class="code-font">${s?.a || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-a" value="1.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-a',0)" id="btn-${id}-a-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-a',1)" id="btn-${id}-a-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-a',2)" id="btn-${id}-a-2" class="score-btn score-2">2</button></div></div></div>
+                dhNetH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">${k.a}</h4><div class="grid grid-cols-1 gap-1"><div class="kunci-box text-xs code-font">NW: ${k.a} | GW: ${k.g} | DNS: ${k.d}</div><div class="jawaban-box">
+                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Network</span><span class="code-font student-val">${s?.a || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-a" value="1.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-a',0)" id="btn-${id}-a-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-a',1)" id="btn-${id}-a-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-a',2)" id="btn-${id}-a-2" class="score-btn score-2">2</button></div></div></div>
                     <div class="dash-inner-divider opacity-20"></div>
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400">GATEWAY</span><span class="code-font">${s?.g || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-g" value="1.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-g',0)" id="btn-${id}-g-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-g',1)" id="btn-${id}-g-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-g',2)" id="btn-${id}-g-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Gateway</span><span class="code-font student-val">${s?.g || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-g" value="1.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-g',0)" id="btn-${id}-g-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-g',1)" id="btn-${id}-g-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-g',2)" id="btn-${id}-g-2" class="score-btn score-2">2</button></div></div></div>
                     <div class="dash-inner-divider opacity-20"></div>
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400">DNS SERVER</span><span class="code-font">${s?.d || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-d" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-d',0)" id="btn-${id}-d-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-d',1)" id="btn-${id}-d-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-d',2)" id="btn-${id}-d-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Dns Server</span><span class="code-font student-val">${s?.d || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-d" value="0.5" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-d',0)" id="btn-${id}-d-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-d',1)" id="btn-${id}-d-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-d',2)" id="btn-${id}-d-2" class="score-btn score-2">2</button></div></div></div>
                 </div></div></div>`;
                 if(s && k.a === s.a) setTimeout(()=>setScore(`${id}-a`, 2), 50);
                 if(s && k.g === s.g) setTimeout(()=>setScore(`${id}-g`, 2), 50);
@@ -598,12 +602,12 @@
             const sk = P.dhcpServer(dataStore.key), ss = P.dhcpServer(dataStore.student);
             let sH = ""; sk.forEach((k, i) => {
                 const s = ss.find(x => x.i === k.i); const id = `ds-${i}`;
-                sH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1">${k.i}</h4><div class="grid grid-cols-1 gap-1"><div class="kunci-box text-xs code-font">INT: ${k.i} | Lease: ${k.lt} | Pool: ${k.ap}</div><div class="jawaban-box">
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Interface</span><span class="code-font">${s?.i || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-i" value="1.3" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-i',0)" id="btn-${id}-i-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-i',1)" id="btn-${id}-i-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-i',2)" id="btn-${id}-i-2" class="score-btn score-2">2</button></div></div></div>
+                sH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">${k.i}</h4><div class="grid grid-cols-1 gap-1"><div class="kunci-box text-xs code-font">INT: ${k.i} | Lease: ${k.lt} | Pool: ${k.ap}</div><div class="jawaban-box">
+                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Interface</span><span class="code-font student-val">${s?.i || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-i" value="1.3" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-i',0)" id="btn-${id}-i-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-i',1)" id="btn-${id}-i-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-i',2)" id="btn-${id}-i-2" class="score-btn score-2">2</button></div></div></div>
                     <div class="dash-inner-divider opacity-20"></div>
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Lease Time</span><span class="code-font">${s?.lt || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-lt" value="1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-lt',0)" id="btn-${id}-lt-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-lt',1)" id="btn-${id}-lt-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-lt',2)" id="btn-${id}-lt-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Lease Time</span><span class="code-font student-val">${s?.lt || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-lt" value="1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-lt',0)" id="btn-${id}-lt-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-lt',1)" id="btn-${id}-lt-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-lt',2)" id="btn-${id}-lt-2" class="score-btn score-2">2</button></div></div></div>
                     <div class="dash-inner-divider opacity-20"></div>
-                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Pool Name</span><span class="code-font">${s?.ap || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-ap" value="0.5" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-ap',0)" id="btn-${id}-ap-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-ap',1)" id="btn-${id}-ap-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-ap',2)" id="btn-${id}-ap-2" class="score-btn score-2">2</button></div></div></div>
+                    <div class="jawaban-row"><div class="flex flex-col"><span class="text-[7px] text-slate-400 uppercase">Address Pool</span><span class="code-font student-val">${s?.ap || "-"}</span></div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}-ap" value="0.5" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}-ap',0)" id="btn-${id}-ap-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}-ap',1)" id="btn-${id}-ap-1" class="score-btn score-1">1</button><button onclick="setScore('${id}-ap',2)" id="btn-${id}-ap-2" class="score-btn score-2">2</button></div></div></div>
                 </div></div></div>`;
                 if(s && k.i === s.i) setTimeout(()=>setScore(`${id}-i`, 2), 50);
                 if(s && k.lt === s.lt) setTimeout(()=>setScore(`${id}-lt`, 2), 50);
@@ -619,7 +623,7 @@
             const fS = P.filters(dataStore.student); const fW = {1:0.6, 2:0.6, 3:0.7, 4:0.8, 5:0.9, 6:1.2, 7:1.2};
             let fiH = ""; for(let i=1; i<=7; i++){ 
                 const id = `f-${i}`;
-                fiH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">FILTER ${i}</h4><div class="jawaban-box"><div class="jawaban-row"><div class="flex-1 code-font text-xs">${fS[i].join("<br>") || "-"}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}" value="${fW[i]}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}',0)" id="btn-${id}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}',1)" id="btn-${id}-1" class="score-btn score-1">1</button><button onclick="setScore('${id}',2)" id="btn-${id}-2" class="score-btn score-2">2</button></div></div></div></div></div>`;
+                fiH += `<div class="mt-2"><h4 class="text-[9px] font-bold text-slate-400 mb-1 uppercase">FILTER ${i}</h4><div class="jawaban-box"><div class="jawaban-row"><div class="flex-1 code-font text-xs student-val">${fS[i].join("<br>") || "-"}</div><div class="control-pill shadow-inner"><input type="number" id="weight-${id}" value="${fW[i]}" step="0.1" oninput="updateTotalScore()" class="weight-input"><div class="flex gap-0.5"><button onclick="setScore('${id}',0)" id="btn-${id}-0" class="score-btn score-0 active">0</button><button onclick="setScore('${id}',1)" id="btn-${id}-1" class="score-btn score-1">1</button><button onclick="setScore('${id}',2)" id="btn-${id}-2" class="score-btn score-2">2</button></div></div></div></div></div>`;
             }
             if(fS.extra.length) fiH += `<div class="jawaban-box-grey code-font text-xs mt-2">${fS.extra.join("<br>")}</div>`;
             const elFilter = document.getElementById('filter-rows-container'); if(elFilter) elFilter.innerHTML = fiH;
@@ -631,15 +635,34 @@
             if (Object.keys(scores).length === 0) return alert("Mulai penilaian terlebih dahulu!");
             let total = 0; let rows = [];
             const studentHost = P.host(dataStore.student) || "MikroTik";
-            document.querySelectorAll('.weight-input').forEach(i => {
-                const id = i.id.replace('weight-', '');
-                const w = parseFloat(i.value) || 0;
-                const s = scores[id] || 0;
-                rows.push({id, w, s, v: w*s}); total += w*s;
+            
+            // Get all sections marked as section-box
+            const sections = document.querySelectorAll('.section-box');
+            let dataForCsv = [];
+
+            sections.forEach(sec => {
+                const title = sec.getAttribute('data-title');
+                const weights = sec.querySelectorAll('.weight-input');
+                const students = sec.querySelectorAll('.student-val');
+                
+                weights.forEach((wInput, idx) => {
+                    const id = wInput.id.replace('weight-', '');
+                    const weight = parseFloat(wInput.value) || 0;
+                    const score = scores[id] || 0;
+                    const final = weight * score;
+                    const detail = students[idx] ? students[idx].innerText.replace(/\n/g, " | ") : "-";
+                    
+                    dataForCsv.push({ title, detail, weight, score, final });
+                    total += final;
+                });
             });
-            let csv = "sep=;\nJudul;Bobot;Skor;Nilai\n";
-            rows.forEach(r => { csv += `"${r.id}";${r.w.toString().replace('.',',')};${r.s};${r.v.toString().replace('.',',')}\n`; });
-            csv += `\n;;TOTAL POIN;${total.toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 1})}`;
+
+            let csv = "sep=;\nJudul/Subjudul;Rincian Konfigurasi;Bobot;Skor;Nilai Akhir";
+            dataForCsv.forEach(d => {
+                csv += `\n"${d.title}";"${d.detail}";${d.weight.toString().replace('.',',')};${d.score};${d.final.toString().replace('.',',')}`;
+            });
+            csv += `\n\n;;;;TOTAL POIN;${total.toLocaleString('id-ID', {minimumFractionDigits: 1, maximumFractionDigits: 1})}`;
+            
             const b = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(b);
