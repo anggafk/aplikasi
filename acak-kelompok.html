@@ -10,11 +10,12 @@
             theme: {
                 extend: {
                     colors: {
-                        themeDark: '#2B4055',    /* Warna background header (gelap) */
-                        themeNav: '#344A61',     /* Warna tombol gelap (seperti + TAMBAH) */
-                        themeBlue: '#3498DB',    /* Warna biru cerah utama */
-                        themeBlueHover: '#2980B9',
-                        themeGreen: '#2ECC71'
+                        sauber: '#002D72',       /* Sauber Racing Blue */
+                        petronas: '#00A19C',     /* Petronas Cyan */
+                        petronasHover: '#008580',/* Petronas Cyan - Hover */
+                        speedWhite: '#FDFDFD',   /* Speed White */
+                        redbull: '#E10600',      /* Aksen Red Bull */
+                        redbullHover: '#B80500'  /* Aksen Red Bull - Hover */
                     },
                     fontFamily: {
                         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
@@ -56,32 +57,32 @@
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="min-h-screen bg-[#f4f6f9] text-slate-700 font-sans pb-20 relative">
+<body class="min-h-screen bg-slate-100 text-slate-700 font-sans pb-20 relative">
 
     <!-- Confetti Canvas -->
     <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-[100]" style="display: none;"></canvas>
 
     <!-- Header Atas -->
-    <header class="bg-themeDark text-white px-4 sm:px-6 py-4 flex justify-between items-center shadow-md sticky top-0 z-40 border-b-[4px] border-themeBlue">
+    <header class="bg-sauber text-speedWhite px-4 sm:px-6 py-4 flex justify-between items-center shadow-md sticky top-0 z-40 border-b-[4px] border-petronas">
         <div class="flex items-center gap-3 sm:gap-4">
-            <div class="bg-themeBlue p-2 sm:p-2.5 rounded-md text-white shadow-sm hidden sm:block">
+            <div class="bg-petronas p-2 sm:p-2.5 rounded-md text-speedWhite shadow-sm hidden sm:block">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
-            <h1 class="text-xl md:text-2xl font-bold uppercase tracking-wide leading-none text-white">ACAK KELOMPOK</h1>
+            <h1 class="text-xl md:text-2xl font-bold uppercase tracking-wide leading-none text-speedWhite">ACAK KELOMPOK</h1>
         </div>
         <div class="flex justify-end">
-            <span class="border border-slate-400 text-slate-200 px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">
-                VER 43
+            <span class="border border-petronas text-petronas bg-sauber px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">
+                VER 49
             </span>
         </div>
     </header>
 
     <!-- Modal Zoom Detail Kelompok -->
-    <div id="group-zoom-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 hidden animate-fade-in" onclick="closeGroupDetail()">
-        <div class="bg-white w-full max-w-md rounded-md shadow-2xl flex flex-col overflow-hidden animate-zoom-in border border-slate-200 border-t-[4px] border-t-themeBlue" onclick="event.stopPropagation()">
+    <div id="group-zoom-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-sauber/80 backdrop-blur-sm p-4 hidden animate-fade-in" onclick="closeGroupDetail()">
+        <div class="bg-speedWhite w-full max-w-md rounded-md shadow-2xl flex flex-col overflow-hidden animate-zoom-in border border-sauber border-t-[4px]" onclick="event.stopPropagation()">
             <div class="px-6 py-4 flex justify-between items-center border-b border-slate-100">
-                <h3 id="zoom-title" class="text-sm font-extrabold text-themeDark uppercase tracking-widest">KELOMPOK</h3>
-                <button onclick="closeGroupDetail()" class="text-slate-400 hover:text-themeDark transition-colors">
+                <h3 id="zoom-title" class="text-sm font-extrabold text-sauber uppercase tracking-widest">KELOMPOK</h3>
+                <button onclick="closeGroupDetail()" class="text-slate-400 hover:text-sauber transition-colors duration-300">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
@@ -90,9 +91,9 @@
                     <!-- Students injected here -->
                 </ul>
             </div>
-            <div class="px-6 py-4 bg-white border-t border-slate-100 flex justify-between items-center">
+            <div class="px-6 py-4 bg-speedWhite border-t border-slate-100 flex justify-between items-center">
                 <span id="zoom-count" class="text-xs font-bold text-slate-500 uppercase tracking-wider">0 ANGGOTA</span>
-                <button onclick="closeGroupDetail()" class="bg-themeNav hover:bg-themeDark text-white px-5 py-2 rounded-md text-xs font-bold transition-colors uppercase tracking-wider">
+                <button onclick="closeGroupDetail()" class="bg-redbull hover:bg-sauber text-speedWhite px-5 py-2 rounded-md text-xs font-bold transition-colors duration-300 hover:shadow-md uppercase tracking-wider">
                     TUTUP
                 </button>
             </div>
@@ -100,26 +101,26 @@
     </div>
 
     <!-- Modal Overlay Pengacakan / Tampilan Semua Kelompok -->
-    <div id="result-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 md:p-6 hidden animate-fade-in" onclick="closeModal()">
-        <div class="bg-[#f4f6f9] w-full h-full rounded-md shadow-2xl flex flex-col overflow-hidden relative animate-zoom-in border border-themeBlue border-t-[4px]" id="modal-content" onclick="event.stopPropagation()">
+    <div id="result-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-sauber/80 backdrop-blur-sm p-4 md:p-6 hidden animate-fade-in" onclick="closeModal()">
+        <div class="bg-slate-100 w-full h-full rounded-md shadow-2xl flex flex-col overflow-hidden relative animate-zoom-in border border-sauber border-t-[4px]" id="modal-content" onclick="event.stopPropagation()">
             
             <!-- Header Modal -->
-            <div id="modal-header-bg" class="border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 h-16 transition-colors duration-500 bg-white">
+            <div id="modal-header-bg" class="border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 h-16 transition-colors duration-500 bg-speedWhite">
                 <div class="flex items-center gap-3">
                     <div id="modal-icon-container">
                         <!-- Icon injected by JS -->
                     </div>
                     <div>
-                        <h2 id="modal-title" class="text-sm font-extrabold text-themeDark uppercase tracking-widest">MEMPROSES DATA...</h2>
+                        <h2 id="modal-title" class="text-sm font-extrabold text-sauber uppercase tracking-widest">MEMPROSES DATA...</h2>
                     </div>
                 </div>
                 
                 <div id="modal-actions" class="flex gap-2.5 hidden">
-                    <button onclick="downloadCSV()" class="bg-themeGreen hover:bg-[#27ae60] text-white px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 uppercase tracking-wider">
+                    <button onclick="downloadCSV()" class="bg-petronas hover:bg-sauber text-speedWhite px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-colors duration-300 hover:shadow-md flex items-center gap-1.5 uppercase tracking-wider">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                         SIMPAN CSV
                     </button>
-                    <button onclick="closeModal()" class="bg-themeNav hover:bg-themeDark text-white px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 uppercase tracking-wider">
+                    <button onclick="closeModal()" class="bg-redbull hover:bg-sauber text-speedWhite px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-colors duration-300 hover:shadow-md flex items-center gap-1.5 uppercase tracking-wider">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                         TUTUP
                     </button>
@@ -127,7 +128,7 @@
             </div>
 
             <!-- Content Modal -->
-            <div class="flex-1 p-4 bg-[#f4f6f9] overflow-hidden relative">
+            <div class="flex-1 p-4 bg-slate-100 overflow-hidden relative">
                 <div class="h-full w-full overflow-y-auto custom-scrollbar px-2 pb-10">
                     <div id="modal-groups-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-start">
                         <!-- Groups injected here -->
@@ -141,12 +142,12 @@
         
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             <!-- Class Selection (Sumber Data) -->
-            <section class="lg:col-span-8 bg-white p-5 rounded-md shadow-sm border border-themeBlue border-t-[4px] flex flex-col h-full">
+            <section class="lg:col-span-8 bg-speedWhite p-5 rounded-md shadow-sm border border-sauber border-t-[4px] flex flex-col h-full transition-shadow duration-300 hover:shadow-md">
                 <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 min-h-[44px]">
-                    <h2 class="text-sm font-extrabold text-themeDark uppercase tracking-widest">
+                    <h2 class="text-sm font-extrabold text-sauber uppercase tracking-widest">
                         ATURAN SUMBER DATA
                     </h2>
-                    <button onclick="toggleImport()" class="bg-themeNav hover:bg-themeDark text-white px-3 py-1.5 rounded text-xs font-bold transition-colors flex items-center gap-1">
+                    <button onclick="toggleImport()" class="bg-redbull hover:bg-sauber text-speedWhite px-3 py-1.5 rounded text-xs font-bold transition-colors duration-300 hover:shadow-md flex items-center gap-1">
                         <span id="import-btn-text">+ IMPORT MANUAL</span>
                     </button>
                 </div>
@@ -156,9 +157,9 @@
                 </div>
 
                 <div id="import-panel" class="mt-4 bg-slate-50 p-4 rounded border border-slate-200 hidden animate-fade-in">
-                    <textarea id="import-textarea" class="w-full p-3 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-themeBlue focus:border-themeBlue min-h-[100px] outline-none" placeholder="Tempel data siswa di sini..."></textarea>
+                    <textarea id="import-textarea" class="w-full p-3 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-petronas focus:border-petronas min-h-[100px] outline-none transition-colors" placeholder="Tempel data siswa di sini..."></textarea>
                     <div class="mt-3 flex justify-end">
-                        <button onclick="handleImport()" class="bg-themeBlue text-white px-5 py-2 rounded hover:bg-themeBlueHover text-xs font-bold uppercase tracking-wider transition-all">
+                        <button onclick="handleImport()" class="bg-petronas text-speedWhite px-5 py-2 rounded hover:bg-sauber text-xs font-bold uppercase tracking-wider transition-colors duration-300 hover:shadow-md">
                             PROSES DATA
                         </button>
                     </div>
@@ -166,22 +167,19 @@
             </section>
 
             <!-- Controls Bar (Pengaturan) -->
-            <section class="lg:col-span-4 bg-white p-5 rounded-md shadow-sm border border-themeBlue border-t-[4px] flex flex-col h-full">
+            <section class="lg:col-span-4 bg-speedWhite p-5 rounded-md shadow-sm border border-sauber border-t-[4px] flex flex-col h-full transition-shadow duration-300 hover:shadow-md">
                 <div class="flex items-center border-b border-slate-100 pb-3 mb-4 min-h-[44px]">
-                    <h2 class="text-sm font-extrabold text-themeDark uppercase tracking-widest">PENGATURAN KELOMPOK</h2>
+                    <h2 class="text-sm font-extrabold text-sauber uppercase tracking-widest">PENGATURAN KELOMPOK</h2>
                 </div>
 
                 <div class="flex flex-row items-center gap-1.5 sm:gap-2">
                     <div class="relative w-1/3 shrink-0">
-                        <select id="group-count-select" class="w-full appearance-none bg-[#f8fafc] border border-slate-200 text-themeDark px-2 py-1.5 sm:py-2 rounded focus:outline-none focus:border-themeBlue text-[9px] sm:text-[10px] font-bold cursor-pointer outline-none text-center m-0">
+                        <select id="group-count-select" class="w-full appearance-none bg-slate-50 border border-slate-200 text-sauber px-2 py-1.5 sm:py-2 rounded focus:outline-none focus:border-petronas text-[9px] sm:text-[10px] font-bold cursor-pointer outline-none text-center m-0 transition-colors hover:border-petronas">
                             <!-- Options generated by JS -->
                         </select>
-                        <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-[10px]">
-                            ▼
-                        </div>
                     </div>
 
-                    <button id="shuffle-btn" onclick="startShuffling()" class="flex-1 bg-themeBlue hover:bg-themeBlueHover active:bg-themeNav text-white font-bold px-2 py-1.5 sm:py-2 rounded shadow-sm uppercase tracking-tight sm:tracking-wider text-[9px] sm:text-[10px] transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed m-0">
+                    <button id="shuffle-btn" onclick="startShuffling()" class="flex-1 bg-petronas hover:bg-sauber text-speedWhite font-bold px-2 py-1.5 sm:py-2 rounded shadow-sm uppercase tracking-tight sm:tracking-wider text-[9px] sm:text-[10px] transition-colors duration-300 hover:shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-petronas disabled:hover:shadow-sm m-0">
                         PROSES
                     </button>
                 </div>
@@ -192,9 +190,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             
             <!-- Left Column: Data Source -->
-            <div class="bg-white lg:col-span-5 rounded-md shadow-sm border border-themeBlue border-t-[4px] overflow-hidden flex flex-col h-[650px]">
+            <div class="bg-speedWhite lg:col-span-5 rounded-md shadow-sm border border-sauber border-t-[4px] overflow-hidden flex flex-col h-[650px] transition-shadow duration-300 hover:shadow-md">
                 <div class="p-4 border-b border-slate-100 flex justify-between items-center shrink-0">
-                    <h3 class="text-sm font-extrabold text-themeDark uppercase tracking-widest">
+                    <h3 class="text-sm font-extrabold text-sauber uppercase tracking-widest">
                         DAFTAR SISWA
                     </h3>
                     <span id="total-students" class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded uppercase tracking-wider">
@@ -202,7 +200,7 @@
                     </span>
                 </div>
                 
-                <div class="overflow-y-auto flex-1 p-0 custom-scrollbar bg-white">
+                <div class="overflow-y-auto flex-1 p-0 custom-scrollbar bg-speedWhite">
                     <div id="student-list-container">
                         <!-- Student Table injected here -->
                     </div>
@@ -210,26 +208,26 @@
             </div>
 
             <!-- Right Column: Results -->
-            <div id="main-results-container" class="lg:col-span-7 rounded-md h-[650px] flex flex-col bg-white border border-themeBlue border-t-[4px] shadow-sm cursor-pointer transition-colors" onclick="if(groups.length > 0) showAllGroupsModal()">
+            <div id="main-results-container" class="lg:col-span-7 rounded-md h-[650px] flex flex-col bg-speedWhite border border-sauber border-t-[4px] shadow-sm cursor-pointer transition-shadow duration-300 hover:shadow-lg" onclick="if(groups.length > 0) showAllGroupsModal()">
                 <div class="p-4 border-b border-slate-100 flex justify-between items-center shrink-0">
-                    <h3 class="text-sm font-extrabold text-themeDark uppercase tracking-widest">
+                    <h3 class="text-sm font-extrabold text-sauber uppercase tracking-widest">
                         HASIL PEMBAGIAN
                     </h3>
                     <div id="result-header-actions" class="flex items-center gap-2 hidden">
-                        <span id="group-count-badge" class="text-[10px] font-bold bg-themeDark text-white border-none px-3 py-1 rounded-md uppercase tracking-wider shadow-sm">
+                        <span id="group-count-badge" class="text-[10px] font-bold bg-sauber text-speedWhite border-none px-3 py-1 rounded-md uppercase tracking-wider shadow-sm">
                             0 KELOMPOK
                         </span>
-                        <button onclick="event.stopPropagation(); downloadCSV()" class="bg-white border border-themeBlue hover:bg-themeBlue text-themeBlue hover:text-white p-1.5 rounded-md transition-colors shadow-sm" title="Download CSV">
+                        <button onclick="event.stopPropagation(); downloadCSV()" class="bg-speedWhite border border-petronas hover:bg-sauber hover:border-sauber text-petronas hover:text-speedWhite p-1.5 rounded-md transition-colors duration-300 hover:shadow-md shadow-sm" title="Download CSV">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                         </button>
                     </div>
                 </div>
 
-                <div class="overflow-y-auto flex-1 p-4 md:p-5 custom-scrollbar bg-[#f4f6f9] rounded-b-md">
+                <div class="overflow-y-auto flex-1 p-4 md:p-5 custom-scrollbar bg-slate-50 rounded-b-md">
                     <div id="main-groups-grid" class="h-full">
                         <!-- Placeholder or Groups -->
                         <div class="h-full flex flex-col items-center justify-center text-slate-400">
-                            <div class="w-16 h-16 bg-white border border-slate-200 rounded flex items-center justify-center text-slate-300 shadow-sm">
+                            <div class="w-16 h-16 bg-speedWhite border border-slate-200 rounded flex items-center justify-center text-slate-300 shadow-sm">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                     <line x1="3" y1="9" x2="21" y2="9"></line>
@@ -245,8 +243,8 @@
     </main>
 
     <!-- Footer Version -->
-    <div class="fixed bottom-0 left-0 right-0 bg-white/90 border-t border-slate-200 p-2.5 flex justify-end items-center z-10 px-6">
-        <span class="font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">v43</span>
+    <div class="fixed bottom-0 left-0 right-0 bg-speedWhite/90 border-t border-slate-200 p-2.5 flex justify-end items-center z-10 px-6">
+        <span class="font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">v49</span>
     </div>
 
     <script>
@@ -282,9 +280,9 @@
             for (const cls in classData) {
                 const isSelected = selectedClass === cls;
                 const classes = isSelected 
-                    ? 'bg-themeBlue text-white border-themeBlue' 
-                    : 'bg-white text-slate-600 hover:bg-slate-50 border-slate-200';
-                html += `<button onclick="loadClass('${cls}')" class="px-1 py-1.5 sm:px-2 sm:py-2 rounded text-[9px] sm:text-[10px] font-bold transition-all border ${classes} uppercase tracking-tight sm:tracking-wider truncate" title="${cls}">${cls}</button>`;
+                    ? 'bg-petronas text-speedWhite border-petronas shadow-md' 
+                    : 'bg-speedWhite text-slate-600 hover:bg-petronas hover:text-speedWhite hover:border-petronas border-slate-200 hover:shadow-md';
+                html += `<button onclick="loadClass('${cls}')" class="px-1 py-1.5 sm:px-2 sm:py-2 rounded text-[9px] sm:text-[10px] font-bold transition-colors duration-300 border ${classes} uppercase tracking-tight sm:tracking-wider truncate" title="${cls}">${cls}</button>`;
             }
             container.innerHTML = html;
         }
@@ -317,7 +315,7 @@
 
             let html = `
                 <table class="w-full text-sm text-left border-collapse">
-                    <thead class="bg-white text-slate-400 font-bold sticky top-0 z-10 text-[10px] uppercase tracking-wider border-b border-slate-100">
+                    <thead class="bg-speedWhite text-slate-400 font-bold sticky top-0 z-10 text-[10px] uppercase tracking-wider border-b border-slate-100 shadow-sm">
                         <tr>
                             <th class="px-4 py-3 w-12 text-center">NO</th>
                             <th class="px-2 py-3">NAMA LENGKAP</th>
@@ -328,11 +326,11 @@
             `;
 
             students.forEach((student, idx) => {
-                const rowClass = student.excluded ? 'bg-slate-50 opacity-60' : 'hover:bg-slate-50 bg-white';
+                const rowClass = student.excluded ? 'bg-slate-50 opacity-60' : 'hover:bg-slate-50 bg-speedWhite';
                 const nameClass = student.excluded ? 'text-slate-400 line-through decoration-slate-400' : 'text-slate-700 font-bold';
                 const btnClass = student.excluded 
-                    ? 'text-rose-500 hover:bg-rose-100' 
-                    : 'text-slate-300 hover:text-themeGreen hover:bg-green-50';
+                    ? 'text-redbull hover:bg-redbull hover:text-speedWhite hover:shadow-md' 
+                    : 'text-slate-300 hover:text-speedWhite hover:bg-petronas hover:shadow-md';
                 
                 const icon = student.excluded 
                     ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' 
@@ -341,9 +339,9 @@
                 html += `
                     <tr class="transition-colors ${rowClass}">
                         <td class="px-4 py-2.5 text-center text-slate-400">${idx + 1}</td>
-                        <td class="px-2 py-2.5 transition-all ${nameClass} uppercase">${student.name}</td>
+                        <td class="px-2 py-2.5 transition-colors ${nameClass} uppercase">${student.name}</td>
                         <td class="px-4 py-2.5 text-center">
-                            <button onclick="toggleExclusion(${student.id})" class="w-6 h-6 rounded flex items-center justify-center transition-all mx-auto ${btnClass}">
+                            <button onclick="toggleExclusion(${student.id})" class="w-6 h-6 rounded flex items-center justify-center transition-colors duration-300 mx-auto ${btnClass}">
                                 ${icon}
                             </button>
                         </td>
@@ -365,13 +363,13 @@
             const actions = document.getElementById('modal-actions');
             const iconContainer = document.getElementById('modal-icon-container');
 
-            if(header) header.className = "border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 h-16 transition-colors duration-500 bg-white";
+            if(header) header.className = "border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 h-16 transition-colors duration-500 bg-speedWhite";
             if(title) {
                 title.innerText = "SEMUA KELOMPOK";
-                title.className = "text-sm font-extrabold text-themeDark tracking-widest uppercase";
+                title.className = "text-sm font-extrabold text-sauber tracking-widest uppercase";
             }
             actions?.classList.remove('hidden');
-            if(iconContainer) iconContainer.innerHTML = `<div class="bg-themeBlue p-1.5 rounded shadow-sm border border-transparent"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg></div>`;
+            if(iconContainer) iconContainer.innerHTML = `<div class="bg-petronas p-1.5 rounded shadow-sm border border-transparent"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-speedWhite"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg></div>`;
             
             renderGroups(groups, 'modal-groups-grid', true);
         }
@@ -392,11 +390,11 @@
             let listHtml = '';
             group.forEach((student, sIdx) => {
                 listHtml += `
-                    <li class="flex items-center gap-3 bg-white p-3 rounded border border-slate-200 shadow-sm">
-                        <div class="w-7 h-7 rounded bg-slate-100 border border-slate-200 text-themeDark font-bold flex items-center justify-center text-xs shrink-0">
+                    <li class="flex items-center gap-3 bg-speedWhite p-3 rounded border border-slate-200 shadow-sm transition-colors hover:bg-slate-50">
+                        <div class="w-7 h-7 rounded bg-slate-100 border border-slate-200 text-sauber font-bold flex items-center justify-center text-xs shrink-0">
                             ${sIdx + 1}
                         </div>
-                        <span class="font-bold text-themeDark text-sm uppercase truncate">${student.name}</span>
+                        <span class="font-bold text-sauber text-sm uppercase truncate">${student.name}</span>
                     </li>
                 `;
             });
@@ -416,7 +414,7 @@
             if (!groupsToRender || groupsToRender.length === 0) {
                 container.innerHTML = `
                     <div class="h-full flex flex-col items-center justify-center text-slate-400">
-                        <div class="w-16 h-16 bg-white border border-slate-200 rounded flex items-center justify-center text-slate-300 shadow-sm">
+                        <div class="w-16 h-16 bg-speedWhite border border-slate-200 rounded flex items-center justify-center text-slate-300 shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                                 <line x1="3" y1="9" x2="21" y2="9"></line>
@@ -439,16 +437,16 @@
             let html = '';
             groupsToRender.forEach((group, idx) => {
                 const listContainerClass = isWideMode ? 'grid grid-cols-2 gap-x-2 gap-y-1' : (isPreview ? 'space-y-1' : 'space-y-1');
-                const cardScale = isShuffling ? 'scale-[0.98] opacity-80' : 'scale-100 opacity-100 hover:shadow-md hover:-translate-y-1 hover:border-themeBlue cursor-pointer';
+                const cardScale = isShuffling ? 'opacity-80' : 'opacity-100 hover:shadow-md hover:border-petronas cursor-pointer';
 
                 html += `
-                    <div onclick="event.stopPropagation(); openGroupDetail(${idx})" class="bg-white rounded-md shadow-sm border border-slate-200 border-t-[4px] border-t-themeBlue transition-all duration-200 flex flex-col ${cardScale}">
-                        <div class="px-3 py-2.5 border-b border-slate-100">
-                            <h4 class="font-extrabold text-themeDark uppercase tracking-widest ${isPreview ? 'text-[11px]' : 'text-xs'}">
+                    <div onclick="event.stopPropagation(); openGroupDetail(${idx})" class="bg-speedWhite rounded-md shadow-sm border border-sauber border-t-[4px] transition-colors duration-300 flex flex-col ${cardScale}">
+                        <div class="px-3 py-2.5 border-b border-slate-100 bg-slate-50 transition-colors">
+                            <h4 class="font-extrabold text-sauber uppercase tracking-widest ${isPreview ? 'text-[11px]' : 'text-xs'}">
                                 KELOMPOK ${idx + 1}
                             </h4>
                         </div>
-                        <div class="${isPreview ? 'p-2' : 'p-3'} flex-1 bg-white rounded-b-md">
+                        <div class="${isPreview ? 'p-2' : 'p-3'} flex-1 rounded-b-md">
                             <ul class="${listContainerClass}">
                 `;
 
@@ -784,21 +782,21 @@
             const iconContainer = document.getElementById('modal-icon-container');
 
             if (shuffling) {
-                if(header) header.className = "border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 h-16 transition-colors duration-500 bg-white";
+                if(header) header.className = "border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 h-16 transition-colors duration-500 bg-speedWhite";
                 if(title) {
                     title.innerText = "SISTEM SEDANG MENGACAK...";
-                    title.className = "text-sm font-extrabold text-themeDark uppercase tracking-widest";
+                    title.className = "text-sm font-extrabold text-sauber uppercase tracking-widest";
                 }
                 actions?.classList.add('hidden');
-                if(iconContainer) iconContainer.innerHTML = `<svg class="w-5 h-5 text-themeBlue animate-spin-custom" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+                if(iconContainer) iconContainer.innerHTML = `<svg class="w-5 h-5 text-petronas animate-spin-custom" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
             } else {
-                if(header) header.className = "border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 h-16 transition-colors duration-500 bg-emerald-50 border-emerald-300 relative overflow-hidden";
+                if(header) header.className = "border-b border-slate-200 px-6 py-4 flex justify-between items-center shrink-0 h-16 transition-colors duration-500 bg-slate-50 border-petronas relative overflow-hidden";
                 if(title) {
                     title.innerText = "PENGACAKAN SELESAI!";
-                    title.className = "text-base font-extrabold text-emerald-800 relative z-10";
+                    title.className = "text-base font-extrabold text-petronas relative z-10";
                 }
                 actions?.classList.remove('hidden');
-                if(iconContainer) iconContainer.innerHTML = `<div class="bg-white border border-emerald-200 p-1.5 rounded-lg shadow-sm relative z-10"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3l.04.23a2.9 2.9 0 0 1-2 3.29l-.23.04a2.9 2.9 0 0 0-2.42 2.76l-.02.45a2.9 2.9 0 0 1-2.91 2.77H10a2.9 2.9 0 0 0-2.29 1.1l-.19.26a2.9 2.9 0 0 1-3.6 1.05l-.17-.08a2.9 2.9 0 0 0-3.32.6l-1 1"/></svg></div>`;
+                if(iconContainer) iconContainer.innerHTML = `<div class="bg-speedWhite border border-petronas p-1.5 rounded-lg shadow-sm relative z-10"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-petronas"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3l.04.23a2.9 2.9 0 0 1-2 3.29l-.23.04a2.9 2.9 0 0 0-2.42 2.76l-.02.45a2.9 2.9 0 0 1-2.91 2.77H10a2.9 2.9 0 0 0-2.29 1.1l-.19.26a2.9 2.9 0 0 1-3.6 1.05l-.17-.08a2.9 2.9 0 0 0-3.32.6l-1 1"/></svg></div>`;
             }
         }
 
@@ -839,7 +837,7 @@
             canvas.height = window.innerHeight;
 
             const particles = [];
-            const colors = ['#3498DB', '#344A61', '#2B4055', '#2ECC71', '#CBD5E1'];
+            const colors = ['#002D72', '#00A19C', '#FDFDFD', '#E10600']; // Updated with new palette
 
             for (let i = 0; i < 200; i++) {
                 particles.push({
