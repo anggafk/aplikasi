@@ -66,13 +66,13 @@
     <header class="bg-sauber text-speedWhite px-4 sm:px-6 py-4 flex justify-between items-center shadow-md sticky top-0 z-40 border-b-[4px] border-petronas">
         <div class="flex items-center gap-3 sm:gap-4">
             <div class="bg-petronas p-2 sm:p-2.5 rounded-md text-speedWhite shadow-sm hidden sm:block">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
             <h1 class="text-xl md:text-2xl font-bold uppercase tracking-wide leading-none text-speedWhite">ACAK KELOMPOK</h1>
         </div>
         <div class="flex justify-end">
             <span class="border border-petronas text-petronas bg-sauber px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">
-                VER 49
+                VER 51
             </span>
         </div>
     </header>
@@ -244,7 +244,7 @@
 
     <!-- Footer Version -->
     <div class="fixed bottom-0 left-0 right-0 bg-speedWhite/90 border-t border-slate-200 p-2.5 flex justify-end items-center z-10 px-6">
-        <span class="font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">v49</span>
+        <span class="font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">v51</span>
     </div>
 
     <script>
@@ -442,7 +442,7 @@
                 html += `
                     <div onclick="event.stopPropagation(); openGroupDetail(${idx})" class="bg-speedWhite rounded-md shadow-sm border border-sauber border-t-[4px] transition-colors duration-300 flex flex-col ${cardScale}">
                         <div class="px-3 py-2.5 border-b border-slate-100 bg-slate-50 transition-colors">
-                            <h4 class="font-extrabold text-sauber uppercase tracking-widest ${isPreview ? 'text-[11px]' : 'text-xs'}">
+                            <h4 class="font-extrabold text-sauber uppercase tracking-widest ${isPreview ? 'text-xs' : 'text-sm'}">
                                 KELOMPOK ${idx + 1}
                             </h4>
                         </div>
@@ -452,12 +452,12 @@
 
                 for (let sIdx = 0; sIdx < maxSlots; sIdx++) {
                     const student = group[sIdx];
-                    const itemClass = isPreview ? 'text-[10px] p-1 gap-1.5' : 'text-[11px] p-1.5 gap-2';
+                    const itemClass = isPreview ? 'text-xs p-1.5 gap-2' : 'text-sm p-2 gap-2.5';
                     
                     if (student) {
                         html += `
                             <li class="flex items-center font-bold text-slate-600 hover:bg-slate-50 transition-colors rounded ${itemClass}">
-                                <div class="${isPreview ? 'w-4 h-4 text-[9px]' : 'w-5 h-5 text-[10px]'} rounded-sm bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                                <div class="${isPreview ? 'w-5 h-5 text-[10px]' : 'w-6 h-6 text-xs'} rounded-sm bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
                                     ${sIdx + 1}
                                 </div>
                                 <span class="truncate uppercase">${student.name}</span>
@@ -466,7 +466,7 @@
                     } else {
                         html += `
                             <li class="flex items-center font-bold text-transparent bg-transparent rounded ${itemClass} invisible pointer-events-none select-none">
-                                <div class="${isPreview ? 'w-4 h-4 text-[9px]' : 'w-5 h-5 text-[10px]'} rounded-sm bg-transparent text-transparent flex items-center justify-center shrink-0">
+                                <div class="${isPreview ? 'w-5 h-5 text-[10px]' : 'w-6 h-6 text-xs'} rounded-sm bg-transparent text-transparent flex items-center justify-center shrink-0">
                                     0
                                 </div>
                                 <span class="truncate">X</span>
