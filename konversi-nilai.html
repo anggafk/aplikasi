@@ -3,53 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Konversi Nilai - Professional Linear Scaler</title>
+    <title>Konversi Nilai - Professional Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
         
         :root {
-            /* Warna Tema Baru sesuai Gambar */
-            --nav-bg: #2c3e50;
-            --primary-blue: #3498db;
-            --primary-hover: #2980b9;
-            --body-bg: #ecf0f1;
+            /* Kalibrasi Warna Akurat Sauber Petronas F1 */
+            --sauber-racing-blue: #002D72; 
+            --petronas-teal: #00A19C;      
+            --petronas-hover: #008985;
+            --f1-red: #E10600;             
+            --racing-gray: #f8fafc;
         }
 
         body { 
             font-family: 'Inter', sans-serif; 
+            background-color: var(--racing-gray);
+            color: var(--sauber-racing-blue);
         }
 
         .mono { font-family: 'JetBrains Mono', monospace; }
 
-        /* Scrollbar formal */
+        /* Scrollbar presisi */
         ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #bdc3c7; }
-        ::-webkit-scrollbar-thumb:hover { background: #95a5a6; }
+        ::-webkit-scrollbar-track { background: var(--racing-gray); }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--petronas-teal); }
 
         input::-webkit-outer-spin-button, 
         input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
 
-        /* Tampilan kotak tegas (Solid & Sharp) */
+        /* Tampilan kotak tegas */
         .sharp-card {
             background: #ffffff;
-            border: 1px solid #dcdde1;
-            border-radius: 4px; /* Lebih tegas sesuai gambar portal */
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
         }
         
-        .btn-primary {
-            background-color: var(--primary-blue);
+        .btn-racing-blue {
+            background-color: var(--sauber-racing-blue);
+            color: white;
             transition: all 0.2s ease;
         }
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
+        .btn-racing-blue:hover {
+            filter: brightness(1.2);
+        }
+
+        .btn-petronas {
+            background-color: var(--petronas-teal);
+            color: white;
+            transition: all 0.2s ease;
+        }
+        .btn-petronas:hover {
+            background-color: var(--petronas-hover);
         }
 
         .input-precision::placeholder {
-            color: #bdc3c7;
+            color: #cbd5e1;
         }
 
         .disabled-btn {
@@ -57,37 +70,39 @@
             cursor: not-allowed;
             pointer-events: none;
         }
+
+        .border-blue-top {
+            border-top: 4px solid var(--sauber-racing-blue);
+        }
     </style>
 </head>
-<body class="bg-[#ecf0f1] min-h-screen text-[#2c3e50]">
-    <!-- Navbar (Dark Navy sesuai Gambar) -->
-    <nav class="sticky top-0 z-30 bg-[#2c3e50] border-b-4 border-[#3498db]">
+<body class="min-h-screen">
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-30 bg-[#002D72] border-b-4 border-[#00A19C] shadow-lg">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between text-white">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-[#3498db] rounded flex items-center justify-center text-white shadow-md">
+                <div class="w-10 h-10 bg-[#00A19C] rounded flex items-center justify-center text-white shadow-md">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M5 20V8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v12"/><circle cx="12" cy="11" r="2"/><path d="m10 11 1.5 2 1.5-2"/></svg>
                 </div>
                 <div>
-                    <h1 class="text-lg font-extrabold uppercase tracking-wider">Konversi Nilai</h1>
-                    <p class="text-[9px] font-medium opacity-70 tracking-widest uppercase">Teknik Komputer dan Jaringan</p>
+                    <h1 class="text-lg font-extrabold uppercase tracking-wider leading-none">Konversi Nilai</h1>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <span class="text-[10px] font-mono font-bold text-white bg-white/10 px-2 py-1 rounded border border-white/20">VER 2.1.5</span>
-            </div>
+            <!-- Bagian label versi telah dihapus -->
+            <div class="flex items-center gap-4"></div>
         </div>
     </nav>
 
     <main class="max-w-7xl mx-auto px-6 py-6">
         <div class="flex flex-col lg:flex-row gap-4 items-start">
             
-            <!-- LEFT SIDEBAR: CONFIGURATION -->
+            <!-- LEFT SIDEBAR -->
             <div class="flex-none space-y-4 lg:sticky lg:top-24">
                 <!-- Rule Card -->
-                <div class="sharp-card p-4 shadow-sm w-fit border-t-4 border-[#3498db]">
+                <div class="sharp-card p-4 shadow-sm w-fit border-blue-top">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-3 gap-4">
-                        <h2 class="text-[11px] font-black text-[#2c3e50] uppercase tracking-[0.15em]">Aturan</h2>
-                        <button onclick="addSegment()" class="px-2 py-1 bg-[#2c3e50] hover:bg-black text-white rounded text-[9px] font-bold transition-all flex items-center gap-1.5">
+                        <h2 class="text-[11px] font-black text-[#002D72] uppercase tracking-[0.15em]">Aturan</h2>
+                        <button onclick="addSegment()" class="px-2 py-1 bg-[#002D72] hover:bg-black text-white rounded text-[9px] font-bold transition-all flex items-center gap-1.5 shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                             TAMBAH
                         </button>
@@ -95,64 +110,63 @@
 
                     <!-- Header Label Grid -->
                     <div id="segmentHeader" class="grid grid-cols-[48px_48px_48px_48px_24px] gap-1 px-0.5 mb-1.5 text-[7px] font-black text-slate-500 uppercase text-center w-full">
-                        <div>Asli Min</div>
-                        <div>Asli Max</div>
-                        <div class="text-[#3498db]">Akhir Min</div>
-                        <div class="text-[#3498db]">Akhir Max</div>
+                        <div>In Min</div>
+                        <div>In Max</div>
+                        <div class="text-[#00A19C]">Out Min</div>
+                        <div class="text-[#00A19C]">Out Max</div>
                         <div></div>
                     </div>
                     
-                    <!-- Rules Container -->
                     <div id="segmentsContainer" class="space-y-1 max-h-[45vh] overflow-y-auto scrollbar-hide w-fit pr-1">
                     </div>
 
                     <div class="mt-4 pt-4 border-t border-slate-100">
-                        <button onclick="calculateConversion()" class="w-full btn-primary text-white font-bold py-2.5 rounded text-[10px] uppercase tracking-widest shadow-md active:scale-95">
+                        <button onclick="calculateConversion()" class="w-full btn-petronas font-bold py-2.5 rounded text-[10px] uppercase tracking-widest shadow-md active:scale-95">
                             Proses Kalkulasi
                         </button>
                     </div>
                 </div>
 
                 <!-- Statistics Panel -->
-                <div id="statsContainer" class="sharp-card bg-[#2c3e50] p-4 space-y-4 border-t-4 border-[#3498db]">
-                    <h3 class="text-[9px] font-black text-white/50 uppercase tracking-widest text-center border-b border-white/10 pb-2">Ringkasan Statistik</h3>
+                <div id="statsContainer" class="sharp-card bg-[#002D72] p-4 space-y-4 border-t-4 border-[#00A19C] shadow-lg">
+                    <h3 class="text-[9px] font-black text-white/40 uppercase tracking-widest text-center border-b border-white/10 pb-2">Ringkasan Statistik</h3>
                     <div class="grid grid-cols-2 gap-x-6 gap-y-3 text-white">
                         <div>
-                            <span class="block text-[7px] text-white/40 uppercase font-bold">Asli Terendah</span>
-                            <div id="statMinAsli" class="text-sm font-bold mono">0.00</div>
+                            <span class="block text-[7px] text-white/30 uppercase font-bold tracking-tight">Asli Min</span>
+                            <div id="statMinAsli" class="text-sm font-bold mono text-[#00A19C]">0.00</div>
                         </div>
                         <div>
-                            <span class="block text-[7px] text-white/40 uppercase font-bold">Asli Tertinggi</span>
-                            <div id="statMaxAsli" class="text-sm font-bold mono">0.00</div>
+                            <span class="block text-[7px] text-white/30 uppercase font-bold tracking-tight">Asli Max</span>
+                            <div id="statMaxAsli" class="text-sm font-bold mono text-[#00A19C]">0.00</div>
                         </div>
                         <div class="pt-2 border-t border-white/10">
-                            <span class="block text-[7px] text-[#3498db] uppercase font-bold">Akhir Terendah</span>
-                            <div id="statMinBaru" class="text-sm font-bold text-[#3498db] mono">0.00</div>
+                            <span class="block text-[7px] text-[#00A19C] uppercase font-bold tracking-tight">Akhir Min</span>
+                            <div id="statMinBaru" class="text-sm font-extrabold mono text-white">0.00</div>
                         </div>
                         <div class="pt-2 border-t border-white/10">
-                            <span class="block text-[7px] text-[#3498db] uppercase font-bold">Akhir Tertinggi</span>
-                            <div id="statMaxBaru" class="text-sm font-bold text-[#3498db] mono">0.00</div>
+                            <span class="block text-[7px] text-[#00A19C] uppercase font-bold tracking-tight">Akhir Max</span>
+                            <div id="statMaxBaru" class="text-sm font-extrabold mono text-white">0.00</div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- RIGHT CONTENT: TABLE & CHART -->
+            <!-- RIGHT CONTENT -->
             <div class="flex-1 w-full space-y-4 min-w-0">
                 <div class="bg-white p-3 rounded border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
                     <div class="flex items-center gap-2">
-                        <button onclick="openImportModal()" class="bg-[#27ae60] hover:bg-[#219150] text-white px-4 py-2 rounded font-bold text-[10px] flex items-center gap-2 transition uppercase tracking-wide shadow-sm">
+                        <button onclick="openImportModal()" class="btn-racing-blue px-4 py-2 rounded font-bold text-[10px] flex items-center gap-2 transition uppercase tracking-wide shadow-sm">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             Import Data Siswa
                         </button>
-                        <button onclick="clearData()" class="text-slate-400 hover:text-rose-700 px-3 py-2 text-[9px] font-bold uppercase tracking-widest transition">
+                        <button onclick="clearData()" class="text-slate-400 hover:text-[#E10600] px-3 py-2 text-[9px] font-bold uppercase tracking-widest transition">
                             Hapus Semua
                         </button>
                     </div>
                     
-                    <div id="dataSummary" class="hidden flex items-center gap-2 bg-[#ecf0f1] px-3 py-1.5 rounded border border-[#dcdde1]">
-                        <span class="text-[9px] font-bold text-slate-500 uppercase">Siswa Terdata:</span>
-                        <span id="studentCount" class="text-xs font-black text-[#2c3e50]">0</span>
+                    <div id="dataSummary" class="hidden flex items-center gap-2 bg-[#00A19C]/5 px-3 py-1.5 rounded border border-[#00A19C]/20">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">Terdata:</span>
+                        <span id="studentCount" class="text-xs font-black text-[#002D72]">0</span>
                     </div>
                 </div>
 
@@ -160,28 +174,28 @@
                     <!-- Main Table -->
                     <div class="flex-1 bg-white rounded border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[600px]">
                         <div id="emptyState" class="flex-1 flex flex-col items-center justify-center p-12 text-center bg-slate-50/50">
-                            <div class="w-16 h-16 bg-white rounded flex items-center justify-center mb-4 border border-[#dcdde1]">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#bdc3c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                            <div class="w-16 h-16 bg-white rounded flex items-center justify-center mb-4 border border-slate-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#00A19C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
                             </div>
-                            <h4 class="text-sm font-bold text-[#2c3e50] uppercase tracking-wider">Laporan Kosong</h4>
-                            <p class="text-[11px] text-slate-400 mt-1 uppercase font-medium">Impor data untuk memulai proses konversi</p>
+                            <h4 class="text-sm font-bold text-[#002D72] uppercase tracking-wider">Belum Ada Data Siswa</h4>
+                            <p class="text-[11px] text-slate-400 mt-1 uppercase font-medium">Import data Excel untuk memproses skor</p>
                         </div>
 
                         <div id="tableContainer" class="hidden h-full flex flex-col">
-                            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                                <h3 class="font-black text-[#2c3e50] text-[10px] uppercase tracking-[0.2em]">Hasil Konversi Presisi</h3>
-                                <button onclick="copyTable()" class="flex items-center gap-1.5 px-3 py-1.5 bg-[#ecf0f1] hover:bg-[#dcdde1] text-[#2c3e50] rounded text-[9px] font-bold border border-[#bdc3c7] transition uppercase">
+                            <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
+                                <h3 class="font-black text-[#002D72] text-[10px] uppercase tracking-[0.2em]">Hasil Konversi Presisi</h3>
+                                <button onclick="copyTable()" class="flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-100 text-[#002D72] rounded text-[9px] font-bold border border-slate-200 transition uppercase shadow-sm">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                                     Salin ke Excel
                                 </button>
                             </div>
-                            <div class="overflow-y-auto flex-1">
+                            <div class="overflow-y-auto flex-1 custom-scrollbar">
                                 <table class="w-full text-left border-collapse">
-                                    <thead class="bg-[#f8fafc] text-[#7f8c8d] text-[8px] font-black uppercase tracking-widest sticky top-0 border-b border-slate-200">
+                                    <thead class="bg-[#f8f9fa] text-[#7f8c8d] text-[8px] font-black uppercase tracking-widest sticky top-0 border-b border-slate-200">
                                         <tr>
                                             <th class="px-6 py-3 font-black">Nama Siswa</th>
                                             <th class="px-6 py-3 text-center w-32 border-l border-slate-100">Nilai Asli</th>
-                                            <th class="px-6 py-3 text-center w-36 border-l border-slate-100 text-[#3498db] bg-[#3498db]/5">Skor Akhir</th>
+                                            <th class="px-6 py-3 text-center w-36 border-l border-slate-100 text-[#00A19C] bg-[#00A19C]/5 font-bold tracking-tight">Hasil Akhir</th>
                                         </tr>
                                     </thead>
                                     <tbody id="studentRows" class="divide-y divide-slate-100 text-xs">
@@ -194,7 +208,7 @@
                     <!-- Chart Card -->
                     <div id="chartArea" class="hidden flex-none w-full xl:w-[320px] bg-white p-5 rounded border border-slate-200 shadow-sm flex flex-col h-full max-h-[600px]">
                         <div class="mb-6 pb-2 border-b border-slate-100">
-                            <h3 class="text-[10px] font-black text-[#2c3e50] uppercase tracking-widest">Visualisasi Kurva</h3>
+                            <h3 class="text-[10px] font-black text-[#002D72] uppercase tracking-widest text-center">Kurva Distribusi</h3>
                         </div>
                         <div class="flex-1 min-h-[400px]">
                             <canvas id="conversionChart"></canvas>
@@ -206,25 +220,25 @@
     </main>
 
     <!-- Import Modal -->
-    <div id="importModal" class="fixed inset-0 z-50 modal-overlay flex items-center justify-center opacity-0 pointer-events-none transition-all duration-200" style="background: rgba(44, 62, 80, 0.6);">
-        <div class="bg-white w-full max-w-lg mx-4 rounded shadow-2xl overflow-hidden transform scale-95 transition-all duration-200 border border-[#bdc3c7]" id="modalContent">
-            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-[#f8fafc]">
-                <h3 class="text-xs font-black text-[#2c3e50] uppercase tracking-widest">Import Data Siswa</h3>
-                <button onclick="closeImportModal()" class="text-slate-400 hover:text-[#2c3e50] transition">
+    <div id="importModal" class="fixed inset-0 z-50 modal-overlay flex items-center justify-center opacity-0 pointer-events-none transition-all duration-200" style="background: rgba(0, 45, 114, 0.7); backdrop-filter: blur(4px);">
+        <div class="bg-white w-full max-w-lg mx-4 rounded shadow-2xl overflow-hidden transform scale-95 transition-all duration-200 border border-slate-300" id="modalContent">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                <h3 class="text-xs font-black text-[#002D72] uppercase tracking-widest">Import Data Siswa</h3>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-[#002D72] transition">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6 12 12"/></svg>
                 </button>
             </div>
             <div class="p-6 space-y-4">
-                <textarea id="importInput" rows="12" placeholder="Tempel Nama dan Nilai (misal: Budi 80)..." class="w-full px-4 py-3 rounded border border-[#dcdde1] focus:border-[#3498db] outline-none font-mono text-[11px] bg-[#f8fafc] transition-all"></textarea>
-                <button onclick="processImport()" class="w-full bg-[#2c3e50] hover:bg-black text-white font-bold py-3 rounded transition-all uppercase tracking-widest text-[10px]">
+                <textarea id="importInput" rows="12" placeholder="Tempel Nama dan Nilai (misal: Budi 80)..." class="w-full px-4 py-3 rounded border border-slate-200 focus:border-[#00A19C] outline-none font-mono text-[11px] bg-slate-50 transition-all shadow-inner"></textarea>
+                <button onclick="processImport()" class="w-full bg-[#002D72] hover:bg-black text-white font-bold py-3 rounded transition-all uppercase tracking-widest text-[10px] shadow-md">
                     Simpan Data
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Toast UI -->
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#2c3e50] text-white px-6 py-3 rounded shadow-xl opacity-0 transition-all z-[100] pointer-events-none flex items-center gap-3 border border-[#3498db]">
+    <!-- Toast Feedback -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#002D72] text-white px-6 py-3 rounded shadow-xl opacity-0 transition-all z-[100] pointer-events-none flex items-center gap-3 border border-[#00A19C]">
         <div id="toastIcon" class="w-4 h-4 rounded-full flex items-center justify-center"></div>
         <span id="toastMsg" class="text-[10px] font-bold uppercase tracking-widest">Berhasil</span>
     </div>
@@ -244,12 +258,11 @@
         function renderSegments() {
             const container = document.getElementById('segmentsContainer');
             container.innerHTML = '';
-            
             const gridConfig = "grid-cols-[48px_48px_48px_48px_24px]";
             
             segments.forEach((seg, idx) => {
                 const segEl = document.createElement('div');
-                segEl.className = `grid ${gridConfig} gap-1 items-center bg-white p-0.5 rounded border border-[#dcdde1] hover:border-[#3498db] transition-all group mb-1 w-full`;
+                segEl.className = `grid ${gridConfig} gap-1 items-center bg-white p-0.5 rounded border border-slate-200 hover:border-[#00A19C] transition-all group mb-1 w-full`;
                 
                 const aMinVal = seg.aMin !== null ? seg.aMin : '';
                 const aMaxVal = seg.aMax !== null ? seg.aMax : '';
@@ -259,13 +272,13 @@
                 const canDelete = segments.length > 1;
 
                 segEl.innerHTML = `
-                    <input type="number" value="${aMinVal}" placeholder="0" onchange="updateSegData(${idx}, 'aMin', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-[#f8fafc] focus:bg-white outline-none font-mono text-center transition-all" title="Asli Min">
-                    <input type="number" value="${aMaxVal}" placeholder="100" onchange="updateSegData(${idx}, 'aMax', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-[#f8fafc] focus:bg-white outline-none font-mono text-center transition-all" title="Asli Max">
-                    <input type="number" value="${nMinVal}" placeholder="75" onchange="updateSegData(${idx}, 'nMin', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-[#f1f9ff] focus:bg-white outline-none font-mono text-center font-bold text-[#3498db] transition-all" title="Akhir Min">
-                    <input type="number" value="${nMaxVal}" placeholder="100" onchange="updateSegData(${idx}, 'nMax', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-[#f1f9ff] focus:bg-white outline-none font-mono text-center font-bold text-[#3498db] transition-all" title="Akhir Max">
+                    <input type="number" value="${aMinVal}" placeholder="0" onchange="updateSegData(${idx}, 'aMin', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-[#f8f9fa] focus:bg-white outline-none font-mono text-center transition-all" title="Asli Min">
+                    <input type="number" value="${aMaxVal}" placeholder="100" onchange="updateSegData(${idx}, 'aMax', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-[#f8f9fa] focus:bg-white outline-none font-mono text-center transition-all" title="Asli Max">
+                    <input type="number" value="${nMinVal}" placeholder="75" onchange="updateSegData(${idx}, 'nMin', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-[#00A19C]/5 focus:bg-white outline-none font-mono text-center font-bold text-[#002D72] transition-all" title="Akhir Min">
+                    <input type="number" value="${nMaxVal}" placeholder="100" onchange="updateSegData(${idx}, 'nMax', this.value)" class="input-precision w-full py-1.5 text-[10px] rounded border-0 bg-[#00A19C]/5 focus:bg-white outline-none font-mono text-center font-bold text-[#002D72] transition-all" title="Akhir Max">
                     
                     <div class="flex justify-center items-center">
-                        <button onclick="removeSegment(${idx})" class="text-[#bdc3c7] hover:text-rose-700 transition opacity-0 group-hover:opacity-100 p-0.5 ${!canDelete ? 'disabled-btn' : ''}" title="Hapus">
+                        <button onclick="removeSegment(${idx})" class="text-slate-300 hover:text-[#E10600] transition opacity-0 group-hover:opacity-100 p-0.5 ${!canDelete ? 'disabled-btn' : ''}" title="Hapus">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                         </button>
                     </div>
@@ -301,10 +314,10 @@
             document.getElementById('toastMsg').innerText = msg;
             
             if (type === "error") {
-                icon.className = "w-4 h-4 rounded-full flex items-center justify-center bg-rose-600 text-white";
+                icon.className = "w-4 h-4 rounded-full flex items-center justify-center bg-[#E10600] text-white shadow-md";
                 icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
             } else {
-                icon.className = "w-4 h-4 rounded-full flex items-center justify-center bg-[#27ae60] text-white";
+                icon.className = "w-4 h-4 rounded-full flex items-center justify-center bg-[#00A19C] text-white shadow-md";
                 icon.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
             }
 
@@ -462,9 +475,9 @@
                 const displayConverted = s.converted !== null ? s.converted.toFixed(2) : '—';
                 
                 row.innerHTML = `
-                    <td class="px-6 py-3 font-bold text-[#2c3e50] truncate max-w-[300px]">${s.name}</td>
-                    <td class="px-6 py-3 text-center text-[#7f8c8d] font-medium mono border-l border-slate-50">${displayOriginal}</td>
-                    <td class="px-6 py-3 text-center font-black ${s.converted !== null ? 'text-[#3498db] bg-[#3498db]/5' : 'text-slate-200'} tracking-tight mono border-l border-slate-50">
+                    <td class="px-6 py-3 font-bold text-[#002D72] truncate max-w-[300px] font-sans">${s.name}</td>
+                    <td class="px-6 py-3 text-center text-slate-500 font-medium mono border-l border-slate-50">${displayOriginal}</td>
+                    <td class="px-6 py-3 text-center font-black ${s.converted !== null ? 'text-[#00A19C] bg-[#00A19C]/5' : 'text-slate-200'} tracking-tight mono border-l border-slate-50">
                         ${displayConverted}
                     </td>
                 `;
@@ -496,20 +509,22 @@
                             label: 'Garis Aturan',
                             data: rulePoints,
                             showLine: true,
-                            borderColor: '#3498db',
+                            borderColor: '#00A19C',
                             backgroundColor: 'transparent',
                             borderWidth: 3,
                             pointRadius: 5,
                             pointBackgroundColor: '#fff',
                             pointBorderWidth: 2,
-                            pointBorderColor: '#3498db',
+                            pointBorderColor: '#002D72',
                             tension: 0,
                             zIndex: 1
                         },
                         {
                             label: 'Siswa',
                             data: studentPoints,
-                            backgroundColor: '#e67e22',
+                            backgroundColor: '#E10600',
+                            borderColor: '#002D72',
+                            borderWidth: 1,
                             pointRadius: 4,
                             pointHoverRadius: 8,
                             zIndex: 10
@@ -525,24 +540,25 @@
                             labels: { 
                                 boxWidth: 10, 
                                 font: { size: 9, weight: '700' },
-                                usePointStyle: true
+                                usePointStyle: true,
+                                color: '#002D72'
                             } 
                         },
                         tooltip: { 
-                            backgroundColor: '#2c3e50',
-                            callbacks: { label: (ctx) => `Asli: ${ctx.raw.x} → Akhir: ${ctx.raw.y.toFixed(2)}` } 
+                            backgroundColor: '#002D72',
+                            callbacks: { label: (ctx) => `In: ${ctx.raw.x.toFixed(2)} → Out: ${ctx.raw.y.toFixed(2)}` } 
                         }
                     },
                     scales: {
                         y: { 
-                            title: { display: true, text: 'OUTPUT', font: { size: 8, weight: '900' }, color: '#95a5a6' }, 
+                            title: { display: true, text: 'OUTPUT', font: { size: 8, weight: '900' }, color: '#00A19C' }, 
                             grid: { color: '#f1f2f6' },
-                            ticks: { font: { size: 9, family: 'JetBrains Mono' } }
+                            ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#002D72' }
                         },
                         x: { 
-                            title: { display: true, text: 'INPUT', font: { size: 8, weight: '900' }, color: '#95a5a6' }, 
+                            title: { display: true, text: 'INPUT', font: { size: 8, weight: '900' }, color: '#00A19C' }, 
                             grid: { color: '#f1f2f6' },
-                            ticks: { font: { size: 9, family: 'JetBrains Mono' } }
+                            ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#002D72' }
                         }
                     }
                 }
