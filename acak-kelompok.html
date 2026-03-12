@@ -72,7 +72,7 @@
         </div>
         <div class="flex justify-end">
             <span class="border border-petronas text-petronas bg-sauber px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">
-                VER 51
+                VER 52
             </span>
         </div>
     </header>
@@ -244,7 +244,7 @@
 
     <!-- Footer Version -->
     <div class="fixed bottom-0 left-0 right-0 bg-speedWhite/90 border-t border-slate-200 p-2.5 flex justify-end items-center z-10 px-6">
-        <span class="font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">v51</span>
+        <span class="font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">v52</span>
     </div>
 
     <script>
@@ -394,7 +394,7 @@
                         <div class="w-7 h-7 rounded bg-slate-100 border border-slate-200 text-sauber font-bold flex items-center justify-center text-xs shrink-0">
                             ${sIdx + 1}
                         </div>
-                        <span class="font-bold text-sauber text-sm uppercase truncate">${student.name}</span>
+                        <span class="font-extrabold text-slate-700 text-sm uppercase truncate">${student.name}</span>
                     </li>
                 `;
             });
@@ -442,7 +442,7 @@
                 html += `
                     <div onclick="event.stopPropagation(); openGroupDetail(${idx})" class="bg-speedWhite rounded-md shadow-sm border border-sauber border-t-[4px] transition-colors duration-300 flex flex-col ${cardScale}">
                         <div class="px-3 py-2.5 border-b border-slate-100 bg-slate-50 transition-colors">
-                            <h4 class="font-extrabold text-sauber uppercase tracking-widest ${isPreview ? 'text-xs' : 'text-sm'}">
+                            <h4 class="font-extrabold text-sauber uppercase tracking-widest ${isPreview ? 'text-[11px]' : 'text-xs'}">
                                 KELOMPOK ${idx + 1}
                             </h4>
                         </div>
@@ -452,21 +452,21 @@
 
                 for (let sIdx = 0; sIdx < maxSlots; sIdx++) {
                     const student = group[sIdx];
-                    const itemClass = isPreview ? 'text-xs p-1.5 gap-2' : 'text-sm p-2 gap-2.5';
+                    const itemClass = isPreview ? 'text-[10px] p-1 gap-1.5' : 'text-[11px] p-1.5 gap-2';
                     
                     if (student) {
                         html += `
                             <li class="flex items-center font-bold text-slate-600 hover:bg-slate-50 transition-colors rounded ${itemClass}">
-                                <div class="${isPreview ? 'w-5 h-5 text-[10px]' : 'w-6 h-6 text-xs'} rounded-sm bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
+                                <div class="${isPreview ? 'w-4 h-4 text-[9px]' : 'w-5 h-5 text-[10px]'} rounded-sm bg-slate-100 text-slate-400 flex items-center justify-center shrink-0">
                                     ${sIdx + 1}
                                 </div>
-                                <span class="truncate uppercase">${student.name}</span>
+                                <span class="truncate uppercase font-extrabold text-slate-700">${student.name}</span>
                             </li>
                         `;
                     } else {
                         html += `
                             <li class="flex items-center font-bold text-transparent bg-transparent rounded ${itemClass} invisible pointer-events-none select-none">
-                                <div class="${isPreview ? 'w-5 h-5 text-[10px]' : 'w-6 h-6 text-xs'} rounded-sm bg-transparent text-transparent flex items-center justify-center shrink-0">
+                                <div class="${isPreview ? 'w-4 h-4 text-[9px]' : 'w-5 h-5 text-[10px]'} rounded-sm bg-transparent text-transparent flex items-center justify-center shrink-0">
                                     0
                                 </div>
                                 <span class="truncate">X</span>
