@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>UJI KOMPETENSI KEAHLIAN 2026 - Monitoring Progres Lokal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -63,7 +63,6 @@
             });
             if (changed) {
                 renderTimers();
-                // Simpan ke local storage setiap 5 detik agar tidak membebani
                 if (new Date().getSeconds() % 5 === 0) {
                     saveToLocal();
                 }
@@ -276,28 +275,140 @@
             --red-bull-red: #E10600;
             --student-font-size: 14px;
         }
-        body { font-family: 'Inter', sans-serif; background-color: #cbd5e1; height: 100vh; margin: 0; display: flex; flex-direction: column; overflow: hidden; }
-        .student-block { background-color: var(--speed-white); border: 1px solid #cbd5e1; border-radius: 0.75rem; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: 95px; margin-bottom: 0.6rem; transition: all 0.3s; flex-shrink: 0; }
+        
+        /* Layout Fix for Mobile Browsers */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            background-color: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            /* h-[100dvh] ensures it fits perfectly even with browser toolbars */
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        .student-block { 
+            background-color: var(--speed-white); 
+            border: 1px solid #cbd5e1; 
+            border-radius: 0.75rem; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+            height: 95px; 
+            margin-bottom: 0.6rem; 
+            transition: all 0.3s; 
+            flex-shrink: 0; 
+        }
+        
         .timer-active { border-color: var(--petronas-cyan) !important; box-shadow: 0 0 10px rgba(0, 161, 156, 0.2); }
         .status-locked { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
-        .student-header { background-color: #f1f5f9; display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid #e2e8f0; height: 38px; }
+        
+        .student-header { 
+            background-color: #f1f5f9; 
+            display: flex; 
+            align-items: center; 
+            padding: 0 10px; 
+            border-bottom: 1px solid #e2e8f0; 
+            height: 38px; 
+        }
+        
         .input-no { width: 35px; background: transparent; border: none; font-weight: 900; color: var(--sauber-blue); font-size: var(--student-font-size); outline: none; }
         .input-nama { flex: 1; background: transparent; border: none; font-weight: 800; color: var(--sauber-blue); font-size: var(--student-font-size); text-transform: uppercase; outline: none; }
-        .individual-timer { background-color: var(--sauber-blue); color: white; padding: 2px 8px; border-radius: 6px; font-weight: 900; font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; min-width: 75px; justify-content: center; }
+        
+        .individual-timer { 
+            background-color: var(--sauber-blue); 
+            color: white; 
+            padding: 2px 8px; 
+            border-radius: 6px; 
+            font-weight: 900; 
+            font-size: 12px; 
+            display: flex; 
+            align-items: center; 
+            gap: 4px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            min-width: 75px; 
+            justify-content: center; 
+        }
+        
         .timer-running { background-color: var(--petronas-cyan); animation: pulse-timer 2s infinite; }
         @keyframes pulse-timer { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+        
         .student-progress-row { display: flex; flex: 1; background: transparent; }
-        .progress-cell { flex: 1; display: flex; align-items: center; justify-content: center; border-right: 1px solid rgba(226, 232, 240, 0.8); font-size: 16px; font-weight: 900; color: #94a3b8; cursor: pointer; text-align: center; }
+        
+        .progress-cell { 
+            flex: 1; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-right: 1px solid rgba(226, 232, 240, 0.8); 
+            font-size: 16px; 
+            font-weight: 900; 
+            color: #94a3b8; 
+            cursor: pointer; 
+            text-align: center; 
+        }
+        
         .status-recorded-success { background-color: var(--petronas-cyan) !important; color: white !important; }
         .status-recorded-partial { background-color: var(--mclaren-orange) !important; color: white !important; }
         .status-recorded-failed { background-color: var(--red-bull-red) !important; color: white !important; }
+        
         .modal-overlay { display: none; position: fixed; inset: 0; background-color: rgba(0, 45, 114, 0.85); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
         .modal-card { background: var(--speed-white); padding: 1.5rem; border-radius: 1.5rem; border: 2px solid var(--sauber-blue); width: 100%; }
     </style>
 </head>
 <body class="p-0">
 
-    <!-- Modal Import -->
+    <!-- MAIN APP WRAPPER -->
+    <div class="flex flex-col h-full w-full overflow-hidden">
+        
+        <!-- HEADER (Fixed at Top) -->
+        <header class="bg-[#002D72] shrink-0 p-3 shadow-lg border-b-2 border-[#001f4d] z-10">
+            <div class="grid grid-cols-[80px_1fr_40px] items-center">
+                <div id="status-indicator" class="flex items-center">
+                    <span class="text-[10px] text-green-400 font-bold uppercase flex items-center">
+                        <i data-lucide="database" class="w-3 h-3 mr-1"></i> LOKAL
+                    </span>
+                </div> 
+                <h1 class="text-lg font-black text-[#00A19C] leading-none uppercase tracking-tighter text-center">
+                    UKK 2026<br><span class="text-white text-[10px] tracking-widest font-bold uppercase">PENGUJIAN FILTER RULE</span>
+                </h1>
+                <div onclick="openTaskConfig()" class="w-10 h-10 bg-[#001f4d] rounded-full flex items-center justify-center text-[#00A19C] cursor-pointer justify-self-end">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- CONTENT AREA (Scrollable) -->
+        <main class="flex-grow pt-3 px-3 overflow-y-auto bg-slate-200" id="main-scroll-area">
+            <div id="tables-container" class="flex flex-col w-full max-w-md mx-auto pb-4">
+                <!-- Data akan di-render di sini dari LocalStorage -->
+            </div>
+        </main>
+
+        <!-- FOOTER (Fixed at Bottom) -->
+        <footer class="flex justify-between items-center bg-white px-3 py-3 shrink-0 border-t z-10">
+            <div class="flex space-x-2">
+                <button onclick="updateScale(1)" class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200 active:bg-slate-200"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                <button onclick="updateScale(-1)" class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200 active:bg-slate-200"><i data-lucide="minus" class="w-5 h-5"></i></button>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="openImportModal()" class="w-10 h-10 bg-slate-100 text-[#002D72] rounded-lg border border-slate-200 flex items-center justify-center active:bg-slate-200"><i data-lucide="upload" class="w-5 h-5"></i></button>
+                <button onclick="exportData()" class="w-10 h-10 bg-[#00A19C] text-white rounded-lg flex items-center justify-center shadow-sm active:bg-[#00817d]"><i data-lucide="download" class="w-5 h-5"></i></button>
+                <button onclick="requestClearAll()" class="w-10 h-10 bg-red-50 text-red-600 rounded-lg border border-red-100 flex items-center justify-center active:bg-red-100"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODALS -->
     <div id="modal-import" class="modal-overlay">
         <div class="modal-card max-w-lg">
             <h2 class="text-xl font-bold text-[#002D72] uppercase mb-1">Import Nama (Lokal)</h2>
@@ -310,7 +421,6 @@
         </div>
     </div>
 
-    <!-- Modal Tasks Config -->
     <div id="modal-tasks-config" class="modal-overlay">
         <div class="modal-card max-md">
             <h2 class="text-xl font-black text-[#002D72] mb-4 uppercase">Pengaturan Tugas</h2>
@@ -328,49 +438,10 @@
         </div>
     </div>
 
-    <!-- MAIN APP WRAPPER -->
-    <div class="flex flex-col h-screen w-full overflow-hidden">
-        <header class="bg-[#002D72] shrink-0 p-3 shadow-lg border-b-2 border-[#001f4d]">
-            <div class="grid grid-cols-[80px_1fr_40px] items-center">
-                <div id="status-indicator" class="flex items-center">
-                    <span class="text-[10px] text-green-400 font-bold uppercase flex items-center">
-                        <i data-lucide="database" class="w-3 h-3 mr-1"></i> LOKAL
-                    </span>
-                </div> 
-                <h1 class="text-lg font-black text-[#00A19C] leading-none uppercase tracking-tighter text-center">
-                    UKK 2026<br><span class="text-white text-[10px] tracking-widest font-bold">PENGUJIAN FILTER RULE</span>
-                </h1>
-                <div onclick="openTaskConfig()" class="w-10 h-10 bg-[#001f4d] rounded-full flex items-center justify-center text-[#00A19C] cursor-pointer justify-self-end">
-                    <i data-lucide="settings" class="w-5 h-5"></i>
-                </div>
-            </div>
-        </header>
-
-        <!-- Daftar Siswa -->
-        <div class="flex-grow pt-3 px-3 overflow-y-auto bg-slate-200" id="main-scroll-area">
-            <div id="tables-container" class="flex flex-col w-full max-w-md mx-auto">
-                <!-- Data akan di-render di sini dari LocalStorage -->
-            </div>
-        </div>
-
-        <footer class="flex justify-between items-center bg-white px-3 py-3 shrink-0 border-t">
-            <div class="flex space-x-2">
-                <button onclick="updateScale(1)" class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center"><i data-lucide="plus" class="w-5 h-5"></i></button>
-                <button onclick="updateScale(-1)" class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center"><i data-lucide="minus" class="w-5 h-5"></i></button>
-            </div>
-            <div class="flex space-x-2">
-                <button onclick="openImportModal()" class="w-10 h-10 bg-slate-100 text-[#002D72] rounded-lg border flex items-center justify-center"><i data-lucide="upload" class="w-5 h-5"></i></button>
-                <button onclick="exportData()" class="w-10 h-10 bg-[#00A19C] text-white rounded-lg flex items-center justify-center"><i data-lucide="download" class="w-5 h-5"></i></button>
-                <button onclick="requestClearAll()" class="w-10 h-10 bg-red-50 text-red-600 rounded-lg border border-red-100 flex items-center justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
-            </div>
-        </footer>
-    </div>
-
-    <!-- Modal Konfirmasi Hapus -->
     <div id="modal-clear-all" class="modal-overlay">
         <div class="modal-card max-w-xs text-center">
             <h2 class="text-lg font-bold text-red-600 mb-4 uppercase">Reset Semua Data?</h2>
-            <p class="text-[10px] text-slate-400 mb-4">Aksi ini akan menghapus semua progres di browser ini selamanya.</p>
+            <p class="text-[10px] text-slate-400 mb-4 uppercase">Aksi ini akan menghapus semua progres selamanya.</p>
             <button onclick="confirmClearAll()" class="w-full py-4 bg-red-600 text-white rounded-xl font-bold mb-2 uppercase">Ya, Hapus Semua</button>
             <button onclick="closeModal('modal-clear-all')" class="w-full py-3 text-slate-400 font-bold uppercase">Batal</button>
         </div>
