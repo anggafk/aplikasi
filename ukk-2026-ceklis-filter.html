@@ -113,9 +113,10 @@
             const lines = document.getElementById('import-textarea').value.split('\n').filter(l => l.trim() !== "");
             if (lines.length === 0) return;
 
+            // Simpan data progres lama untuk dipetakan kembali jika nama tetap sama (opsional)
+            // Namun sesuai permintaan, import biasanya me-reset urutan atau membuat daftar baru
             students = lines.map((line, i) => {
                 const trimmedLine = line.trim();
-                // Mencari posisi spasi pertama untuk memisahkan Nomor dan Nama
                 const firstSpaceIndex = trimmedLine.indexOf(' ');
                 
                 let displayNo, name;
@@ -124,7 +125,6 @@
                     displayNo = trimmedLine.substring(0, firstSpaceIndex);
                     name = trimmedLine.substring(firstSpaceIndex + 1).trim();
                 } else {
-                    // Jika tidak ada spasi, anggap seluruh baris adalah nama dan berikan nomor urut
                     displayNo = i + 1;
                     name = trimmedLine;
                 }
@@ -225,10 +225,20 @@
 
         // Global Mappings
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        
+        // Memperbarui fungsi buka modal import agar memuat data siswa yang ada
         window.openImportModal = () => {
-            document.getElementById('import-textarea').value = "";
+            const importTextarea = document.getElementById('import-textarea');
+            
+            // Konversi array students kembali ke format teks "ANGKA NAMA"
+            const currentDataText = students
+                .map(s => `${s.displayNo} ${s.name}`)
+                .join('\n');
+                
+            importTextarea.value = currentDataText;
             document.getElementById('modal-import').style.display = 'flex';
         };
+
         window.requestClearAll = () => document.getElementById('modal-clear-all').style.display = 'flex';
         window.updateScale = (delta) => {
             studentFontSize = Math.max(10, Math.min(22, studentFontSize + delta));
@@ -301,7 +311,6 @@
             font-family: 'Inter', sans-serif;
             display: flex;
             flex-direction: column;
-            /* h-[100dvh] ensures it fits perfectly even with browser toolbars */
             height: 100vh;
             height: 100dvh;
         }
