@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UJI KOMPETENSI KEAHLIAN 2026 - Monitoring Progres Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Variabel Global
+        let numTasks = 7;
+        let taskConfig = Array.from({length: 10}, (_, i) => ({ label: `T${i+1}`, detail: "" }));
+        let students = [];
+        let studentFontSize = 14;
+        let isSyncing = false;
+
+        // Konfigurasi Firebase
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-ukk-2026';
+
+        // Path Firestore (6 segmen/genap)
+        const stateDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'ukk_state');
+
+        // Autentikasi
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+            }
+        }
+
+        // Sinkronisasi Real-time
+        function setupSync() {
+            onAuthStateChanged(auth, (user) => {
+                if (!user) return;
+
+                onSnapshot(stateDocRef, (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.data();
+                        numTasks = data.numTasks || 7;
+                        taskConfig = data.taskConfig || taskConfig;
+                        students = data.students || [];
+                        studentFontSize = data.studentFontSize || 14;
+                        updateUI();
+                        updateSyncIndicator(true);
+                    } else {
+                        initializeDefaultStudents();
+                        pushStateToCloud();
+                    }
+                }, (error) => {
+                    updateSyncIndicator(false);
+                    console.error("Sync error:", error);
+                });
+            });
+        }
+
+        // Simpan data ke Cloud
+        async function pushStateToCloud() {
+            if (!auth.currentUser) return;
+            isSyncing = true;
+            try {
+                await setDoc(stateDocRef, {
+                    numTasks,
+                    taskConfig,
+                    students,
+                    studentFontSize,
+                    lastUpdated: new Date().getTime()
+                });
+            } catch (error) {
+                console.error("Cloud push failed:", error);
+            } finally {
+                isSyncing = false;
+            }
+        }
+
+        // Loop Timer Per Detik
+        setInterval(() => {
+            let changed = false;
+            students.forEach(s => {
+                if (s.isRunning) {
+                    s.elapsedSeconds++;
+                    changed = true;
+                }
+            });
+            if (changed) {
+                renderTimers();
+            }
+        }, 1000);
+
+        function initializeDefaultStudents() {
+            students = [{
+                id: 1,
+                displayNo: 1,
+                name: "NAMA SISWA",
+                progress: Array(10).fill(null),
+                elapsedSeconds: 0,
+                isRunning: false
+            }];
+        }
+
+        function updateSyncIndicator(online) {
+            const el = document.getElementById('sync-status');
+            if (el) {
+                el.innerHTML = online 
+                    ? `<span class="flex items-center text-[10px] text-green-400 font-bold"><i data-lucide="cloud-check" class="w-3 h-3 mr-1"></i> ONLINE</span>`
+                    : `<span class="flex items-center text-[10px] text-red-400 font-bold"><i data-lucide="cloud-off" class="w-3 h-3 mr-1"></i> OFFLINE</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        // --- Interaksi ---
+
+        window.toggleTimer = (idx) => {
+            students[idx].isRunning = !students[idx].isRunning;
+            pushStateToCloud();
+            updateUI();
+        }
+
+        window.toggleTest = (sIdx, tIdx) => {
+            const s = students[sIdx];
+            if (!s.isRunning) return; 
+
+            const cur = s.progress[tIdx];
+            if (cur === null) {
+                s.progress[tIdx] = { status: 'success', recordedAt: s.elapsedSeconds };
+            } else if (cur.status === 'success') {
+                s.progress[tIdx].status = 'partial';
+            } else if (cur.status === 'partial') {
+                s.progress[tIdx].status = 'failed';
+            } else {
+                s.progress[tIdx] = null;
+            }
+            pushStateToCloud();
+            renderTable();
+        }
+
+        window.deleteTest = (e, sIdx, tIdx) => {
+            if (e) e.preventDefault();
+            const s = students[sIdx];
+            if (!s.isRunning) return;
+            s.progress[tIdx] = null;
+            pushStateToCloud();
+            renderTable();
+        }
+
+        window.updateStudentData = (idx, field, value) => {
+            students[idx][field] = field === 'name' ? value.toUpperCase() : value;
+            clearTimeout(window.typeTimer);
+            window.typeTimer = setTimeout(pushStateToCloud, 1000);
+        }
+
+        window.processImport = () => {
+            const lines = document.getElementById('import-textarea').value.split('\n').filter(l => l.trim() !== "");
+            if (lines.length === 0) return;
+
+            students = lines.map((line, i) => {
+                let parts = line.trim().split(/\t|\s{2,}/);
+                let displayNo = isNaN(parts[0]) ? i + 1 : parts[0];
+                let name = (parts.length > 1 ? parts.slice(1).join(" ") : parts[0]).toUpperCase();
+                return {
+                    id: i + 1,
+                    displayNo: displayNo,
+                    name: name,
+                    progress: Array(10).fill(null),
+                    elapsedSeconds: 0,
+                    isRunning: false
+                };
+            });
+            pushStateToCloud();
+            closeModal('modal-import');
+        }
+
+        window.saveTaskConfig = () => {
+            numTasks = parseInt(document.getElementById('config-num-tasks').value);
+            const labelInputs = document.querySelectorAll('.task-label-input');
+            const detailInputs = document.querySelectorAll('.task-detail-input');
+            taskConfig = Array.from({length: 10}, (_, i) => ({
+                label: labelInputs[i]?.value || `T${i+1}`,
+                detail: detailInputs[i]?.value || ""
+            }));
+            pushStateToCloud();
+            closeModal('modal-tasks-config');
+        };
+
+        window.confirmClearAll = async () => {
+            initializeDefaultStudents();
+            await pushStateToCloud();
+            location.reload();
+        };
+
+        function applyScales() {
+            document.documentElement.style.setProperty('--student-font-size', studentFontSize + 'px');
+        }
+
+        function renderTimers() {
+            students.forEach((s, i) => {
+                const el = document.getElementById(`timer-display-${i}`);
+                if (el) el.textContent = formatTime(s.elapsedSeconds);
+            });
+        }
+
+        function updateUI() {
+            applyScales();
+            renderTable();
+            lucide.createIcons();
+        }
+
+        function renderTable() {
+            const container = document.getElementById('tables-container');
+            if (!container) return;
+            container.innerHTML = '';
+            students.forEach((s, i) => {
+                let cellsHtml = '';
+                for (let t = 0; t < numTasks; t++) {
+                    const p = s.progress[t];
+                    let content = taskConfig[t].label;
+                    let cls = '';
+                    if (p !== null) {
+                        content = Math.floor((p.recordedAt || 0) / 60);
+                        if (p.status === 'success') cls = 'status-recorded-success';
+                        else if (p.status === 'partial') cls = 'status-recorded-partial';
+                        else cls = 'status-recorded-failed';
+                    }
+                    cellsHtml += `<div onclick="toggleTest(${i}, ${t})" oncontextmenu="deleteTest(event, ${i}, ${t})" class="progress-cell ${cls}">${content}</div>`;
+                }
+
+                const html = `
+                    <div class="student-block ${s.isRunning ? 'timer-active' : ''}">
+                        <div class="student-header">
+                            <input type="text" class="input-no" value="${s.displayNo}" oninput="updateStudentData(${i}, 'displayNo', this.value)">
+                            <input type="text" class="input-nama" value="${s.name}" oninput="updateStudentData(${i}, 'name', this.value)">
+                            <div onclick="toggleTimer(${i})" class="individual-timer ${s.isRunning ? 'timer-running' : ''}">
+                                <i data-lucide="${s.isRunning ? 'pause' : 'play'}" class="w-3 h-3 fill-current"></i>
+                                <span id="timer-display-${i}">${formatTime(s.elapsedSeconds)}</span>
+                            </div>
+                        </div>
+                        <div class="student-progress-row ${!s.isRunning ? 'status-locked' : ''}">
+                            ${cellsHtml}
+                        </div>
+                    </div>`;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+            lucide.createIcons();
+        }
+
+        function formatTime(s) {
+            const m = Math.floor(s / 60);
+            const sec = s % 60;
+            return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        // Global Mappings
+        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+        window.openImportModal = () => document.getElementById('modal-import').style.display = 'flex';
+        window.requestClearAll = () => document.getElementById('modal-clear-all').style.display = 'flex';
+        window.updateScale = (delta) => {
+            studentFontSize = Math.max(10, Math.min(22, studentFontSize + delta));
+            pushStateToCloud();
+            updateUI();
+        };
+        window.openTaskConfig = () => {
+            const container = document.getElementById('task-inputs-container');
+            container.innerHTML = "";
+            for (let i = 0; i < 10; i++) {
+                container.innerHTML += `<div class="grid grid-cols-4 gap-2"><input type="text" value="${taskConfig[i].label}" class="task-label-input col-span-1 border rounded p-1 text-center text-xs uppercase font-bold"><input type="text" value="${taskConfig[i].detail}" class="task-detail-input col-span-3 border rounded p-1 text-xs"></div>`;
+            }
+            document.getElementById('modal-tasks-config').style.display = 'flex';
+        };
+
+        // Fungsi Ekspor Data Baru dengan Nilai Numerik (2, 1, 0)
+        window.exportData = () => {
+            if (students.length === 0) return;
+
+            const taskHeaders = taskConfig.slice(0, numTasks).map(c => c.label).join(',');
+            let csv = `No,Nama,Waktu Terpakai,${taskHeaders},Total Skor\n`;
+            
+            students.forEach(s => {
+                if (s.name) {
+                    let totalScore = 0;
+                    let row = [s.displayNo, `"${s.name}"`, formatTime(s.elapsedSeconds)];
+                    
+                    for (let t = 0; t < numTasks; t++) {
+                        const p = s.progress[t];
+                        if (p === null) {
+                            row.push("-");
+                        } else {
+                            let score = 0;
+                            if (p.status === 'success') score = 2;
+                            else if (p.status === 'partial') score = 1;
+                            else if (p.status === 'failed') score = 0;
+                            
+                            row.push(score);
+                            totalScore += score;
+                        }
+                    }
+                    row.push(totalScore);
+                    csv += row.join(",") + "\n";
+                }
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `REKAP_NILAI_UKK_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        };
+
+        window.onload = async () => {
+            await initAuth();
+            setupSync();
+        };
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        :root {
+            --sauber-blue: #002D72;
+            --petronas-cyan: #00A19C;
+            --mclaren-orange: #FF8000;
+            --speed-white: #FDFDFD;
+            --red-bull-red: #E10600;
+            --student-font-size: 14px;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: #cbd5e1; height: 100vh; margin: 0; display: flex; flex-direction: column; overflow: hidden; }
+        .student-block { background-color: var(--speed-white); border: 1px solid #cbd5e1; border-radius: 0.75rem; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: 95px; margin-bottom: 0.6rem; transition: all 0.3s; flex-shrink: 0; }
+        .timer-active { border-color: var(--petronas-cyan) !important; box-shadow: 0 0 10px rgba(0, 161, 156, 0.2); }
+        .status-locked { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
+        .student-header { background-color: #f1f5f9; display: flex; align-items: center; padding: 0 10px; border-bottom: 1px solid #e2e8f0; height: 38px; }
+        .input-no { width: 35px; background: transparent; border: none; font-weight: 900; color: var(--sauber-blue); font-size: var(--student-font-size); outline: none; }
+        .input-nama { flex: 1; background: transparent; border: none; font-weight: 800; color: var(--sauber-blue); font-size: var(--student-font-size); text-transform: uppercase; outline: none; }
+        .individual-timer { background-color: var(--sauber-blue); color: white; padding: 2px 8px; border-radius: 6px; font-weight: 900; font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; min-width: 75px; justify-content: center; }
+        .timer-running { background-color: var(--petronas-cyan); animation: pulse-timer 2s infinite; }
+        @keyframes pulse-timer { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+        .student-progress-row { display: flex; flex: 1; background: transparent; }
+        .progress-cell { flex: 1; display: flex; align-items: center; justify-content: center; border-right: 1px solid rgba(226, 232, 240, 0.8); font-size: 16px; font-weight: 900; color: #94a3b8; cursor: pointer; text-align: center; }
+        .status-recorded-success { background-color: var(--petronas-cyan) !important; color: white !important; }
+        .status-recorded-partial { background-color: var(--mclaren-orange) !important; color: white !important; }
+        .status-recorded-failed { background-color: var(--red-bull-red) !important; color: white !important; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background-color: rgba(0, 45, 114, 0.85); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
+        .modal-card { background: var(--speed-white); padding: 1.5rem; border-radius: 1.5rem; border: 2px solid var(--sauber-blue); width: 100%; }
+    </style>
+</head>
+<body class="p-0">
+
+    <div id="modal-import" class="modal-overlay">
+        <div class="modal-card max-w-lg">
+            <h2 class="text-xl font-bold text-[#002D72] uppercase mb-1">Import Nama (Online)</h2>
+            <textarea id="import-textarea" rows="8" class="w-full p-4 border-2 border-slate-100 rounded-xl font-mono text-xs mb-4" placeholder="1 NAMA SISWA"></textarea>
+            <div class="flex space-x-3">
+                <button onclick="closeModal('modal-import')" class="flex-1 px-4 py-3 border-2 rounded-lg font-bold text-slate-400 uppercase text-xs">Batal</button>
+                <button onclick="processImport()" class="flex-1 px-4 py-3 bg-[#00A19C] text-white rounded-lg font-bold uppercase text-xs">Import & Sync</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-tasks-config" class="modal-overlay">
+        <div class="modal-card max-md">
+            <h2 class="text-xl font-black text-[#002D72] mb-4 uppercase">Pengaturan Tugas</h2>
+            <div class="mb-4">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Jumlah Tugas</label>
+                <select id="config-num-tasks" class="w-full bg-slate-50 border-2 p-3 rounded-xl font-bold outline-none text-sm">
+                    <option value="1">1 Tugas</option><option value="2">2 Tugas</option><option value="3">3 Tugas</option><option value="4">4 Tugas</option><option value="5">5 Tugas</option><option value="6">6 Tugas</option><option value="7" selected>7 Tugas</option><option value="8">8 Tugas</option><option value="9">9 Tugas</option><option value="10">10 Tugas</option>
+                </select>
+            </div>
+            <div id="task-inputs-container" class="max-h-[300px] overflow-y-auto space-y-2 mb-6"></div>
+            <div class="flex space-x-3">
+                <button onclick="closeModal('modal-tasks-config')" class="flex-1 bg-slate-100 font-bold py-3 rounded-xl uppercase text-xs">Batal</button>
+                <button onclick="saveTaskConfig()" class="flex-1 bg-[#00A19C] text-white font-bold py-3 rounded-xl uppercase text-xs">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col h-screen w-full overflow-hidden">
+        <header class="bg-[#002D72] shrink-0 p-3 shadow-lg border-b-2 border-[#001f4d]">
+            <div class="grid grid-cols-[80px_1fr_40px] items-center">
+                <div id="sync-status" class="flex items-center">
+                    <span class="text-[8px] text-slate-400 animate-pulse font-bold uppercase">Connecting...</span>
+                </div> 
+                <h1 class="text-lg font-black text-[#00A19C] leading-none uppercase tracking-tighter text-center">
+                    UKK 2026<br><span class="text-white text-[10px] tracking-widest font-bold">PENGUJIAN FILTER RULE</span>
+                </h1>
+                <div onclick="openTaskConfig()" class="w-10 h-10 bg-[#001f4d] rounded-full flex items-center justify-center text-[#00A19C] cursor-pointer justify-self-end">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="flex-grow pt-3 px-3 overflow-y-auto bg-slate-200" id="main-scroll-area">
+            <div id="tables-container" class="flex flex-col w-full max-w-md mx-auto">
+                <div class="flex flex-col items-center justify-center h-full text-slate-400 py-20">
+                    <i data-lucide="loader-2" class="w-10 h-10 animate-spin mb-2"></i>
+                    <p class="font-bold uppercase text-[10px]">Memuat Data Cloud...</p>
+                </div>
+            </div>
+        </div>
+
+        <footer class="flex justify-between items-center bg-white px-3 py-3 shrink-0 border-t">
+            <div class="flex space-x-2">
+                <button onclick="updateScale(1)" class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                <button onclick="updateScale(-1)" class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center"><i data-lucide="minus" class="w-5 h-5"></i></button>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="openImportModal()" class="w-10 h-10 bg-slate-100 text-[#002D72] rounded-lg border flex items-center justify-center"><i data-lucide="upload" class="w-5 h-5"></i></button>
+                <button onclick="exportData()" class="w-10 h-10 bg-[#00A19C] text-white rounded-lg flex items-center justify-center"><i data-lucide="download" class="w-5 h-5"></i></button>
+                <button onclick="requestClearAll()" class="w-10 h-10 bg-red-50 text-red-600 rounded-lg border border-red-100 flex items-center justify-center"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+            </div>
+        </footer>
+    </div>
+
+    <div id="modal-clear-all" class="modal-overlay">
+        <div class="modal-card max-w-xs text-center">
+            <h2 class="text-lg font-bold text-red-600 mb-4 uppercase">Reset Semua (Cloud)?</h2>
+            <button onclick="confirmClearAll()" class="w-full py-4 bg-red-600 text-white rounded-xl font-bold mb-2 uppercase">Ya, Hapus Database</button>
+            <button onclick="closeModal('modal-clear-all')" class="w-full py-3 text-slate-400 font-bold uppercase">Batal</button>
+        </div>
+    </div>
+
+</body>
+</html>
