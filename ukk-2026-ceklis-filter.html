@@ -114,13 +114,25 @@
             if (lines.length === 0) return;
 
             students = lines.map((line, i) => {
-                let parts = line.trim().split(/\t|\s{2,}/);
-                let displayNo = isNaN(parts[0]) ? i + 1 : parts[0];
-                let name = (parts.length > 1 ? parts.slice(1).join(" ") : parts[0]).toUpperCase();
+                const trimmedLine = line.trim();
+                // Mencari posisi spasi pertama untuk memisahkan Nomor dan Nama
+                const firstSpaceIndex = trimmedLine.indexOf(' ');
+                
+                let displayNo, name;
+                
+                if (firstSpaceIndex !== -1) {
+                    displayNo = trimmedLine.substring(0, firstSpaceIndex);
+                    name = trimmedLine.substring(firstSpaceIndex + 1).trim();
+                } else {
+                    // Jika tidak ada spasi, anggap seluruh baris adalah nama dan berikan nomor urut
+                    displayNo = i + 1;
+                    name = trimmedLine;
+                }
+
                 return {
                     id: i + 1,
                     displayNo: displayNo,
-                    name: name,
+                    name: name.toUpperCase(),
                     progress: Array(10).fill(null),
                     elapsedSeconds: 0,
                     isRunning: false
@@ -412,8 +424,8 @@
     <div id="modal-import" class="modal-overlay">
         <div class="modal-card max-w-lg">
             <h2 class="text-xl font-bold text-[#002D72] uppercase mb-1">Import Nama (Lokal)</h2>
-            <p class="text-[10px] text-slate-400 mb-3 uppercase font-bold">Data akan disimpan di browser ini</p>
-            <textarea id="import-textarea" rows="8" class="w-full p-4 border-2 border-slate-100 rounded-xl font-mono text-xs mb-4" placeholder="1 NAMA SISWA"></textarea>
+            <p class="text-[10px] text-slate-400 mb-3 uppercase font-bold">Format: ANGKA [spasi] NAMA SISWA</p>
+            <textarea id="import-textarea" rows="8" class="w-full p-4 border-2 border-slate-100 rounded-xl font-mono text-xs mb-4" placeholder="1 BUDI SANTOSO&#10;2 ANI WIJAYA"></textarea>
             <div class="flex space-x-3">
                 <button onclick="closeModal('modal-import')" class="flex-1 px-4 py-3 border-2 rounded-lg font-bold text-slate-400 uppercase text-xs">Batal</button>
                 <button onclick="processImport()" class="flex-1 px-4 py-3 bg-[#00A19C] text-white rounded-lg font-bold uppercase text-xs">Import & Generate</button>
