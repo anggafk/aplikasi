@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LKSN2025 – Modul D Network Systems</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600;700&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --bg2: #0f1318;
+    --bg3: #161b24;
+    --border: #1e2836;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #39ff6e;
+    --warn: #ffcc00;
+    --text: #c8d8e8;
+    --text-dim: #6a7f94;
+    --text-bright: #e8f4ff;
+    --code-bg: #060a0f;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #060a10 0%, #0a1520 50%, #060a10 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 40px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(0,212,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.25);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    padding: 4px 10px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-bright);
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+  .header h1 span { color: var(--accent); }
+  .header p {
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+
+  /* NAV */
+  .nav {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 14px 16px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .nav-btn:hover { color: var(--text); }
+  .nav-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* LAYOUT */
+  .main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 40px;
+  }
+
+  /* SECTION */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* SECTION HEADER */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    background: var(--accent);
+    color: #000;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+  .section-title .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  /* CONFIG BLOCK */
+  .config-block {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    position: relative;
+  }
+  .config-block::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--accent);
+  }
+  .config-block.warn-block::before {
+    background: var(--warn);
+  }
+  .config-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .config-header:hover { background: rgba(255,255,255,0.02); }
+  .config-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+  .task-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+  .config-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-bright);
+  }
+  .config-devices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .device-tag {
+    background: rgba(0,212,255,0.07);
+    border: 1px solid rgba(0,212,255,0.2);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+  .chevron {
+    color: var(--text-dim);
+    font-size: 12px;
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+  .config-block.open .chevron { transform: rotate(180deg); }
+
+  .config-body {
+    display: none;
+    padding: 20px 20px 20px 24px;
+  }
+  .config-block.open .config-body { display: block; }
+
+  /* STEPS */
+  .step {
+    margin-bottom: 20px;
+  }
+  .step-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .step-desc {
+    color: var(--text);
+    font-size: 13px;
+    margin-bottom: 10px;
+    line-height: 1.7;
+  }
+
+  /* CODE */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent2);
+    padding: 14px 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: #a8d8b0;
+    overflow-x: auto;
+    line-height: 1.8;
+    position: relative;
+  }
+  pre .comment { color: #3a5a6a; }
+  pre .keyword { color: #ff9050; }
+  pre .value { color: #00d4ff; }
+  pre .device-header {
+    color: var(--warn);
+    font-weight: 600;
+  }
+
+  /* TEST BLOCK */
+  .test-block {
+    background: rgba(57,255,110,0.04);
+    border: 1px solid rgba(57,255,110,0.2);
+    border-left: 3px solid var(--accent3);
+    padding: 14px 16px;
+    margin-top: 12px;
+  }
+  .test-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .test-label::before {
+    content: '▶';
+    font-size: 9px;
+  }
+  .test-block pre {
+    background: transparent;
+    border: none;
+    border-left: none;
+    padding: 0;
+    color: #7fd890;
+    margin-top: 6px;
+  }
+  .test-block p {
+    font-size: 12px;
+    color: #7fd890;
+    line-height: 1.7;
+  }
+
+  /* NOTE */
+  .note {
+    background: rgba(255,204,0,0.05);
+    border-left: 3px solid var(--warn);
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #c8a800;
+    line-height: 1.6;
+  }
+  .note strong { color: var(--warn); }
+
+  /* DIVIDER */
+  .sub-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 18px 0;
+  }
+
+  /* OVERVIEW BOX */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .overview-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 16px;
+  }
+  .overview-card .oc-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .overview-card .oc-value {
+    font-size: 13px;
+    color: var(--text-bright);
+    font-weight: 600;
+  }
+  .overview-card .oc-sub {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; }
+  .dot.green { background: var(--accent3); }
+  .dot.blue { background: var(--accent); }
+  .dot.orange { background: var(--accent2); }
+  .dot.yellow { background: var(--warn); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">LKSN Dikmen 2025 · Modul D</div>
+  <h1>Network Systems <span>Configuration Guide</span></h1>
+  <p>IT Network System Administration — Panduan Langkah Pengerjaan</p>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showSection(0)">Overview</button>
+  <button class="nav-btn" onclick="showSection(1)">01 · Basic</button>
+  <button class="nav-btn" onclick="showSection(2)">02 · L2 Services</button>
+  <button class="nav-btn" onclick="showSection(3)">03 · OSPF</button>
+  <button class="nav-btn" onclick="showSection(4)">04 · EIGRP</button>
+  <button class="nav-btn" onclick="showSection(5)">05 · BGP</button>
+  <button class="nav-btn" onclick="showSection(6)">06 · IP Services</button>
+  <button class="nav-btn" onclick="showSection(7)">07 · Security & VPN</button>
+</nav>
+
+<div class="main">
+
+<!-- ============================================================ OVERVIEW -->
+<div class="section active" id="s0">
+  <div class="section-title">
+    <div class="section-num">i</div>
+    <div>
+      <h2>Overview Topologi & Urutan Pengerjaan</h2>
+      <div class="subtitle">Baca ini sebelum memulai konfigurasi</div>
+    </div>
+  </div>
+
+  <div class="overview-grid">
+    <div class="overview-card">
+      <div class="oc-label">COR1 (hijau)</div>
+      <div class="oc-value">OSPF Area 0/10</div>
+      <div class="oc-sub">CO1 · RCO1 · RCO2 · S3CO1 · S3CO2</div>
+    </div>
+    <div class="overview-card">
+      <div class="oc-label">COR2 (biru)</div>
+      <div class="oc-value">EIGRP AS 100 + IPv6</div>
+      <div class="oc-sub">CO2 · RCO3 · RCO4 · S3CO3 · S3CO4</div>
+    </div>
+    <div class="overview-card">
+      <div class="oc-label">REG1 & REG2 (oranye)</div>
+      <div class="oc-value">EIGRP + DMVPN Spoke</div>
+      <div class="oc-sub">RG1 · RG2 · SRG1 · SRG2</div>
+    </div>
+    <div class="overview-card">
+      <div class="oc-label">Internet</div>
+      <div class="oc-value">BGP AS 65000.3</div>
+      <div class="oc-sub">CO1 & CO2 ↔ ISP (AS 65000.1)</div>
+    </div>
+    <div class="overview-card">
+      <div class="oc-label">ISP</div>
+      <div class="oc-value">JANGAN diubah</div>
+      <div class="oc-sub">Sudah terkonfigurasi penuh</div>
+    </div>
+    <div class="overview-card">
+      <div class="oc-label">IP yang harus dikonfigurasi</div>
+      <div class="oc-value">Hanya VLAN Interface</div>
+      <div class="oc-sub">Interface lain sudah terkonfigurasi</div>
+    </div>
+  </div>
+
+  <div class="config-block open">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row">
+        <span class="config-name">Urutan Pengerjaan yang Disarankan</span>
+      </div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-desc">
+          Kerjakan secara berurutan karena ada dependensi antar modul:<br><br>
+          <strong style="color:var(--accent)">1. Basic Config</strong> → timezone, domain, password, IP VLAN (semua device dulu)<br>
+          <strong style="color:var(--accent)">2. L2 Services</strong> → VTP → VLAN → STP → Trunk → EtherChannel → HSRP<br>
+          <strong style="color:var(--accent)">3. OSPF</strong> (COR1) dan <strong style="color:var(--accent)">EIGRP</strong> (COR2) — bisa paralel<br>
+          <strong style="color:var(--accent)">4. BGP</strong> → setelah OSPF & EIGRP konvergen<br>
+          <strong style="color:var(--accent)">5. IP Services</strong> → NAT & DHCP setelah routing sudah jalan<br>
+          <strong style="color:var(--accent)">6. Security & VPN</strong> → DMVPN + SSH + Port Security terakhir
+        </div>
+        <div class="note"><strong>⚠ Penting:</strong> Tidak boleh menggunakan static route kecuali di RG1/RG2 bagian Security & VPN. Pastikan semua interface <code>no shutdown</code> sebelum submit.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ BASIC -->
+<div class="section" id="s1">
+  <div class="section-title">
+    <div class="section-num">1</div>
+    <div>
+      <h2>Basic Configurations</h2>
+      <div class="subtitle">Semua router & switch di COR1, COR2, REG1, REG2</div>
+    </div>
+  </div>
+
+  <!-- PRE — Rommon Fix -->
+  <div class="config-block open warn-block" style="--accent-left: var(--warn);">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row">
+        <span class="task-num" style="color:var(--warn);">PRE</span>
+        <span class="config-name" style="color:var(--warn);">⚠ Perbaiki ROMMON — RG1 &amp; RG2 (Router PT2800)</span>
+      </div>
+      <div class="config-devices">
+        <span class="device-tag">RG1</span>
+        <span class="device-tag">RG2</span>
+      </div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Gejala</div>
+        <div class="step-desc">Router PT2800 sering boot ke <strong style="color:var(--warn)">ROM Monitor (rommon)</strong> karena configuration register yang salah. Jika CLI hanya menampilkan <code>rommon 1 &gt;</code>, <code>rommon 2 &gt;</code>, dan seterusnya — router tidak bisa dikonfigurasi. Perbaiki ini <strong>SEBELUM</strong> konfigurasi apapun di RG1 & RG2.</div>
+        <pre><span class="comment">! Gejala yang muncul di CLI:</span>
+<span class="comment">!   rommon 1 ></span>
+<span class="comment">!   rommon 2 ></span>
+<span class="comment">!   (dst...)</span></pre>
+      </div>
+      <div class="step">
+        <div class="step-label">Langkah perbaikan — ketik di rommon prompt</div>
+        <pre><span class="device-header">! RG1 DAN RG2 — lakukan di keduanya</span>
+rommon 1 > confreg 0x2102
+rommon 2 > reset
+
+<span class="comment">! Router akan reboot otomatis.</span>
+<span class="comment">! Tunggu hingga muncul prompt normal:</span>
+<span class="comment">!   Router></span>
+<span class="comment">! Baru lanjutkan konfigurasi basic di bawah.</span></pre>
+        <div class="test-block">
+          <div class="test-label">Verifikasi — setelah reboot</div>
+          <pre>show version | include Configuration register
+<span class="comment">! Harus menampilkan: Configuration register is 0x2102</span>
+
+Router> enable
+Router# show running-config
+<span class="comment">! Harus masuk IOS normal, bukan rommon</span></pre>
+        </div>
+        <div class="note" style="margin-top:10px"><strong>⚠ Jika masih rommon setelah reset:</strong><br>
+          1. Klik device RG1/RG2 di Packet Tracer → tab <strong>Physical</strong> → pastikan IOS image terpasang<br>
+          2. Atau ganti device ke <strong>Router 2911 / 4321</strong> yang lebih stabil di Packet Tracer 8.x
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task 1 -->
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row">
+        <span class="task-num">T1</span>
+        <span class="config-name">Timezone GMT+7</span>
+      </div>
+      <div class="config-devices">
+        <span class="device-tag">All Routers</span>
+        <span class="device-tag">All Switches</span>
+      </div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Langkah konfigurasi</div>
+        <div class="step-desc">Masuk ke global config, atur timezone WIB dengan offset +7.</div>
+        <pre><span class="device-header">! Semua router dan switch (COR1, COR2, REG1, REG2)</span>
+clock timezone WIB 7 0</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show clock
+<span class="comment">! Output harus menampilkan WIB setelah jam</span>
+<span class="comment">! Contoh: *12:30:00.000 WIB Thu Mar 26 2026</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task 2 -->
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row">
+        <span class="task-num">T2</span>
+        <span class="config-name">Domain Name</span>
+      </div>
+      <div class="config-devices">
+        <span class="device-tag">All Devices</span>
+      </div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Langkah konfigurasi</div>
+        <pre><span class="device-header">! Semua router dan switch</span>
+ip domain-name lksn2025.id</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show running-config | include domain-name
+<span class="comment">! Output: ip domain-name lksn2025.id</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task 3 -->
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row">
+        <span class="task-num">T3</span>
+        <span class="config-name">Secret Password & Local User</span>
+      </div>
+      <div class="config-devices">
+        <span class="device-tag">All Routers</span>
+        <span class="device-tag">All Switches</span>
+      </div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Langkah konfigurasi</div>
+        <div class="step-desc">Konfigurasi enable secret dan local user dengan privilege 15 (tertinggi).</div>
+        <pre><span class="device-header">! Semua router dan switch</span>
+enable secret Skill39@ID
+username admin privilege 15 secret Skill39@ID</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show running-config | include username
+<span class="comment">! Output: username admin privilege 15 secret 5 ...</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task 4 -->
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row">
+        <span class="task-num">T4</span>
+        <span class="config-name">IP VLAN Interface (IPv4 & IPv6)</span>
+      </div>
+      <div class="config-devices">
+        <span class="device-tag">S3CO1</span>
+        <span class="device-tag">S3CO2</span>
+        <span class="device-tag">S3CO3</span>
+        <span class="device-tag">S3CO4</span>
+      </div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">S3CO1 — COR1</div>
+        <pre><span class="device-header">! S3CO1</span>
+interface vlan 100
+ ip address 10.10.100.11 255.255.255.0
+ no shutdown
+interface vlan 101
+ ip address 10.10.101.11 255.255.255.0
+ no shutdown
+interface vlan 102
+ ip address 10.10.102.11 255.255.255.0
+ no shutdown
+interface vlan 103
+ ip address 10.10.103.11 255.255.255.0
+ no shutdown
+interface vlan 999
+ ip address 10.10.0.141 255.255.255.252
+ no shutdown</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">S3CO2 — COR1</div>
+        <pre><span class="device-header">! S3CO2</span>
+interface vlan 100
+ ip address 10.10.100.12 255.255.255.0
+ no shutdown
+interface vlan 101
+ ip address 10.10.101.12 255.255.255.0
+ no shutdown
+interface vlan 102
+ ip address 10.10.102.12 255.255.255.0
+ no shutdown
+interface vlan 103
+ ip address 10.10.103.12 255.255.255.0
+ no shutdown
+interface vlan 999
+ ip address 10.10.0.142 255.255.255.252
+ no shutdown</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">S3CO3 — COR2 (IPv4 + IPv6)</div>
+        <pre><span class="device-header">! S3CO3 — aktifkan IPv6 routing dulu</span>
+ipv6 unicast-routing
+
+interface vlan 100
+ ip address 10.11.100.11 255.255.255.0
+ ipv6 address 2001:DB8:11:100::11/64
+ no shutdown
+interface vlan 101
+ ip address 10.11.101.11 255.255.255.0
+ ipv6 address 2001:DB8:11:101::11/64
+ no shutdown
+interface vlan 102
+ ip address 10.11.102.11 255.255.255.0
+ ipv6 address 2001:DB8:11:102::11/64
+ no shutdown
+interface vlan 103
+ ip address 10.11.103.11 255.255.255.0
+ no shutdown
+interface vlan 999
+ ip address 10.10.0.241 255.255.255.252
+ ipv6 address 2001:DB8:0:240::1/64
+ no shutdown</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">S3CO4 — COR2 (IPv4 + IPv6)</div>
+        <pre><span class="device-header">! S3CO4</span>
+ipv6 unicast-routing
+
+interface vlan 100
+ ip address 10.11.100.12 255.255.255.0
+ ipv6 address 2001:DB8:11:100::12/64
+ no shutdown
+interface vlan 101
+ ip address 10.11.101.12 255.255.255.0
+ ipv6 address 2001:DB8:11:101::12/64
+ no shutdown
+interface vlan 102
+ ip address 10.11.102.12 255.255.255.0
+ ipv6 address 2001:DB8:11:102::12/64
+ no shutdown
+interface vlan 103
+ ip address 10.11.103.12 255.255.255.0
+ no shutdown
+interface vlan 999
+ ip address 10.10.0.242 255.255.255.252
+ ipv6 address 2001:DB8:0:240::2/64
+ no shutdown</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show ip interface brief | include Vlan
+<span class="comment">! Semua VLAN harus up/up</span>
+
+show ipv6 interface brief  <span class="comment">! di S3CO3 & S3CO4</span>
+<span class="comment">! IPv6 address harus muncul</span>
+
+<span class="comment">! Cek konektivitas antar VLAN999 (S3CO1 ke S3CO2):</span>
+ping 10.10.0.142 source vlan 999   <span class="comment">! dari S3CO1</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ L2 -->
+<div class="section" id="s2">
+  <div class="section-title">
+    <div class="section-num">2</div>
+    <div>
+      <h2>L2 Services</h2>
+      <div class="subtitle">VTP · VLAN · <strong style="color:var(--accent)">Trunk</strong> · STP · EtherChannel · HSRP</div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-bottom:16px">
+    <strong>⚠ Perhatian urutan:</strong> Trunk harus dikonfigurasi <strong>sebelum STP dan EtherChannel</strong> agar VTP bisa propagasi VLAN ke client dan link tidak berwarna orange di Packet Tracer.
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T1</span><span class="config-name">VTP Domain</span></div>
+      <div class="config-devices"><span class="device-tag">S3COx</span><span class="device-tag">S2CO1</span><span class="device-tag">S2CO2</span><span class="device-tag">SRG1</span><span class="device-tag">SRG2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Topologi koneksi switch</div>
+        <div class="step-desc">
+          Penting dipahami sebelum konfigurasi VTP:<br><br>
+          <strong style="color:var(--accent)">S3COx ↔ S2CO1 / S2CO2</strong> — terhubung langsung, VTP propagasi lewat trunk<br>
+          <strong style="color:var(--warn)">SRG1 / SRG2</strong> — <strong>tidak terhubung ke S3COx</strong>, hanya terhubung ke router RG1/RG2. VLAN tidak bisa propagasi lewat VTP, harus dibuat manual.
+        </div>
+        <pre><span class="device-header">! S3CO1, S3CO2, S3CO3, S3CO4 — VTP Server</span>
+vtp domain LKSN2025
+vtp mode server
+
+<span class="device-header">! S2CO1, S2CO2 — VTP Client (dapat propagasi dari S3COx)</span>
+vtp domain LKSN2025
+vtp mode client
+
+<span class="device-header">! SRG1, SRG2 — VTP Client (domain saja, VLAN dibuat manual)</span>
+vtp domain LKSN2025
+vtp mode client</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show vtp status
+<span class="comment">! VTP Domain Name: LKSN2025</span>
+<span class="comment">! VTP Operating Mode: Server / Client</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T2</span><span class="config-name">Pembuatan VLAN</span></div>
+      <div class="config-devices"><span class="device-tag">S3COx (propagasi)</span><span class="device-tag">SRG1 (manual)</span><span class="device-tag">SRG2 (manual)</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">S3COx — buat VLAN di VTP server, propagasi otomatis ke S2COx setelah trunk (T3)</div>
+        <pre><span class="device-header">! S3CO1 / S3CO2 / S3CO3 / S3CO4</span>
+vlan 100
+ name SERVER
+vlan 101
+ name CLIENT_1
+vlan 102
+ name CLIENT_2
+vlan 103
+ name MGMT
+vlan 999
+ name L3_P2P</pre>
+        <div class="note"><strong>Catatan:</strong> VLAN 999 hanya di S3COx. VLAN 100-103 baru propagasi ke S2COx setelah trunk (T3) dikonfigurasi.</div>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">SRG1 & SRG2 — buat VLAN manual (tidak dapat propagasi dari S3COx)</div>
+        <div class="step-desc">SRG1/SRG2 terhubung ke router RG1/RG2, bukan ke S3COx. VTP client hanya menerima propagasi lewat trunk ke VTP server — karena tidak ada link ke S3COx, VLAN harus dibuat manual.</div>
+        <pre><span class="device-header">! SRG1 & SRG2 — ketik manual</span>
+vlan 100
+ name SERVER
+vlan 101
+ name CLIENT_1
+vlan 102
+ name CLIENT_2
+vlan 103
+ name MGMT</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre><span class="comment">! Di S3COx (VTP server):</span>
+show vlan brief
+<span class="comment">! VLAN 100,101,102,103,999 harus muncul</span>
+
+<span class="comment">! Di SRG1 / SRG2:</span>
+show vlan brief
+<span class="comment">! VLAN 100-103 harus muncul (dibuat manual)</span>
+
+<span class="comment">! Di S2CO1 / S2CO2 — belum muncul dulu, tunggu setelah T3</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T3</span><span class="config-name">Trunk Port</span></div>
+      <div class="config-devices"><span class="device-tag">S3COx</span><span class="device-tag">S2CO1</span><span class="device-tag">S2CO2</span><span class="device-tag">SRG1</span><span class="device-tag">SRG2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">S3COx — trunk manual ke S2COx (native VLAN 888)</div>
+        <div class="step-desc">Setelah S3COx dikonfigurasi trunk, DTP otomatis menegosiasikan sisi S2COx menjadi trunk — <code>switchport mode trunk</code> tidak perlu diketik di S2COx.</div>
+        <pre><span class="device-header">! S3CO1 & S3CO2 — port G0/3 ke S2CO1</span>
+interface g0/3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 888
+
+<span class="device-header">! S3CO3 & S3CO4 — port G0/3 ke S2CO2</span>
+interface g0/3
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 888</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">S2CO1 & S2CO2 — cukup samakan native VLAN 888 di kedua interface</div>
+        <div class="step-desc">S2COx punya <strong>2 interface trunk</strong> — satu ke S3COx pertama, satu ke S3COx kedua. Keduanya harus disamakan native VLAN-nya agar tidak muncul pesan <em>native VLAN mismatch</em>. Mode trunk sudah otomatis lewat DTP.</div>
+        <pre><span class="device-header">! S2CO1 — G0/1 ke S3CO1, G0/2 ke S3CO2</span>
+interface range g0/1 - 2
+ switchport trunk native vlan 888
+
+<span class="device-header">! S2CO2 — G0/1 ke S3CO3, G0/2 ke S3CO4</span>
+interface range g0/1 - 2
+ switchport trunk native vlan 888</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">SRG1 & SRG2 — trunk ke router RG1/RG2 (native VLAN 1, default)</div>
+        <div class="step-desc">SRG1/SRG2 tidak terhubung ke S3COx, melainkan ke router RG1/RG2. Interface G0/0 dikonfigurasi trunk agar VLAN 100-103 bisa dilewatkan ke subinterface router (G0/1.100, G0/1.101, dst). Native VLAN dibiarkan default (VLAN 1) sesuai soal.</div>
+        <pre><span class="device-header">! SRG1 — G0/0 terhubung ke RG1</span>
+interface g0/0
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+
+<span class="device-header">! SRG2 — G0/0 terhubung ke RG2</span>
+interface g0/0
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian keseluruhan setelah T3</div>
+          <pre><span class="comment">! Cek trunk aktif di S3COx:</span>
+show interfaces trunk
+<span class="comment">! G0/3 harus muncul, native VLAN = 888</span>
+
+<span class="comment">! Di S2CO1 / S2CO2 — VLAN sudah propagasi dari VTP:</span>
+show vlan brief
+<span class="comment">! VLAN 100-103 harus sudah muncul</span>
+
+<span class="comment">! Di SRG1 / SRG2 — cek trunk ke RGx:</span>
+show interfaces trunk
+<span class="comment">! G0/0 harus muncul sebagai trunk</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T4</span><span class="config-name">STP — Rapid PVST+</span></div>
+      <div class="config-devices"><span class="device-tag">S3CO1</span><span class="device-tag">S3CO2</span><span class="device-tag">S3CO3</span><span class="device-tag">S3CO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Aktifkan Rapid PVST+ untuk konvergensi cepat</div>
+        <pre><span class="device-header">! Semua switch distribusi (S3COx)</span>
+spanning-tree mode rapid-pvst</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">COR1 — S3CO1 root primary, S3CO2 root secondary</div>
+        <pre><span class="device-header">! S3CO1 — primary root untuk semua VLAN</span>
+spanning-tree vlan 1-4094 priority 0
+
+<span class="device-header">! S3CO2 — secondary root untuk semua VLAN</span>
+spanning-tree vlan 1-4094 priority 4096</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">COR2 — S3CO3 root primary, S3CO4 root secondary</div>
+        <pre><span class="device-header">! S3CO3 — primary root</span>
+spanning-tree vlan 1-4094 priority 0
+
+<span class="device-header">! S3CO4 — secondary root</span>
+spanning-tree vlan 1-4094 priority 4096</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show spanning-tree vlan 100
+<span class="comment">! S3CO1 harus muncul sebagai "This bridge is the root"</span>
+<span class="comment">! Mode: RSTP (Rapid Spanning Tree)</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T5</span><span class="config-name">EtherChannel S3CO1 ↔ S3CO2 (LACP, Po12)</span></div>
+      <div class="config-devices"><span class="device-tag">S3CO1</span><span class="device-tag">S3CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Gunakan interface number 12, protokol LACP (mode active di kedua sisi), load-balance src-dst-ip</div>
+        <pre><span class="device-header">! S3CO1 DAN S3CO2 — konfigurasi sama di kedua sisi</span>
+interface range g0/2, g1/0
+ channel-group 12 mode active
+
+interface port-channel 12
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+
+<span class="comment">! Load balance berdasarkan src+dst IP</span>
+port-channel load-balance src-dst-ip</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show etherchannel 12 summary
+<span class="comment">! Status harus SU (layer2, Up)</span>
+<span class="comment">! Ports: Gi0/2(P) Gi1/0(P) — keduanya harus P (bundled)</span>
+
+show etherchannel load-balance
+<span class="comment">! Harus menampilkan: src-dst-ip</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T6</span><span class="config-name">EtherChannel S3CO3 ↔ S3CO4 (Static, Po34)</span></div>
+      <div class="config-devices"><span class="device-tag">S3CO3</span><span class="device-tag">S3CO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Gunakan mode ON (tanpa dynamic negotiation)</div>
+        <pre><span class="device-header">! S3CO3 DAN S3CO4 — konfigurasi sama</span>
+interface range g0/2, g1/0
+ channel-group 34 mode on
+
+interface port-channel 34
+ switchport trunk encapsulation dot1q
+ switchport mode trunk</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show etherchannel 34 summary
+<span class="comment">! Status: SU, ports: Gi0/2(P) Gi1/0(P)</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T7</span><span class="config-name">HSRP IPv4 — VLAN 100-103</span></div>
+      <div class="config-devices"><span class="device-tag">S3CO1</span><span class="device-tag">S3CO2</span><span class="device-tag">S3CO3</span><span class="device-tag">S3CO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">COR1 — S3CO1 sebagai HSRP active, virtual IP = .10</div>
+        <pre><span class="device-header">! S3CO1 — active (priority 110 + preempt)</span>
+interface vlan 100
+ standby 100 ip 10.10.100.10
+ standby 100 priority 110
+ standby 100 preempt
+interface vlan 101
+ standby 101 ip 10.10.101.10
+ standby 101 priority 110
+ standby 101 preempt
+interface vlan 102
+ standby 102 ip 10.10.102.10
+ standby 102 priority 110
+ standby 102 preempt
+interface vlan 103
+ standby 103 ip 10.10.103.10
+ standby 103 priority 110
+ standby 103 preempt
+
+<span class="device-header">! S3CO2 — standby (priority default 100)</span>
+interface vlan 100
+ standby 100 ip 10.10.100.10
+interface vlan 101
+ standby 101 ip 10.10.101.10
+interface vlan 102
+ standby 102 ip 10.10.102.10
+interface vlan 103
+ standby 103 ip 10.10.103.10</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">COR2 — S3CO3 sebagai HSRP active</div>
+        <pre><span class="device-header">! S3CO3 — active</span>
+interface vlan 100
+ standby 100 ip 10.11.100.10
+ standby 100 priority 110
+ standby 100 preempt
+interface vlan 101
+ standby 101 ip 10.11.101.10
+ standby 101 priority 110
+ standby 101 preempt
+interface vlan 102
+ standby 102 ip 10.11.102.10
+ standby 102 priority 110
+ standby 102 preempt
+interface vlan 103
+ standby 103 ip 10.11.103.10
+ standby 103 priority 110
+ standby 103 preempt
+
+<span class="device-header">! S3CO4 — standby</span>
+interface vlan 100
+ standby 100 ip 10.11.100.10
+<span class="comment">! dst vlan 101-103 sama polanya</span></pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show standby brief
+<span class="comment">! S3CO1 harus Status = Active untuk semua VLAN</span>
+<span class="comment">! S3CO2 harus Status = Standby</span>
+<span class="comment">! Virtual IP harus .10 di tiap subnet</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T8</span><span class="config-name">HSRP IPv6 — VLAN 101 & 102 (COR2)</span></div>
+      <div class="config-devices"><span class="device-tag">S3CO3</span><span class="device-tag">S3CO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Group 1101 untuk VLAN101, Group 1102 untuk VLAN102. Virtual = FE80::10</div>
+        <pre><span class="device-header">! S3CO3 — active</span>
+interface vlan 101
+ standby version 2
+ standby 1101 ipv6 FE80::10
+ standby 1101 priority 110
+ standby 1101 preempt
+interface vlan 102
+ standby version 2
+ standby 1102 ipv6 FE80::10
+ standby 1102 priority 110
+ standby 1102 preempt
+
+<span class="device-header">! S3CO4 — standby</span>
+interface vlan 101
+ standby version 2
+ standby 1101 ipv6 FE80::10
+interface vlan 102
+ standby version 2
+ standby 1102 ipv6 FE80::10</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show standby vlan 101
+<span class="comment">! S3CO3 = Active, virtual = FE80::10</span>
+<span class="comment">! S3CO4 = Standby</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ OSPF -->
+<div class="section" id="s3">
+  <div class="section-title">
+    <div class="section-num">3</div>
+    <div>
+      <h2>OSPF — COR1</h2>
+      <div class="subtitle">CO1 · RCO1 · RCO2 · S3CO1 · S3CO2 | Process 100</div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T1–2</span><span class="config-name">OSPF Process 100 + Advertise /30 & Loopback ke Area 0</span></div>
+      <div class="config-devices"><span class="device-tag">CO1</span><span class="device-tag">RCO1</span><span class="device-tag">RCO2</span><span class="device-tag">S3CO1</span><span class="device-tag">S3CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">CO1 — router-id = Loopback1 (10.10.0.1)</div>
+        <pre><span class="device-header">! CO1</span>
+router ospf 100
+ router-id 10.10.0.1
+ network 10.10.0.0 0.0.0.255 area 0
+ passive-interface default
+ no passive-interface g0/1
+ no passive-interface g0/2
+ no passive-interface loopback1</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">RCO1 — router-id = 10.10.0.2</div>
+        <pre><span class="device-header">! RCO1</span>
+router ospf 100
+ router-id 10.10.0.2
+ network 10.10.0.0 0.0.0.255 area 0
+ passive-interface default
+ no passive-interface g0/0
+ no passive-interface g0/1
+ no passive-interface g0/2
+ no passive-interface g0/3
+ no passive-interface g0/4
+ no passive-interface loopback1</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">RCO2 — router-id = 10.10.0.3 (pola sama dengan RCO1)</div>
+        <pre><span class="device-header">! RCO2</span>
+router ospf 100
+ router-id 10.10.0.3
+ network 10.10.0.0 0.0.0.255 area 0
+ passive-interface default
+ no passive-interface g0/0
+ no passive-interface g0/1
+ no passive-interface g0/2
+ no passive-interface g0/3
+ no passive-interface g0/4
+ no passive-interface loopback1</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T3</span><span class="config-name">VLAN 100-103 ke OSPF Area 10</span></div>
+      <div class="config-devices"><span class="device-tag">S3CO1</span><span class="device-tag">S3CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">S3CO1 — VLAN ke area 10, /30 & Lo1 ke area 0</div>
+        <pre><span class="device-header">! S3CO1</span>
+router ospf 100
+ router-id 10.10.0.4
+ network 10.10.100.0 0.0.0.255 area 10
+ network 10.10.101.0 0.0.0.255 area 10
+ network 10.10.102.0 0.0.0.255 area 10
+ network 10.10.103.0 0.0.0.255 area 10
+ network 10.10.0.141 0.0.0.0 area 0    <span class="comment">! VLAN999 /30</span>
+ network 10.10.0.4 0.0.0.0 area 0      <span class="comment">! Loopback1</span>
+ passive-interface default
+ no passive-interface vlan999
+
+<span class="device-header">! S3CO2 — pola sama, router-id 10.10.0.5</span>
+router ospf 100
+ router-id 10.10.0.5
+ network 10.10.100.0 0.0.0.255 area 10
+ network 10.10.101.0 0.0.0.255 area 10
+ network 10.10.102.0 0.0.0.255 area 10
+ network 10.10.103.0 0.0.0.255 area 10
+ network 10.10.0.142 0.0.0.0 area 0
+ network 10.10.0.5 0.0.0.0 area 0
+ passive-interface default
+ no passive-interface vlan999</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T5</span><span class="config-name">Point-to-Point — No DR/BDR Election</span></div>
+      <div class="config-devices"><span class="device-tag">CO1</span><span class="device-tag">RCO1</span><span class="device-tag">RCO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Atur semua interface /30 sebagai point-to-point agar tidak ada DR/BDR</div>
+        <pre><span class="device-header">! CO1 — semua interface yang terhubung ke OSPF neighbor</span>
+interface g0/1
+ ip ospf network point-to-point
+interface g0/2
+ ip ospf network point-to-point
+
+<span class="device-header">! RCO1 — semua /30 interface</span>
+interface g0/0
+ ip ospf network point-to-point
+interface g0/1
+ ip ospf network point-to-point
+interface g0/2
+ ip ospf network point-to-point
+interface g0/3
+ ip ospf network point-to-point
+interface g0/4
+ ip ospf network point-to-point
+
+<span class="comment">! RCO2 pola sama dengan RCO1</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T6</span><span class="config-name">Default Route CO1 → OSPF (Type 2, Metric 5000)</span></div>
+      <div class="config-devices"><span class="device-tag">CO1</span><span class="device-tag">RCO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">CO1 advertise default route ke OSPF jika dapat dari BGP</div>
+        <pre><span class="device-header">! CO1</span>
+router ospf 100
+ default-information originate metric 5000 metric-type 2</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">RCO4 inject default route ke OSPF dengan kondisi G0/3 harus up (metric 4000)</div>
+        <pre><span class="device-header">! RCO4 — conditional default route via track</span>
+ip sla 1
+ icmp-echo 10.10.0.209
+ip sla schedule 1 life forever start-time now
+
+track 1 ip sla 1 reachability
+
+ip route 0.0.0.0 0.0.0.0 null0 track 1
+
+router ospf 100
+ default-information originate metric 4000 metric-type 2</pre>
+        <div class="note"><strong>Catatan:</strong> Conditional default route RCO4 hanya aktif saat interface G0/3 (10.10.0.208/30) ada di routing table. IP SLA memonitor next-hop di segmen tersebut.</div>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show ip ospf neighbor
+<span class="comment">! Semua neighbor harus Full/  -  (tanda - artinya point-to-point)</span>
+
+show ip route ospf
+<span class="comment">! Cek rute OSPF di router lain</span>
+<span class="comment">! Di S3CO1: harus ada O*E2 0.0.0.0/0 dengan metric 5000</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ EIGRP -->
+<div class="section" id="s4">
+  <div class="section-title">
+    <div class="section-num">4</div>
+    <div>
+      <h2>EIGRP — COR2</h2>
+      <div class="subtitle">CO2 · RCO3 · RCO4 · S3CO3 · S3CO4 | AS 100</div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T1–2</span><span class="config-name">EIGRP AS 100 + Advertise Network</span></div>
+      <div class="config-devices"><span class="device-tag">CO2</span><span class="device-tag">RCO3</span><span class="device-tag">RCO4</span><span class="device-tag">S3CO3</span><span class="device-tag">S3CO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">CO2 — router-id dari Loopback1 (10.10.0.11)</div>
+        <pre><span class="device-header">! CO2</span>
+router eigrp 100
+ eigrp router-id 10.10.0.11
+ no auto-summary
+ network 10.10.0.11 0.0.0.0     <span class="comment">! Loopback1</span>
+ network 10.10.0.204 0.0.0.3    <span class="comment">! G0/1 ke RCO3</span>
+ network 10.10.0.208 0.0.0.3    <span class="comment">! G0/2 ke RCO4</span>
+ network 172.16.100.0 0.0.0.255 <span class="comment">! Tunnel0 (DMVPN)</span></pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">RCO3 & RCO4 — advertise semua /30 & Loopback</div>
+        <pre><span class="device-header">! RCO3</span>
+router eigrp 100
+ eigrp router-id 10.10.0.12
+ no auto-summary
+ network 10.10.0.0 0.0.255.255
+
+<span class="device-header">! RCO4</span>
+router eigrp 100
+ eigrp router-id 10.10.0.13
+ no auto-summary
+ network 10.10.0.0 0.0.255.255</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">S3CO3 & S3CO4 — tambah network VLAN 100-103</div>
+        <pre><span class="device-header">! S3CO3</span>
+router eigrp 100
+ eigrp router-id 10.10.0.14
+ no auto-summary
+ network 10.10.0.0 0.0.255.255
+ network 10.11.100.0 0.0.0.255
+ network 10.11.101.0 0.0.0.255
+ network 10.11.102.0 0.0.0.255
+ network 10.11.103.0 0.0.0.255
+
+<span class="device-header">! S3CO4 — router-id 10.10.0.15, pola sama</span></pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show ip eigrp neighbors
+<span class="comment">! Semua neighbor harus muncul dengan Uptime</span>
+
+show ip route eigrp
+<span class="comment">! Cek rute D (EIGRP) di CO2</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T3</span><span class="config-name">CO2 Advertise Default Route ke EIGRP dari BGP</span></div>
+      <div class="config-devices"><span class="device-tag">CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Redistribute default route BGP ke EIGRP jika ada rute default dari ISP</div>
+        <pre><span class="device-header">! CO2 — setelah BGP dikonfigurasi</span>
+router eigrp 100
+ redistribute bgp 65000 metric 1000 100 255 1 1500
+ <span class="comment">! Format: bandwidth delay reliability load mtu</span></pre>
+        <div class="note"><strong>Alternatif:</strong> Jika BGP sudah memasang default route ke routing table, gunakan <code>ip default-network</code> atau pastikan <code>network 0.0.0.0</code> di BGP sudah teradvertise.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T4</span><span class="config-name">Administrative Distance External EIGRP = 100</span></div>
+      <div class="config-devices"><span class="device-tag">RCO3</span><span class="device-tag">RCO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Ubah AD external EIGRP dari 170 menjadi 100</div>
+        <pre><span class="device-header">! RCO3 & RCO4</span>
+router eigrp 100
+ distance eigrp 90 100
+ <span class="comment">! internal = 90 (tidak berubah), external = 100</span></pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show ip route eigrp
+<span class="comment">! Rute EX (external) harus menampilkan [100/...]</span>
+<span class="comment">! Rute internal tetap [90/...]</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T5</span><span class="config-name">Summarize VLAN 100-103 COR2 ke CO2</span></div>
+      <div class="config-devices"><span class="device-tag">RCO3</span><span class="device-tag">RCO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">10.11.100.0/22 merangkum VLAN 100-103 (10.11.100-103.0/24). Pasang di interface arah CO2.</div>
+        <pre><span class="device-header">! RCO3 — interface G0/3 arah ke CO2</span>
+interface g0/3
+ ip summary-address eigrp 100 10.11.100.0 255.255.252.0
+
+<span class="device-header">! RCO4 — interface G0/3 arah ke CO2</span>
+interface g0/3
+ ip summary-address eigrp 100 10.11.100.0 255.255.252.0</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show ip route eigrp    <span class="comment">! dari CO2</span>
+<span class="comment">! Harus ada rute D 10.11.100.0/22</span>
+<span class="comment">! Tidak ada rute /24 individual untuk VLAN 100-103</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T6</span><span class="config-name">Redistribute OSPF ke EIGRP</span></div>
+      <div class="config-devices"><span class="device-tag">RCO3</span><span class="device-tag">RCO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Masukkan rute OSPF ke dalam EIGRP di RCO3 & RCO4</div>
+        <pre><span class="device-header">! RCO3 & RCO4</span>
+router eigrp 100
+ redistribute ospf 100 metric 1000 100 255 1 1500</pre>
+        <div class="note"><strong>Perhatian:</strong> Pastikan OSPF sudah terkonfigurasi di RCO3/RCO4 sebelum redistribusi ini (lihat task OSPF point 6b).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T7</span><span class="config-name">EIGRP IPv6 AS 100 — COR2</span></div>
+      <div class="config-devices"><span class="device-tag">CO2</span><span class="device-tag">RCO3</span><span class="device-tag">RCO4</span><span class="device-tag">S3CO3</span><span class="device-tag">S3CO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Aktifkan IPv6 EIGRP di semua device COR2</div>
+        <pre><span class="device-header">! Semua device COR2 — aktifkan IPv6 routing dulu</span>
+ipv6 unicast-routing
+
+ipv6 router eigrp 100
+ eigrp router-id 10.10.0.11   <span class="comment">! sesuaikan tiap device</span>
+ no shutdown
+
+<span class="comment">! Aktifkan di setiap interface yang relevan:</span>
+interface g0/1
+ ipv6 eigrp 100
+interface g0/2
+ ipv6 eigrp 100
+<span class="comment">! dst interface lainnya</span></pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">S3CO3 & S3CO4 — nonaktifkan EIGRP IPv6 di VLAN 100-103</div>
+        <pre><span class="device-header">! S3CO3 & S3CO4</span>
+ipv6 router eigrp 100
+ passive-interface vlan100
+ passive-interface vlan101
+ passive-interface vlan102
+ passive-interface vlan103</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show ipv6 eigrp neighbors
+<span class="comment">! Neighbor harus terbentuk antar device COR2</span>
+
+<span class="comment">! Dari CO2-CLI, ping loopback CO2:</span>
+ping 2001:DB8:0:11::1
+<span class="comment">! Harus berhasil</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ BGP -->
+<div class="section" id="s5">
+  <div class="section-title">
+    <div class="section-num">5</div>
+    <div>
+      <h2>BGP</h2>
+      <div class="subtitle">CO1 & CO2 — AS 65000 ↔ ISP AS 65000</div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T1</span><span class="config-name">eBGP Session ke ISP</span></div>
+      <div class="config-devices"><span class="device-tag">CO1</span><span class="device-tag">CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">CO1 — eBGP ke ISP G0/1 (192.0.2.101)</div>
+        <pre><span class="device-header">! CO1 — AS 65000</span>
+router bgp 65000
+ bgp router-id 10.10.0.1
+ neighbor 192.0.2.101 remote-as 65000
+ neighbor 192.0.2.101 timers 10 30
+ neighbor 192.0.2.101 password Skill39@ID
+ <span class="comment">! ISP berada di AS yang sama (65000.1 vs 65000.3)</span>
+ <span class="comment">! Gunakan eBGP jika AS berbeda, atau sesuaikan dengan soal</span></pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">CO2 — eBGP ke ISP G0/2 (192.0.2.201)</div>
+        <pre><span class="device-header">! CO2</span>
+router bgp 65000
+ bgp router-id 10.10.0.11
+ neighbor 192.0.2.201 remote-as 65000
+ neighbor 192.0.2.201 timers 10 30
+ neighbor 192.0.2.201 password Skill39@ID</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show bgp summary
+<span class="comment">! State ISP neighbor harus: Established</span>
+<span class="comment">! Pastikan prefix 198.51.100.0/24 dan 203.0.113.0/24 diterima</span>
+
+show ip route bgp
+<span class="comment">! Harus ada rute B untuk kedua prefix tersebut</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T2</span><span class="config-name">CO1 sebagai Primary Path (Incoming & Outgoing)</span></div>
+      <div class="config-devices"><span class="device-tag">CO1</span><span class="device-tag">CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Incoming: Naikkan LOCAL_PREF di CO1 agar COR1 & COR2 memilih CO1</div>
+        <pre><span class="device-header">! CO1 — set local-preference tinggi untuk prefix dari ISP</span>
+route-map SET-LP-HIGH permit 10
+ set local-preference 200
+
+router bgp 65000
+ neighbor 192.0.2.101 route-map SET-LP-HIGH in</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">Outgoing: AS-PATH prepend di CO2 agar ISP memilih CO1 untuk return traffic</div>
+        <pre><span class="device-header">! CO2 — prepend AS path agar ISP lebih memilih CO1</span>
+route-map PREPEND-OUT permit 10
+ set as-path prepend 65000 65000
+
+router bgp 65000
+ neighbor 192.0.2.201 route-map PREPEND-OUT out</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">Redistribusi BGP default route ke OSPF & EIGRP</div>
+        <pre><span class="device-header">! CO1 — advertise default ke OSPF (sudah di task OSPF T6)</span>
+router ospf 100
+ default-information originate metric 5000 metric-type 2
+
+<span class="device-header">! CO2 — sudah dikonfigurasi di EIGRP T3</span></pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre><span class="comment">! Dari CO1-CLI:</span>
+ping 198.51.100.1
+ping 203.0.113.1
+traceroute 8.8.8.8
+<span class="comment">! Hop terakhir sebelum ISP = 192.0.2.101 (via CO1)</span>
+
+<span class="comment">! Dari CO2-CLI:</span>
+traceroute 8.8.8.8
+<span class="comment">! Traffic harus melewati CO1 (bukan CO2 langsung)</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T3</span><span class="config-name">Verifikasi Failover saat CO2 Down</span></div>
+      <div class="config-devices"><span class="device-tag">RCO3</span><span class="device-tag">RCO4</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Simulasi failure CO2 dengan shutdown G0/3 di RCO3 & RCO4</div>
+        <pre><span class="device-header">! RCO3</span>
+interface g0/3
+ shutdown
+
+<span class="device-header">! RCO4</span>
+interface g0/3
+ shutdown</pre>
+      </div>
+      <div class="step">
+        <div class="step-label">Verifikasi dari CO1-CLI dan CO2-CLI</div>
+        <pre><span class="comment">! CO1-CLI:</span>
+traceroute 8.8.8.8
+<span class="comment">! Hop 5 = 192.0.2.101 → traffic via CO1 ✓</span>
+
+<span class="comment">! CO2-CLI:</span>
+traceroute 8.8.8.8
+<span class="comment">! Traffic harus re-route via COR1/CO1 ✓</span></pre>
+        <div class="note"><strong>Setelah selesai pengujian:</strong> Kembalikan interface ke kondisi no shutdown sebelum submit!</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ IP SERVICES -->
+<div class="section" id="s6">
+  <div class="section-title">
+    <div class="section-num">6</div>
+    <div>
+      <h2>IP Services</h2>
+      <div class="subtitle">NAT · DHCP</div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T1</span><span class="config-name">NAT Overload — VLAN 101-102 (~400 user)</span></div>
+      <div class="config-devices"><span class="device-tag">CO1</span><span class="device-tag">CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">CO1 — pool 192.0.2.104-110 untuk traffic via CO1</div>
+        <pre><span class="device-header">! CO1</span>
+ip nat pool CO1-POOL 192.0.2.104 192.0.2.110 netmask 255.255.255.240
+ip access-list standard NAT-VLAN101-102
+ permit 10.10.101.0 0.0.0.255
+ permit 10.10.102.0 0.0.0.255
+ permit 10.1.101.0 0.0.0.255   <span class="comment">! REG1 vlan101</span>
+ permit 10.2.101.0 0.0.0.255   <span class="comment">! REG2 vlan101</span>
+
+ip nat inside source list NAT-VLAN101-102 pool CO1-POOL overload
+
+interface g0/3
+ ip nat outside
+interface g0/1
+ ip nat inside
+interface g0/2
+ ip nat inside</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">CO2 — pool 192.0.2.193-199</div>
+        <pre><span class="device-header">! CO2</span>
+ip nat pool CO2-POOL 192.0.2.193 192.0.2.199 netmask 255.255.255.240
+ip access-list standard NAT-VLAN101-102
+ permit 10.11.101.0 0.0.0.255
+ permit 10.11.102.0 0.0.0.255
+ permit 10.2.102.0 0.0.0.255   <span class="comment">! REG2 vlan102</span>
+
+ip nat inside source list NAT-VLAN101-102 pool CO2-POOL overload
+
+interface g0/3
+ ip nat outside
+interface g0/1
+ ip nat inside
+interface g0/2
+ ip nat inside</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre><span class="comment">! Dari CO1-CLI (vlan 101 user):</span>
+ping 8.8.8.8
+
+show ip nat translations   <span class="comment">! di CO1</span>
+<span class="comment">! Inside global harus dari range 192.0.2.104-110</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T2</span><span class="config-name">Static NAT — CO1-SVR (10.10.100.101)</span></div>
+      <div class="config-devices"><span class="device-tag">CO1</span><span class="device-tag">CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Server harus muncul sebagai IP berbeda tergantung jalur keluar</div>
+        <pre><span class="device-header">! CO1 — server muncul sebagai 192.0.2.99</span>
+ip nat inside source static 10.10.100.101 192.0.2.99
+
+<span class="device-header">! CO2 — server muncul sebagai 192.9.2.205</span>
+ip nat inside source static 10.10.100.101 192.9.2.205</pre>
+        <div class="note"><strong>Catatan:</strong> Konfigurasi S2CO1 G0/3 ke vlan 100 untuk testing: <code>switchport access vlan 100</code></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T3</span><span class="config-name">DHCP Server — S3CO1 & S3CO3</span></div>
+      <div class="config-devices"><span class="device-tag">S3CO1</span><span class="device-tag">S3CO3</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">S3CO1 — DHCP untuk VLAN 101 & 102 (COR1)</div>
+        <pre><span class="device-header">! S3CO1</span>
+ip dhcp excluded-address 10.10.101.1 10.10.101.100
+ip dhcp excluded-address 10.10.102.1 10.10.102.100
+
+ip dhcp pool VL101-COR1
+ network 10.10.101.0 255.255.255.0
+ default-router 10.10.101.10
+ dns-server 8.8.8.8
+
+ip dhcp pool VL102-COR1
+ network 10.10.102.0 255.255.255.0
+ default-router 10.10.102.10
+ dns-server 8.8.8.8</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">S3CO3 — DHCP untuk VLAN 101 & 102 (COR2)</div>
+        <pre><span class="device-header">! S3CO3</span>
+ip dhcp excluded-address 10.11.101.1 10.11.101.100
+ip dhcp excluded-address 10.11.102.1 10.11.102.100
+
+ip dhcp pool VL101-COR2
+ network 10.11.101.0 255.255.255.0
+ default-router 10.11.101.10
+
+ip dhcp pool VL102-COR2
+ network 10.11.102.0 255.255.255.0
+ default-router 10.11.102.10</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show ip dhcp binding
+<span class="comment">! Daftar IP yang sudah di-lease</span>
+
+show ip dhcp pool
+<span class="comment">! Cek range dan jumlah IP available</span>
+
+<span class="comment">! Di CO1-CLI: set DHCP, cek IP yang didapat</span>
+ip dhcp    <span class="comment">! (via GUI Packet Tracer)</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T4</span><span class="config-name">DHCP Server — REG1 & REG2</span></div>
+      <div class="config-devices"><span class="device-tag">RG1</span><span class="device-tag">RG2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">RG1-CLI mendapat IP dari VLAN 101, RG2-CLI dari VLAN 102</div>
+        <pre><span class="device-header">! RG1</span>
+ip dhcp excluded-address 10.1.101.1 10.1.101.100
+
+ip dhcp pool REG1-VL101
+ network 10.1.101.0 255.255.255.0
+ default-router 10.1.101.10
+
+<span class="device-header">! RG2</span>
+ip dhcp excluded-address 10.2.102.1 10.2.102.100
+
+ip dhcp pool REG2-VL102
+ network 10.2.102.0 255.255.255.0
+ default-router 10.2.102.10</pre>
+        <div class="note"><strong>Catatan:</strong> SRG1 dan SRG2 harus mengonfigurasi port ke client sebagai access vlan 101 / vlan 102 agar DHCP request bisa sampai ke RG1/RG2.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ SECURITY -->
+<div class="section" id="s7">
+  <div class="section-title">
+    <div class="section-num">7</div>
+    <div>
+      <h2>Security & VPN</h2>
+      <div class="subtitle">DMVPN · SSH · Port Security</div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T1</span><span class="config-name">DMVPN Hub — CO2</span></div>
+      <div class="config-devices"><span class="device-tag">CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Konfigurasi Tunnel0 sebagai mGRE DMVPN Hub</div>
+        <pre><span class="device-header">! CO2</span>
+interface tunnel 0
+ ip address 172.16.100.1 255.255.255.0
+ tunnel source gigabitethernet0/3
+ tunnel mode gre multipoint
+ ip nhrp network-id 2025
+ ip nhrp authentication LKSN2025
+ ip nhrp map multicast dynamic
+ no shutdown</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show ip nhrp
+<span class="comment">! Setelah spoke terhubung, muncul entri NHRP mapping</span>
+show dmvpn
+<span class="comment">! Status tunnel interface: Up</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T2</span><span class="config-name">DMVPN Spoke — RG1 & RG2</span></div>
+      <div class="config-devices"><span class="device-tag">RG1</span><span class="device-tag">RG2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Langkah 0 — Pastikan RG1 & RG2 tidak dalam mode ROMMON</div>
+        <div class="step-desc">Jika CLI RG1/RG2 hanya menampilkan <code style="color:var(--warn)">rommon 1 &gt;</code>, perbaiki dulu sebelum konfigurasi apapun:</div>
+        <pre><span class="device-header">! RG1 DAN RG2 — jalankan di rommon prompt</span>
+rommon 1 > confreg 0x2102
+rommon 2 > reset
+
+<span class="comment">! Tunggu hingga muncul Router> sebelum lanjut</span></pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">Langkah 1 — Static route dulu (diizinkan oleh soal), lalu konfigurasi tunnel spoke</div>
+        <pre><span class="device-header">! RG1 — static route (diizinkan)</span>
+ip route 192.0.2.96 255.255.255.240 192.0.2.1
+ip route 192.0.2.192 255.255.255.240 192.0.2.1
+
+<span class="device-header">! RG1 — Tunnel0</span>
+interface tunnel 0
+ ip address 172.16.100.11 255.255.255.0
+ tunnel source gigabitethernet0/0
+ tunnel mode gre multipoint
+ ip nhrp network-id 2025
+ ip nhrp authentication LKSN2025
+ ip nhrp nhs 172.16.100.1
+ ip nhrp map 172.16.100.1 192.0.2.202   <span class="comment">! IP public CO2</span>
+ ip nhrp map multicast 192.0.2.202
+ no shutdown</pre>
+      </div>
+      <hr class="sub-divider">
+      <div class="step">
+        <div class="step-label">RG2 — pola sama, IP berbeda</div>
+        <pre><span class="device-header">! RG2 — static route</span>
+ip route 192.0.2.96 255.255.255.240 192.0.2.5
+ip route 192.0.2.192 255.255.255.240 192.0.2.5
+
+<span class="device-header">! RG2 — Tunnel0</span>
+interface tunnel 0
+ ip address 172.16.100.12 255.255.255.0
+ tunnel source gigabitethernet0/0
+ tunnel mode gre multipoint
+ ip nhrp network-id 2025
+ ip nhrp authentication LKSN2025
+ ip nhrp nhs 172.16.100.1
+ ip nhrp map 172.16.100.1 192.0.2.202
+ ip nhrp map multicast 192.0.2.202
+ no shutdown</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre><span class="comment">! Dari RG1, ping hub:</span>
+ping 172.16.100.1
+<span class="comment">! Harus berhasil (tunnel ke CO2)</span>
+
+<span class="comment">! Dynamic tunnel RG1↔RG2 (setelah EIGRP aktif):</span>
+ping 172.16.100.12   <span class="comment">! dari RG1 ke RG2</span>
+show ip nhrp         <span class="comment">! mapping harus muncul</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T3</span><span class="config-name">EIGRP pada DMVPN (RG1, RG2, CO2)</span></div>
+      <div class="config-devices"><span class="device-tag">RG1</span><span class="device-tag">RG2</span><span class="device-tag">CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Tambahkan EIGRP di RG1 & RG2, advertise tunnel dan summary vlan 100-103</div>
+        <pre><span class="device-header">! RG1</span>
+router eigrp 100
+ eigrp router-id 10.10.0.21
+ no auto-summary
+ network 172.16.100.0 0.0.0.255   <span class="comment">! tunnel</span>
+ network 10.1.100.0 0.0.3.255     <span class="comment">! atau network spesifik</span>
+
+<span class="comment">! Summary VLAN 100-103 REG1 ke arah hub:</span>
+interface tunnel 0
+ ip summary-address eigrp 100 10.1.100.0 255.255.252.0
+
+<span class="device-header">! RG2</span>
+router eigrp 100
+ eigrp router-id 10.10.0.22
+ no auto-summary
+ network 172.16.100.0 0.0.0.255
+ network 10.2.100.0 0.0.3.255
+
+interface tunnel 0
+ ip summary-address eigrp 100 10.2.100.0 255.255.252.0</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show ip eigrp neighbors   <span class="comment">! di CO2</span>
+<span class="comment">! RG1 (172.16.100.11) dan RG2 (172.16.100.12) harus muncul</span>
+
+show ip route eigrp       <span class="comment">! di CO2</span>
+<span class="comment">! Rute 10.1.100.0/22 dan 10.2.100.0/22 harus ada</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T4</span><span class="config-name">SSH v2 + Batasi MAC Algorithm</span></div>
+      <div class="config-devices"><span class="device-tag">CO1</span><span class="device-tag">CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Generate RSA key, aktifkan SSH v2, nonaktifkan telnet</div>
+        <pre><span class="device-header">! CO1 & CO2</span>
+crypto key generate rsa modulus 2048
+ip ssh version 2
+ip ssh server algorithm mac hmac-sha2-512 hmac-sha2-256
+
+line vty 0 4
+ login local
+ transport input ssh
+ <span class="comment">! transport input telnet dihapus otomatis</span></pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show ip ssh
+<span class="comment">! SSH Enabled - version 2.0</span>
+
+<span class="comment">! Dari CO1-SVR, coba SSH:</span>
+ssh -l admin 10.10.0.1
+<span class="comment">! Harus berhasil dengan password Skill39@ID</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T5</span><span class="config-name">Batasi SSH hanya dari CO1-SVR</span></div>
+      <div class="config-devices"><span class="device-tag">CO1</span><span class="device-tag">CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">ACL hanya izinkan 10.10.100.101 untuk SSH</div>
+        <pre><span class="device-header">! CO1 & CO2</span>
+ip access-list standard SSH-PERMIT
+ permit 10.10.100.101
+ deny any
+
+line vty 0 4
+ access-class SSH-PERMIT in</pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre><span class="comment">! SSH dari CO1-SVR (10.10.100.101) → berhasil ✓</span>
+<span class="comment">! SSH dari CO1-CLI atau device lain → ditolak ✗</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="config-block">
+    <div class="config-header" onclick="toggleBlock(this)">
+      <div class="config-title-row"><span class="task-num">T6</span><span class="config-name">Port Security — CO1-CLI & CO2-CLI</span></div>
+      <div class="config-devices"><span class="device-tag">S2CO1</span><span class="device-tag">S2CO2</span></div>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="config-body">
+      <div class="step">
+        <div class="step-label">Buat VLAN 150 VOIP, aktifkan port security max 2 MAC, auto-recovery 3 menit</div>
+        <pre><span class="device-header">! S2CO1 & S2CO2 — buat VLAN VOIP dulu</span>
+vlan 150
+ name VOIP
+
+<span class="device-header">! S2CO1 — port ke CO1-CLI</span>
+interface g0/0
+ switchport mode access
+ switchport access vlan 101
+ switchport voice vlan 150
+ switchport port-security maximum 2
+ <span class="comment">! max 2 = 1 IP phone + 1 PC</span>
+ switchport port-security violation shutdown
+ switchport port-security
+ spanning-tree portfast
+
+<span class="comment">! Auto-recovery setelah 180 detik (3 menit):</span>
+errdisable recovery cause psecure-violation
+errdisable recovery interval 180
+
+<span class="device-header">! S2CO2 — port ke CO2-CLI, konfigurasi sama</span></pre>
+        <div class="test-block">
+          <div class="test-label">Pengujian</div>
+          <pre>show port-security interface g0/0
+<span class="comment">! Port Security: Enabled</span>
+<span class="comment">! Maximum MAC Addresses: 2</span>
+<span class="comment">! Violation Mode: Shutdown</span>
+
+show errdisable recovery
+<span class="comment">! psecure-violation: Enabled, interval: 180 sec</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+function showSection(idx) {
+  document.querySelectorAll('.section').forEach((s, i) => {
+    s.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll('.nav-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === idx);
+  });
+  window.scrollTo({ top: 0 });
+}
+
+function toggleBlock(header) {
+  const block = header.closest('.config-block');
+  block.classList.toggle('open');
+}
+</script>
+</body>
+</html>
