@@ -116,6 +116,10 @@
                 </div>
                 
                 <div id="modal-actions" class="flex gap-2.5 hidden">
+                    <button onclick="startShuffling()" class="bg-sauber hover:bg-petronas text-speedWhite px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-colors duration-300 hover:shadow-md flex items-center gap-1.5 uppercase tracking-wider">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        ACAK ULANG
+                    </button>
                     <button onclick="downloadCSV()" class="bg-petronas hover:bg-sauber text-speedWhite px-4 py-1.5 rounded-md text-xs font-bold shadow-sm transition-colors duration-300 hover:shadow-md flex items-center gap-1.5 uppercase tracking-wider">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                         SIMPAN CSV
@@ -217,6 +221,9 @@
                         <span id="group-count-badge" class="text-[10px] font-bold bg-sauber text-speedWhite border-none px-3 py-1 rounded-md uppercase tracking-wider shadow-sm">
                             0 KELOMPOK
                         </span>
+                        <button onclick="event.stopPropagation(); startShuffling()" class="bg-speedWhite border border-sauber hover:bg-sauber text-sauber hover:text-speedWhite p-1.5 rounded-md transition-colors duration-300 hover:shadow-md shadow-sm" title="Acak Ulang">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        </button>
                         <button onclick="event.stopPropagation(); downloadCSV()" class="bg-speedWhite border border-petronas hover:bg-sauber hover:border-sauber text-petronas hover:text-speedWhite p-1.5 rounded-md transition-colors duration-300 hover:shadow-md shadow-sm" title="Download CSV">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
                         </button>
@@ -244,7 +251,7 @@
 
     <!-- Footer Version -->
     <div class="fixed bottom-0 left-0 right-0 bg-speedWhite/90 border-t border-slate-200 p-2.5 flex justify-end items-center z-10 px-6">
-        <span class="font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">v52</span>
+        <span class="font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 text-[11px]">v53</span>
     </div>
 
     <script>
