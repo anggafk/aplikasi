@@ -378,15 +378,15 @@
           )}
 
           {/* Problem Statement */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6 mb-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
               <div>
                 <h2 className="text-lg font-bold text-racing-blue">Soal Latihan</h2>
                 <div className="text-sm text-slate-600 mt-1">
                   Alokasikan jaringan <span className="font-mono bg-racing-blue text-white px-2 py-0.5 rounded font-bold shadow-sm">{problem.baseNetwork}/{problem.baseCidr}</span> untuk kebutuhan ruang berikut.
                 </div>
               </div>
-              <div className="flex items-center gap-2 mt-4 md:mt-0">
+              <div className="flex flex-wrap items-center gap-2 mt-4 lg:mt-0">
                 <div className="flex items-center gap-2 mr-2">
                   <label htmlFor="numRooms" className="text-sm text-slate-600 font-bold">Jumlah Ruang:</label>
                   <select
@@ -410,10 +410,10 @@
               </div>
             </div>
 
-            {/* Interactive Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
+            {/* Interactive Table - Adaptif untuk HP & Desktop */}
+            <div className="overflow-x-hidden md:overflow-x-auto">
+              <table className="w-full text-sm text-left block md:table">
+                <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200 hidden md:table-header-group">
                   <tr>
                     <th className="px-4 py-3 font-bold">Ruang</th>
                     <th className="px-4 py-3 font-bold">Host</th>
@@ -424,27 +424,38 @@
                     <th className="px-4 py-3 font-bold text-racing-blue">IP Broadcast</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="block md:table-row-group divide-y-0 md:divide-y divide-slate-100">
                   {problem.subnets.map((sub, idx) => {
                     const val = validation ? validation[idx] : null;
                     
                     return (
-                      <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-4 py-3 font-semibold text-slate-700">{sub.name}</td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-slate-200 text-slate-800 font-black text-xs">
+                      <tr key={idx} className="block md:table-row bg-slate-50/50 md:bg-transparent border border-slate-200 md:border-none rounded-xl md:rounded-none mb-6 md:mb-0 shadow-sm md:shadow-none hover:bg-slate-50/50 transition-colors">
+                        
+                        {/* 1. Ruang */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-4 md:py-3 border-b-2 border-slate-200 md:border-none bg-slate-100 md:bg-transparent rounded-t-xl md:rounded-none">
+                          <span className="md:hidden font-bold text-slate-500 text-xs uppercase tracking-wider">Ruang</span>
+                          <span className="font-bold text-racing-blue md:font-semibold md:text-slate-700 text-base md:text-sm">{sub.name}</span>
+                        </td>
+                        
+                        {/* 2. Host */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-4 md:py-3 border-b border-slate-200 md:border-none">
+                          <span className="md:hidden font-bold text-slate-500 text-xs uppercase tracking-wider">Host</span>
+                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-slate-200 text-slate-800 font-black text-xs shadow-sm md:shadow-none">
                             {sub.hosts}
                           </span>
                         </td>
-                        <td className="px-2 py-2">
-                          <div className="relative">
+
+                        {/* 3. Prefix */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none">
+                          <span className="md:hidden font-bold text-racing-blue text-xs uppercase tracking-wider pr-2">Prefix</span>
+                          <div className="relative w-[55%] sm:w-[60%] md:w-full">
                             <input
                               type="text"
                               value={userInputs[idx]['cidr']}
                               onChange={(e) => handleInputChange(idx, 'cidr', e.target.value)}
                               placeholder="/24"
                               disabled={showSolution}
-                              className={`w-full min-w-[80px] px-3 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium
+                              className={`w-full md:min-w-[80px] pl-3 pr-8 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium bg-white
                                 ${val 
                                   ? (val['cidr'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
                                   : 'border-slate-300 text-slate-800'
@@ -458,15 +469,18 @@
                             )}
                           </div>
                         </td>
-                        <td className="px-2 py-2">
-                          <div className="relative">
+
+                        {/* 4. IP Network */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none">
+                          <span className="md:hidden font-bold text-racing-blue text-xs uppercase tracking-wider pr-2">IP Network</span>
+                          <div className="relative w-[55%] sm:w-[60%] md:w-full">
                             <input
                               type="text"
                               value={userInputs[idx]['network']}
                               onChange={(e) => handleInputChange(idx, 'network', e.target.value)}
                               placeholder="x.x.x.x"
                               disabled={showSolution}
-                              className={`w-full min-w-[120px] px-3 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium
+                              className={`w-full md:min-w-[120px] pl-3 pr-8 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium bg-white
                                 ${val 
                                   ? (val['network'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
                                   : 'border-slate-300 text-slate-800'
@@ -480,15 +494,18 @@
                             )}
                           </div>
                         </td>
-                        <td className="px-2 py-2">
-                          <div className="relative">
+
+                        {/* 5. Host Pertama */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none">
+                          <span className="md:hidden font-bold text-racing-teal text-xs uppercase tracking-wider pr-2">Host Pertama</span>
+                          <div className="relative w-[55%] sm:w-[60%] md:w-full">
                             <input
                               type="text"
                               value={userInputs[idx]['firstIp']}
                               onChange={(e) => handleInputChange(idx, 'firstIp', e.target.value)}
                               placeholder="x.x.x.x"
                               disabled={showSolution}
-                              className={`w-full min-w-[120px] px-3 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium
+                              className={`w-full md:min-w-[120px] pl-3 pr-8 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium bg-white
                                 ${val 
                                   ? (val['firstIp'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
                                   : 'border-slate-300 text-slate-800'
@@ -502,15 +519,18 @@
                             )}
                           </div>
                         </td>
-                        <td className="px-2 py-2">
-                          <div className="relative">
+
+                        {/* 6. Host Terakhir */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none">
+                          <span className="md:hidden font-bold text-racing-teal text-xs uppercase tracking-wider pr-2">Host Terakhir</span>
+                          <div className="relative w-[55%] sm:w-[60%] md:w-full">
                             <input
                               type="text"
                               value={userInputs[idx]['lastIp']}
                               onChange={(e) => handleInputChange(idx, 'lastIp', e.target.value)}
                               placeholder="x.x.x.x"
                               disabled={showSolution}
-                              className={`w-full min-w-[120px] px-3 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium
+                              className={`w-full md:min-w-[120px] pl-3 pr-8 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium bg-white
                                 ${val 
                                   ? (val['lastIp'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
                                   : 'border-slate-300 text-slate-800'
@@ -524,15 +544,18 @@
                             )}
                           </div>
                         </td>
-                        <td className="px-2 py-2">
-                          <div className="relative">
+
+                        {/* 7. IP Broadcast */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none last:border-none">
+                          <span className="md:hidden font-bold text-racing-blue text-xs uppercase tracking-wider pr-2">IP Broadcast</span>
+                          <div className="relative w-[55%] sm:w-[60%] md:w-full">
                             <input
                               type="text"
                               value={userInputs[idx]['broadcast']}
                               onChange={(e) => handleInputChange(idx, 'broadcast', e.target.value)}
                               placeholder="x.x.x.x"
                               disabled={showSolution}
-                              className={`w-full min-w-[120px] px-3 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium
+                              className={`w-full md:min-w-[120px] pl-3 pr-8 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium bg-white
                                 ${val 
                                   ? (val['broadcast'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
                                   : 'border-slate-300 text-slate-800'
@@ -546,6 +569,7 @@
                             )}
                           </div>
                         </td>
+
                       </tr>
                     );
                   })}
