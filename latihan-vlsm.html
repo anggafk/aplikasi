@@ -100,7 +100,7 @@
 
     const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-    const generateProblem = (numSubnets = 7) => {
+    const generateProblem = (numSubnets = 4) => {
       let firstOctet = getRandomInt(1, 223);
       while (firstOctet === 127) {
         firstOctet = getRandomInt(1, 223);
@@ -212,7 +212,7 @@
     };
 
     function VLSMApp() {
-      const [numRooms, setNumRooms] = useState(7);
+      const [numRooms, setNumRooms] = useState(4);
       const [problem, setProblem] = useState(null);
       const [userInputs, setUserInputs] = useState({});
       const [validation, setValidation] = useState(null);
@@ -221,7 +221,7 @@
       const [score, setScore] = useState(0);
 
       useEffect(() => {
-        newProblem(7);
+        newProblem(4);
       }, []);
 
       const newProblem = (roomsCount = numRooms) => {
@@ -609,7 +609,7 @@
           </div>
 
           <footer className="mt-12 text-center text-xs font-semibold text-slate-400">
-            Aplikasi Latihan VLSM &copy; anggafk {new Date().getFullYear()}
+            VLSM Practice App &copy; {new Date().getFullYear()}
           </footer>
         </div>
       );
