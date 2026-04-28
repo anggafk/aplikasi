@@ -218,7 +218,6 @@
       const [validation, setValidation] = useState(null);
       const [showSolution, setShowSolution] = useState(false);
       const [showCheatSheet, setShowCheatSheet] = useState(false);
-      const [score, setScore] = useState(0);
 
       useEffect(() => {
         newProblem(4);
@@ -241,7 +240,6 @@
         setUserInputs(initialInputs);
         setValidation(null);
         setShowSolution(false);
-        setScore(0);
       };
 
       const handleNumRoomsChange = (e) => {
@@ -263,8 +261,6 @@
       const checkAnswers = () => {
         if (!problem) return;
 
-        let correctCount = 0;
-        const totalFields = problem.subnets.length * 5;
         const newValidation = {};
 
         problem.subnets.forEach((sol, idx) => {
@@ -274,12 +270,6 @@
           const isFirstCorrect = user.firstIp.trim() === sol.firstIp;
           const isLastCorrect = user.lastIp.trim() === sol.lastIp;
           const isBroadcastCorrect = user.broadcast.trim() === sol.broadcast;
-
-          if (isNetworkCorrect) correctCount++;
-          if (isCidrCorrect) correctCount++;
-          if (isFirstCorrect) correctCount++;
-          if (isLastCorrect) correctCount++;
-          if (isBroadcastCorrect) correctCount++;
 
           newValidation[idx] = {
             network: isNetworkCorrect,
@@ -291,38 +281,6 @@
         });
 
         setValidation(newValidation);
-        
-        if (correctCount === 0) {
-          setScore(0);
-        } else {
-          const BASE_SCORE = 50;
-          const PASSING_SCORE = 70;
-          const THRESHOLD_ANSWERS = 8; 
-          
-          const phase1Weight = (PASSING_SCORE - BASE_SCORE) / THRESHOLD_ANSWERS;
-
-          if (correctCount <= THRESHOLD_ANSWERS) {
-            const calculatedScore = BASE_SCORE + (correctCount * phase1Weight);
-            setScore(Math.round(calculatedScore));
-          } else {
-            const remainingCorrect = correctCount - THRESHOLD_ANSWERS;
-            const remainingFields = totalFields - THRESHOLD_ANSWERS;
-            const remainingScorePool = 100 - PASSING_SCORE; 
-            
-            const phase2Weight = remainingScorePool / remainingFields;
-            
-            const finalScore = PASSING_SCORE + (remainingCorrect * phase2Weight);
-            setScore(Math.round(finalScore));
-          }
-        }
-      };
-
-      const getFeedbackMessage = (s) => {
-        if (s === 100) return "Sempurna! Penguasaan Materi Yang Sangat Baik 🏆";
-        if (s >= 90) return "Luar Biasa! Kerja Sangat Bagus 🌟";
-        if (s >= 80) return "Hebat! Terus Tingkatkan 👍";
-        if (s >= 70) return "Cukup Baik! Terus Berlatih 🙂";
-        return "Jangan Menyerah! Ayo Coba Lagi 💪";
       };
 
       const fillSolution = () => {
@@ -579,34 +537,7 @@
           </div>
 
           {/* Action Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-white rounded-xl shadow-sm border border-slate-200">
-            <div className="flex items-center gap-4">
-               {validation && (
-                <div className="flex items-center gap-3">
-                  {score === 100 ? (
-                    <div className="p-2 bg-yellow-100 rounded-full text-yellow-600 shadow-sm border border-yellow-200">
-                      <Trophy size={24} />
-                    </div>
-                  ) : (
-                    <div className={`p-2 rounded-full shadow-sm border ${score >= 70 ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-racing-red border-red-200'}`}>
-                      {score >= 70 ? <CheckCircle size={24} /> : <XCircle size={24} />}
-                    </div>
-                  )}
-                  <div>
-                    <div className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5">Total Skor</div>
-                    <div className="flex items-center gap-2">
-                       <span className={`text-2xl font-black ${score >= 70 ? 'text-green-600' : 'text-racing-red'}`}>
-                         {score}
-                       </span>
-                       <span className="text-sm font-bold text-slate-700 border-l-2 pl-2 border-slate-200">
-                         {getFeedbackMessage(score)}
-                       </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
+          <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 bg-white rounded-xl shadow-sm border border-slate-200">
             <div className="flex gap-3 w-full sm:w-auto">
               <button
                 onClick={fillSolution}
