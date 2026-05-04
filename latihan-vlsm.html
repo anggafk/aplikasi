@@ -56,6 +56,26 @@
     const Trophy = ({ size = 24, className = "" }) => (
       <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
     );
+    const Monitor = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    );
+    const RouterIcon = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+        {/* Panah Atas */}
+        <line x1="12" y1="14" x2="12" y2="6" strokeWidth="1.5"/>
+        <polyline points="10 8 12 6 14 8" strokeWidth="1.5"/>
+        {/* Panah Bawah */}
+        <line x1="12" y1="10" x2="12" y2="18" strokeWidth="1.5"/>
+        <polyline points="10 16 12 18 14 16" strokeWidth="1.5"/>
+        {/* Panah Kiri */}
+        <line x1="14" y1="12" x2="6" y2="12" strokeWidth="1.5"/>
+        <polyline points="8 10 6 12 8 14" strokeWidth="1.5"/>
+        {/* Panah Kanan */}
+        <line x1="10" y1="12" x2="18" y2="12" strokeWidth="1.5"/>
+        <polyline points="16 10 18 12 16 14" strokeWidth="1.5"/>
+      </svg>
+    );
 
     // --- Helper Functions for IP Math ---
     const ipToInt = (ip) => {
@@ -345,20 +365,30 @@
                 <tbody className="block md:table-row-group divide-y-0 md:divide-y divide-slate-100">
                   {problem.subnets.map((sub, idx) => {
                     const val = validation ? validation[idx] : null;
+                    const isRouter = sub.name.includes('-');
                     
                     return (
-                      <tr key={idx} className="block md:table-row bg-slate-50/50 md:bg-transparent border border-slate-200 md:border-none rounded-xl md:rounded-none mb-6 md:mb-0 shadow-sm md:shadow-none hover:bg-slate-50/50 transition-colors">
+                      <tr key={idx} className={`block md:table-row border border-slate-200 md:border-none rounded-xl md:rounded-none mb-6 md:mb-0 shadow-sm md:shadow-none transition-colors ${
+                        isRouter ? 'bg-blue-50/80 md:bg-blue-50/50 hover:bg-blue-100/60' : 'bg-white hover:bg-slate-50/50'
+                      }`}>
                         
                         {/* 1. Ruang */}
-                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-4 md:py-3 border-b-2 border-slate-200 md:border-none bg-slate-100 md:bg-transparent rounded-t-xl md:rounded-none">
+                        <td className={`flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-4 md:py-3 border-b-2 border-slate-200 md:border-none rounded-t-xl md:rounded-none whitespace-nowrap ${
+                          isRouter ? 'bg-blue-100/60 md:bg-transparent' : 'bg-slate-100 md:bg-transparent'
+                        }`}>
                           <span className="md:hidden font-bold text-slate-500 text-xs uppercase tracking-wider">Ruang</span>
-                          <span className="font-bold text-racing-blue md:font-semibold md:text-slate-700 text-base md:text-sm">{sub.name}</span>
+                          <span className="font-bold text-racing-blue md:font-semibold md:text-slate-700 text-base md:text-sm flex items-center gap-2">
+                            {!isRouter ? <Monitor size={22} className="text-racing-teal" /> : <RouterIcon size={22} className="text-slate-500" />}
+                            {sub.name}
+                          </span>
                         </td>
                         
                         {/* 2. Host */}
                         <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-4 md:py-3 border-b border-slate-200 md:border-none">
                           <span className="md:hidden font-bold text-slate-500 text-xs uppercase tracking-wider">Host</span>
-                          <span className="inline-flex items-center px-2 py-1 rounded-md bg-slate-200 text-slate-800 font-black text-xs shadow-sm md:shadow-none">
+                          <span className={`inline-flex items-center px-2 py-1 rounded-md text-slate-800 font-black text-xs shadow-sm md:shadow-none ${
+                            isRouter ? 'bg-white' : 'bg-slate-200'
+                          }`}>
                             {sub.hosts}
                           </span>
                         </td>
@@ -366,14 +396,14 @@
                         {/* 3. Prefix */}
                         <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none">
                           <span className="md:hidden font-bold text-racing-blue text-xs uppercase tracking-wider pr-2">Prefix</span>
-                          <div className="relative w-[55%] sm:w-[60%] md:w-full">
+                          <div className="relative w-[55%] sm:w-[60%] md:w-[70px]">
                             <input
                               type="text"
                               value={userInputs[idx]['cidr']}
                               onChange={(e) => handleInputChange(idx, 'cidr', e.target.value)}
                               placeholder="/24"
                               disabled={showSolution}
-                              className={`w-full md:min-w-[80px] pl-3 pr-8 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium bg-white
+                              className={`w-full pl-2 pr-7 py-2 rounded border focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal outline-none transition-all font-mono text-sm font-medium bg-white
                                 ${val 
                                   ? (val['cidr'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
                                   : 'border-slate-300 text-slate-800'
@@ -381,7 +411,7 @@
                               `}
                             />
                             {val && (
-                              <div className="absolute right-2 top-2.5">
+                              <div className="absolute right-1.5 top-2.5">
                                 {val['cidr'] ? <CheckCircle size={16} className="text-green-600" /> : <XCircle size={16} className="text-racing-red" />}
                               </div>
                             )}
@@ -524,7 +554,7 @@
           </div>
 
           <footer className="mt-12 text-center text-xs font-semibold text-slate-400">
-            VLSM Practice App &copy; {new Date().getFullYear()}
+            Aplikasi Latihan VLSM &copy; {new Date().getFullYear()} anggafk
           </footer>
         </div>
       );
