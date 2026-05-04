@@ -110,7 +110,7 @@
                 "Hitung VLSM",
                 "Pemasangan Router",
                 "Konfigurasi Router",
-                "Verifikasi & Troubleshooting"
+                "Troubleshooting"
             ]);
 
             const [sampleResults, setSampleResults] = useState([
@@ -358,7 +358,6 @@
                                         </div>
                                     ))}
                                 </div>
-                                {/* Footer modal dihapus sesuai permintaan agar lebih ringkas */}
                             </div>
                         </div>
                     )}
@@ -401,24 +400,12 @@
                         {sampleResults.map((sample, sIdx) => {
                             const groupTime = getDisplayTimeForGroup(sample);
                             const lastTaskDone = sample.taskTimes[taskNames.length - 1] !== null;
-                            const members = shuffledLists[sIdx].length > 0 ? shuffledLists[sIdx] : [];
 
                             return (
                                 <div key={sample.id} className={`bg-white border-t-8 transition-all shadow-xl flex flex-col ${lastTaskDone ? 'border-[#00A19C]' : 'border-[#002D72]'}`}>
                                     <div className={`p-8 text-center border-b-2 relative ${lastTaskDone ? 'bg-cyan-50' : 'bg-slate-50'}`}>
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.3em] mb-4 text-[#002D72]/50">{titles[sIdx]}</h3>
+                                        <h3 className="text-[16px] font-black uppercase tracking-[0.3em] mb-4 text-[#002D72]/50">{titles[sIdx]}</h3>
                                         
-                                        <div className="flex flex-wrap justify-center gap-1.5 mb-5 min-h-[48px]">
-                                            {members.length > 0 ? members.map((name, i) => (
-                                                <div key={i} className="flex text-[9px] font-black border border-[#002D72]/20 overflow-hidden rounded-sm">
-                                                    <span className="bg-[#002D72] text-white px-1.5 py-0.5">{String.fromCharCode(65 + i)}</span>
-                                                    <span className="bg-white px-2 py-0.5 text-[#002D72] uppercase tracking-tighter">{name}</span>
-                                                </div>
-                                            )) : (
-                                                <span className="text-[9px] italic text-slate-400 font-bold uppercase tracking-widest self-center">Anggota belum diacak</span>
-                                            )}
-                                        </div>
-
                                         <div className={`text-7xl font-mono font-black tabular-nums tracking-tighter ${lastTaskDone ? 'text-[#00A19C]' : 'text-[#002D72]'}`}>
                                             {formatTime(groupTime)}
                                         </div>
