@@ -100,7 +100,7 @@
 
     const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-    const generateProblem = (numSubnets = 4) => {
+    const generateProblem = () => {
       let firstOctet = getRandomInt(1, 223);
       while (firstOctet === 127) {
         firstOctet = getRandomInt(1, 223);
@@ -111,89 +111,65 @@
       const baseNetwork = `${firstOctet}.${secondOctet}.${thirdOctet}.0`;
       const baseCidr = 24;
 
-      const depts = [
-        'Lab Jaringan TJKT', 'Ruang Server TJKT', 'Ruang Guru TJKT', 'Kelas X TJKT', 'Kelas XI TJKT', 'Kelas XII TJKT',
-        'Bengkel Las TPFL', 'Ruang Fabrikasi TPFL', 'Ruang Guru TPFL', 'Kelas X TPFL', 'Kelas XI TPFL', 'Kelas XII TPFL',
-        'Bengkel Otomotif TO', 'Ruang Mesin TO', 'Ruang Guru TO', 'Kelas X TO', 'Kelas XI TO', 'Kelas XII TO',
-        'Ruang Tata Usaha', 'Perpustakaan', 'Aula Utama', 'Gudang Sekolah', 'Ruang Kepala Sekolah',
-        'Ruang BK', 'Sekretariat OSIS', 'Ruang UKS', 'Pos Keamanan', 'Kantin Sekolah', 'Ruang Rapat', 'Lobi Utama'
-      ];
-      const shuffledDepts = depts.sort(() => 0.5 - Math.random());
-      
-      const activeDepts = shuffledDepts.slice(0, numSubnets);
-
-      let selectedSubnets = [];
-      let validConfig = false;
-      let attempts = 0;
+      const pcNames = ['PC 1', 'PC 2', 'PC 3', 'PC 4', 'PC 5', 'PC 6'];
+      const routerNames = ['RA-RB', 'RB-RC', 'RC-RD', 'RD-RE', 'RE-RF'];
 
       const cidrRanges = {
         26: { min: 31, max: 62 },
         27: { min: 15, max: 30 },
         28: { min: 7, max: 14 },
-        29: { min: 3, max: 6 },
-        30: { min: 2, max: 2 }
+        29: { min: 3, max: 6 }
       };
 
-      while (!validConfig && attempts < 200) {
-        attempts++;
-        let tempSubnets = [];
-        let cidrCounts = { 26: 0, 27: 0, 28: 0, 29: 0, 30: 0 };
-        let totalSize = 0;
-        let possible = true;
+      // Pool kombinasi prefix untuk PC agar selalu muat di dalam /24 (Maksimal 256 IP)
+      const pcCombinations = [
+        [26, 26, 27, 28, 29, 29],
+        [26, 27, 27, 28, 28, 29],
+        [26, 27, 28, 28, 28, 29],
+        [27, 27, 27, 27, 28, 28]
+      ];
+      
+      let chosenCombination = pcCombinations[Math.floor(Math.random() * pcCombinations.length)];
+      // Acak urutan kombinasi prefix-nya
+      chosenCombination = chosenCombination.sort(() => 0.5 - Math.random());
 
-        for (let i = 0; i < numSubnets; i++) {
-          const availableCidrs = [26, 27, 28, 29, 30].filter(c => {
-            if (c === 30) return cidrCounts[c] < 1;
-            return cidrCounts[c] < 2;
-          });
-          
-          if (availableCidrs.length === 0) {
-            possible = false;
-            break;
-          }
+      let tempSubnets = [];
+      const usedHosts = new Set();
 
-          const chosenCidr = availableCidrs[Math.floor(Math.random() * availableCidrs.length)];
-          cidrCounts[chosenCidr]++;
-          totalSize += Math.pow(2, 32 - chosenCidr);
-
-          tempSubnets.push({
-            name: activeDepts[i],
-            cidr: chosenCidr
-          });
+      // 1. Generate untuk PC 1 - PC 6
+      for (let i = 0; i < pcNames.length; i++) {
+        const cidr = chosenCombination[i];
+        const { min, max } = cidrRanges[cidr];
+        let h = getRandomInt(min, max);
+        
+        let safety = 0;
+        // Pastikan tidak ada host PC yang jumlahnya sama persis
+        while (usedHosts.has(h) && safety < 100) {
+          h = getRandomInt(min, max);
+          safety++;
         }
+        usedHosts.add(h);
 
-        if (possible && totalSize <= 256) {
-          validConfig = true;
-          
-          const usedHosts = new Set();
-
-          selectedSubnets = tempSubnets.map(sub => {
-            const { min, max } = cidrRanges[sub.cidr];
-            let h = getRandomInt(min, max);
-            
-            let safety = 0;
-            while (usedHosts.has(h) && safety < 100) {
-              h = getRandomInt(min, max);
-              safety++;
-            }
-            usedHosts.add(h);
-
-            return {
-              name: sub.name,
-              hosts: h
-            };
-          });
-        }
+        tempSubnets.push({
+          name: pcNames[i],
+          hosts: h
+        });
       }
 
-      if (!validConfig) {
-         selectedSubnets = activeDepts.map((name, idx) => ({ name, hosts: 10 + idx }));
+      // 2. Generate untuk Router (RA-RB sampai RE-RF) -> /30 (2 Host)
+      for (let i = 0; i < routerNames.length; i++) {
+        tempSubnets.push({
+          name: routerNames[i],
+          hosts: 2
+        });
       }
 
-      selectedSubnets.sort((a, b) => b.hosts - a.hosts);
+      // 3. Urutkan dari host terbesar ke terkecil (WAJIB untuk perhitungan VLSM)
+      tempSubnets.sort((a, b) => b.hosts - a.hosts);
 
+      // 4. Kalkulasi IP VLSM yang benar
       let currentIpInt = ipToInt(baseNetwork);
-      let solution = selectedSubnets.map(sub => {
+      let solution = tempSubnets.map(sub => {
         const details = calculateSubnetDetails(currentIpInt, sub.hosts);
         currentIpInt = details.nextNetworkInt; 
         return {
@@ -202,7 +178,12 @@
         };
       });
 
-      solution.sort(() => 0.5 - Math.random());
+      // 5. URUTAN TAMPILAN KHUSUS sesuai permintaan (berselang-seling)
+      const displayOrder = [
+        'PC 1', 'RA-RB', 'PC 2', 'RB-RC', 'PC 3', 'RC-RD', 
+        'PC 4', 'RD-RE', 'PC 5', 'RE-RF', 'PC 6'
+      ];
+      solution.sort((a, b) => displayOrder.indexOf(a.name) - displayOrder.indexOf(b.name));
 
       return {
         baseNetwork,
@@ -212,7 +193,6 @@
     };
 
     function VLSMApp() {
-      const [numRooms, setNumRooms] = useState(4);
       const [problem, setProblem] = useState(null);
       const [userInputs, setUserInputs] = useState({});
       const [validation, setValidation] = useState(null);
@@ -220,11 +200,11 @@
       const [showCheatSheet, setShowCheatSheet] = useState(false);
 
       useEffect(() => {
-        newProblem(4);
+        newProblem();
       }, []);
 
-      const newProblem = (roomsCount = numRooms) => {
-        const p = generateProblem(roomsCount);
+      const newProblem = () => {
+        const p = generateProblem();
         setProblem(p);
         
         const initialInputs = {};
@@ -240,12 +220,6 @@
         setUserInputs(initialInputs);
         setValidation(null);
         setShowSolution(false);
-      };
-
-      const handleNumRoomsChange = (e) => {
-        const val = parseInt(e.target.value);
-        setNumRooms(val);
-        newProblem(val);
       };
 
       const handleInputChange = (idx, field, value) => {
@@ -345,22 +319,8 @@
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2 mt-4 lg:mt-0">
-                <div className="flex items-center gap-2 mr-2">
-                  <label htmlFor="numRooms" className="text-sm text-slate-600 font-bold">Jumlah Ruang:</label>
-                  <select
-                    id="numRooms"
-                    value={numRooms}
-                    onChange={handleNumRoomsChange}
-                    className="px-2 py-1.5 bg-slate-50 border border-slate-300 rounded-md text-sm text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-racing-teal focus:border-racing-teal transition-all"
-                  >
-                    <option value={4}>4 Ruang</option>
-                    <option value={5}>5 Ruang</option>
-                    <option value={6}>6 Ruang</option>
-                    <option value={7}>7 Ruang</option>
-                  </select>
-                </div>
                 <button 
-                  onClick={() => newProblem(numRooms)} 
+                  onClick={newProblem} 
                   className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 hover:border-racing-teal hover:text-racing-teal text-slate-700 rounded-lg text-sm font-bold transition-all"
                 >
                   <RefreshCw size={16} /> Soal Baru
