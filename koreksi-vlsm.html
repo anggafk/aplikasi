@@ -73,14 +73,10 @@
 
       // Gemini API function with retry logic
       const analyzeWithGemini = async (base64String, mimeType, groupId) => {
-        // PENTING: Masukkan API Key Gemini kamu di bawah ini
-        const apiKey = "MASUKKAN_API_KEY_GEMINI_KAMU_DISINI"; 
-        
-        if (apiKey === "MASUKKAN_API_KEY_GEMINI_KAMU_DISINI") {
-          throw new Error("API Key belum disetel. Silakan edit kode index.html dan masukkan API Key Gemini milikmu.");
-        }
+        // Lingkungan mengeksekusi ini akan otomatis memasukkan API key jika tidak disetel
+        const apiKey = ""; 
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
         
         const idealKey = vlsmData[groupId];
         const systemPrompt = `Kamu adalah asisten guru jaringan komputer ahli. Tugasmu mengoreksi lembar jawaban VLSM siswa dari gambar yang diunggah.
