@@ -110,7 +110,7 @@
                 "Hitung VLSM",
                 "Pemasangan Router",
                 "Konfigurasi Router",
-                "TROUBLE\u200BSHOOTING" // Karakter \u200B adalah zero-width space
+                "TROUBLE\u200BSHOOTING"
             ]);
 
             const [sampleResults, setSampleResults] = useState([
@@ -119,14 +119,22 @@
                 { id: 3, taskTimes: [null, null, null, null] }
             ]);
 
+            // Ref untuk menyimpan waktu mulai agar timer tetap akurat meski tab tidak aktif
+            const startTimeRef = useRef(null);
+
             const titles = rawTitles.split(/\r?\n/).slice(0, 3).map((t, i) => t || `KELOMPOK ${i+1}`);
 
             useEffect(() => {
                 let interval = null;
                 if (isRunning) {
+                    // Gunakan Date.now() untuk sinkronisasi waktu nyata
+                    const initialTime = time;
+                    startTimeRef.current = Date.now() - (initialTime * 1000);
+                    
                     interval = setInterval(() => {
-                        setTime((prevTime) => prevTime + 1);
-                    }, 1000);
+                        const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+                        setTime(elapsed);
+                    }, 200); // Interval lebih rapat agar transisi detik terasa halus
                 }
                 return () => clearInterval(interval);
             }, [isRunning]);
@@ -207,7 +215,6 @@
                 }, speed);
             };
 
-            // Fungsi Format Waktu yang diperbarui: Selalu dalam Menit:Detik
             const formatTime = (seconds) => {
                 if (seconds === null || seconds < 0) return "00:00";
                 const mins = Math.floor(seconds / 60);
