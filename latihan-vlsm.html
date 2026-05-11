@@ -131,7 +131,7 @@
       const baseNetwork = `${firstOctet}.${secondOctet}.${thirdOctet}.0`;
       const baseCidr = 24;
 
-      const pcNames = ['PC 1', 'PC 2', 'PC 3', 'PC 4'];
+      const pcNames = ['PC A', 'PC B', 'PC C', 'PC D'];
       const routerNames = ['RA-RB', 'RB-RC', 'RC-RD'];
 
       const cidrRanges = {
@@ -156,7 +156,7 @@
       let tempSubnets = [];
       const usedHosts = new Set();
 
-      // 1. Generate untuk PC 1 - PC 6
+      // 1. Generate untuk PC A - PC D
       for (let i = 0; i < pcNames.length; i++) {
         const cidr = chosenCombination[i];
         const { min, max } = cidrRanges[cidr];
@@ -176,7 +176,7 @@
         });
       }
 
-      // 2. Generate untuk Router (RA-RB sampai RE-RF) -> /30 (2 Host)
+      // 2. Generate untuk Router (RA-RB sampai RC-RD) -> /30 (2 Host)
       for (let i = 0; i < routerNames.length; i++) {
         tempSubnets.push({
           name: routerNames[i],
@@ -200,7 +200,7 @@
 
       // 5. URUTAN TAMPILAN KHUSUS sesuai permintaan (berselang-seling)
       const displayOrder = [
-        'PC 1', 'RA-RB', 'PC 2', 'RB-RC', 'PC 3', 'RC-RD', 'PC 4'
+        'PC A', 'RA-RB', 'PC B', 'RB-RC', 'PC C', 'RC-RD', 'PC D'
       ];
       solution.sort((a, b) => displayOrder.indexOf(a.name) - displayOrder.indexOf(b.name));
 
