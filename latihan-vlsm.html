@@ -131,8 +131,8 @@
       const baseNetwork = `${firstOctet}.${secondOctet}.${thirdOctet}.0`;
       const baseCidr = 24;
 
-      const pcNames = ['PC 1', 'PC 2', 'PC 3', 'PC 4', 'PC 5', 'PC 6'];
-      const routerNames = ['RA-RB', 'RB-RC', 'RC-RD', 'RD-RE', 'RE-RF'];
+      const pcNames = ['PC 1', 'PC 2', 'PC 3', 'PC 4'];
+      const routerNames = ['RA-RB', 'RB-RC', 'RC-RD'];
 
       const cidrRanges = {
         26: { min: 31, max: 62 },
@@ -143,10 +143,10 @@
 
       // Pool kombinasi prefix untuk PC agar selalu muat di dalam /24 (Maksimal 256 IP)
       const pcCombinations = [
-        [26, 26, 27, 28, 29, 29],
-        [26, 27, 27, 28, 28, 29],
-        [26, 27, 28, 28, 28, 29],
-        [27, 27, 27, 27, 28, 28]
+        [26, 26, 27, 28],
+        [26, 27, 27, 28],
+        [26, 27, 28, 29],
+        [27, 27, 28, 28]
       ];
       
       let chosenCombination = pcCombinations[Math.floor(Math.random() * pcCombinations.length)];
@@ -200,8 +200,7 @@
 
       // 5. URUTAN TAMPILAN KHUSUS sesuai permintaan (berselang-seling)
       const displayOrder = [
-        'PC 1', 'RA-RB', 'PC 2', 'RB-RC', 'PC 3', 'RC-RD', 
-        'PC 4', 'RD-RE', 'PC 5', 'RE-RF', 'PC 6'
+        'PC 1', 'RA-RB', 'PC 2', 'RB-RC', 'PC 3', 'RC-RD', 'PC 4'
       ];
       solution.sort((a, b) => displayOrder.indexOf(a.name) - displayOrder.indexOf(b.name));
 
