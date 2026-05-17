@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projek KK TKJ - Timer Praktikum</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sauber-blue': '#002D72',
+                        'petronas-cyan': '#00A19C',
+                        'speed-white': '#FDFDFD',
+                        'red-bull-red': '#E10600'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- React, ReactDOM, dan Babel CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-[#FDFDFD]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Custom Router Icon (Gaya Cisco Sirkular dengan tanda panah keluar)
+        const RouterIcon = ({ className }) => (
+            <svg 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+            >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 3v18M3 12h18" />
+                <path d="M12 3.5l2 2m-2-2l-2 2" /> 
+                <path d="M12 20.5l2-2m-2 2l-2-2" /> 
+                <path d="M3.5 12l2-2m-2 2l2 2" /> 
+                <path d="M20.5 12l-2-2m2 2l-2 2" /> 
+            </svg>
+        );
+
+        // Komponen Ikon Inline untuk kenyamanan tanpa library eksternal npm
+        const Play = ({ className, size = 18 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/>
+            </svg>
+        );
+
+        const Pause = ({ className, size = 18 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="6" y="4" width="4" height="16" fill="currentColor"/>
+                <rect x="14" y="4" width="4" height="16" fill="currentColor"/>
+            </svg>
+        );
+
+        const RotateCcw = ({ className, size = 20 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <polyline points="3 3 3 8 8 8"/>
+            </svg>
+        );
+
+        const ClockIcon = ({ className, size = 24 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+        );
+
+        const Type = ({ className, size = 18 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="4 7 4 4 20 4 20 7"/>
+                <line x1="9" y1="20" x2="15" y2="20"/>
+                <line x1="12" y1="4" x2="12" y2="20"/>
+            </svg>
+        );
+
+        const X = ({ className, size = 24 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        );
+
+        const Check = ({ className, size = 14 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+        );
+
+        const ChevronRight = ({ className, size = 18 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        );
+
+        const Settings = ({ className, size = 20 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+        );
+
+        const Square = ({ className, size = 18 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            </svg>
+        );
+
+        const Users = ({ className, size = 20 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        );
+
+        const App = () => {
+            const [time, setTime] = useState(0);
+            const [isRunning, setIsRunning] = useState(false);
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
+            
+            // Konfigurasi awal Kelompok
+            const [rawTitles, setRawTitles] = useState("KELOMPOK 1\nKELOMPOK 2\nKELOMPOK 3");
+            const [taskNames] = useState([
+                "Splicing FO",
+                "VLSM",
+                "Konfigurasi Router",
+                "Trouble\u200bshooting"
+            ]);
+
+            // Splicing FO: 60 m (3600s), VLSM: 30 m (1800s), Konfigurasi Router: 30 m (1800s)
+            const taskMaxTimes = [3600, 1800, 1800, null];
+
+            // Penjaga stabilitas waktu saat tab diminimize / ganti tab
+            const startTimeRef = useRef(0);
+            const elapsedRef = useRef(0);
+
+            // State hasil tugas kelompok
+            const [sampleResults, setSampleResults] = useState([
+                { id: 1, taskTimes: [null, null, null, null] },
+                { id: 2, taskTimes: [null, null, null, null] },
+                { id: 3, taskTimes: [null, null, null, null] }
+            ]);
+
+            // State toggle freeze / selesai manual
+            const [groupFreezeTimes, setGroupFreezeTimes] = useState([null, null, null]);
+            const groupFreezeTimesRef = useRef([null, null, null]);
+
+            useEffect(() => {
+                groupFreezeTimesRef.current = groupFreezeTimes;
+            }, [groupFreezeTimes]);
+
+            // State Pengacakan Anggota (Maksimal 4 Siswa)
+            const [group1NamesInput, setGroup1NamesInput] = useState("Siswa A1\nSiswa A2\nSiswa A3\nSiswa A4");
+            const [group2NamesInput, setGroup2NamesInput] = useState("Siswa B1\nSiswa B2\nSiswa B3\nSiswa B4");
+            const [group3NamesInput, setGroup3NamesInput] = useState("Siswa C1\nSiswa C2\nSiswa C3\nSiswa C4");
+
+            const [shuffledLists, setShuffledLists] = useState([
+                ["Siswa A1", "Siswa A2", "Siswa A3", "Siswa A4"],
+                ["Siswa B1", "Siswa B2", "Siswa B3", "Siswa B4"],
+                ["Siswa C1", "Siswa C2", "Siswa C3", "Siswa C4"]
+            ]);
+
+            const [shufflingGroups, setShufflingGroups] = useState([false, false, false]);
+
+            const getTitles = () => {
+                const lines = rawTitles.split(/\r?\n/);
+                return [
+                    lines[0] || 'KELOMPOK 1',
+                    lines[1] || 'KELOMPOK 2',
+                    lines[2] || 'KELOMPOK 3'
+                ];
+            };
+
+            const titles = getTitles();
+
+            // Interval Timer Utama (Akurat, Survive Tab Inactivity)
+            useEffect(() => {
+                let interval = null;
+
+                if (isRunning) {
+                    startTimeRef.current = Date.now() - elapsedRef.current * 1000;
+
+                    const tick = () => {
+                        const nextTime = Math.floor((Date.now() - startTimeRef.current) / 1000);
+                        setTime(nextTime);
+                        elapsedRef.current = nextTime;
+
+                        // Periksa transisi tugas otomatis
+                        setSampleResults((prevResults) => 
+                            prevResults.map((sample, sIdx) => {
+                                if (groupFreezeTimesRef.current[sIdx] !== null) return sample;
+
+                                const activeIdx = sample.taskTimes.findIndex(t => t === null);
+                                if (activeIdx === -1) return sample;
+
+                                const previousTime = activeIdx === 0 ? 0 : sample.taskTimes[activeIdx - 1];
+                                const elapsedInTask = nextTime - previousTime;
+
+                                // Auto transition sesuai durasi
+                                if (activeIdx === 0 && elapsedInTask >= 3600) {
+                                    const newTimes = [...sample.taskTimes];
+                                    newTimes[0] = 3600;
+                                    return { ...sample, taskTimes: newTimes };
+                                }
+                                if (activeIdx === 1 && elapsedInTask >= 1800) {
+                                    const newTimes = [...sample.taskTimes];
+                                    newTimes[1] = previousTime + 1800;
+                                    return { ...sample, taskTimes: newTimes };
+                                }
+                                if (activeIdx === 2 && elapsedInTask >= 1800) {
+                                    const newTimes = [...sample.taskTimes];
+                                    newTimes[2] = previousTime + 1800;
+                                    return { ...sample, taskTimes: newTimes };
+                                }
+                                // Selesai otomatis di 3 Jam (10800 Detik)
+                                if (activeIdx === 3 && nextTime >= 10800) {
+                                    const newTimes = [...sample.taskTimes];
+                                    newTimes[3] = 10800;
+                                    return { ...sample, taskTimes: newTimes };
+                                }
+
+                                return sample;
+                            })
+                        );
+                    };
+
+                    tick();
+                    interval = setInterval(tick, 200);
+
+                    // Sinkronisasi paksa saat tab dibuka kembali dari status minimize
+                    const handleTabActive = () => {
+                        if (document.visibilityState === 'visible') {
+                            tick();
+                        }
+                    };
+
+                    document.addEventListener('visibilitychange', handleTabActive);
+                    window.addEventListener('focus', handleTabActive);
+
+                    return () => {
+                        clearInterval(interval);
+                        document.removeEventListener('visibilitychange', handleTabActive);
+                        window.removeEventListener('focus', handleTabActive);
+                    };
+                }
+            }, [isRunning]);
+
+            const toggleTimer = () => setIsRunning(!isRunning);
+
+            // STOP & RESET ALL
+            const handleStopAndReset = () => {
+                setIsRunning(false);
+                setTime(0);
+                elapsedRef.current = 0;
+                setGroupFreezeTimes([null, null, null]);
+                setSampleResults(sampleResults.map(s => ({ ...s, taskTimes: [null, null, null, null] })));
+            };
+
+            const handleTaskClick = (sampleIndex, taskIndex) => {
+                if (!isRunning && time === 0) return; 
+                if (groupFreezeTimes[sampleIndex] !== null) return;
+
+                setSampleResults(prev => prev.map((s, sIdx) => {
+                    if (sIdx === sampleIndex) {
+                        const activeIdx = s.taskTimes.findIndex(t => t === null);
+                        if (activeIdx !== taskIndex) return s;
+
+                        const newTimes = [...s.taskTimes];
+                        if (newTimes[taskIndex] === null) {
+                            newTimes[taskIndex] = time;
+                        }
+                        return { ...s, taskTimes: newTimes };
+                    }
+                    return s;
+                }));
+            };
+
+            const handleTaskRightClick = (e, sampleIndex, taskIndex) => {
+                e.preventDefault(); 
+                if (groupFreezeTimes[sampleIndex] !== null) return;
+
+                setSampleResults(prev => prev.map((s, sIdx) => {
+                    if (sIdx === sampleIndex) {
+                        const newTimes = [...s.taskTimes];
+                        newTimes[taskIndex] = null;
+                        return { ...s, taskTimes: newTimes };
+                    }
+                    return s;
+                }));
+            };
+
+            // Klik waktu utama kelompok untuk freeze manual / unfreeze (antisipasi salah klik)
+            const handleGroupTimerClick = (sIdx) => {
+                if (!isRunning && time === 0) return;
+                
+                setGroupFreezeTimes(prev => {
+                    const next = [...prev];
+                    if (next[sIdx] !== null) {
+                        next[sIdx] = null;
+                    } else {
+                        next[sIdx] = time;
+                    }
+                    return next;
+                });
+            };
+
+            // Format waktu kumulatif Menit:Detik (contoh: 70:12)
+            const formatTime = (seconds) => {
+                if (seconds === null) return "--:--";
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            const getDisplayTimeForGroup = (sample, sIdx) => {
+                if (groupFreezeTimes[sIdx] !== null) {
+                    return groupFreezeTimes[sIdx];
+                }
+                const allTasksFinished = sample.taskTimes.every(t => t !== null);
+                if (allTasksFinished) {
+                    return Math.max(...sample.taskTimes);
+                }
+                return time;
+            };
+
+            const getTaskDisplayTime = (sample, tIdx, sIdx) => {
+                const completedAt = sample.taskTimes[tIdx];
+                if (completedAt !== null) {
+                    if (tIdx === 0) return completedAt;
+                    return completedAt - sample.taskTimes[tIdx - 1];
+                }
+                
+                const activeIdx = sample.taskTimes.findIndex(t => t === null);
+                if (activeIdx === tIdx && (isRunning || time > 0)) {
+                    const currentReferenceTime = groupFreezeTimes[sIdx] !== null ? groupFreezeTimes[sIdx] : time;
+                    if (tIdx === 0) return currentReferenceTime;
+                    return currentReferenceTime - sample.taskTimes[tIdx - 1];
+                }
+                
+                return null;
+            };
+
+            // Animasi Pengacakan 4 Siswa (Getar & Acak Cepat selama 3 detik)
+            const handleShuffle = (groupIdx, inputString) => {
+                if (shufflingGroups[groupIdx]) return;
+
+                setShufflingGroups(prev => {
+                    const next = [...prev];
+                    next[groupIdx] = true;
+                    return next;
+                });
+
+                const lines = inputString.split(/\r?\n/).map(name => name.trim()).filter(Boolean);
+                const listToShuffle = [...lines];
+                while (listToShuffle.length < 4) {
+                    listToShuffle.push("---");
+                }
+
+                let ticks = 0;
+                const maxTicks = 15;
+
+                const interval = setInterval(() => {
+                    setShuffledLists(prev => {
+                        const next = prev.map((list, idx) => {
+                            if (idx === groupIdx) {
+                                const temp = [...listToShuffle];
+                                for (let i = temp.length - 1; i > 0; i--) {
+                                    const j = Math.floor(Math.random() * (i + 1));
+                                    [temp[i], temp[j]] = [temp[j], temp[i]];
+                                }
+                                return temp;
+                            }
+                            return list;
+                        });
+                        return next;
+                    });
+
+                    ticks++;
+                    if (ticks >= maxTicks) {
+                        clearInterval(interval);
+                        setShuffledLists(prev => {
+                            const next = prev.map((list, idx) => {
+                                if (idx === groupIdx) {
+                                    const final = [...listToShuffle];
+                                    for (let i = final.length - 1; i > 0; i--) {
+                                        const j = Math.floor(Math.random() * (i + 1));
+                                        [final[i], final[j]] = [final[j], final[i]];
+                                    }
+                                    return final;
+                                }
+                                return list;
+                            });
+                            return next;
+                        });
+                        setShufflingGroups(prev => {
+                            const next = [...prev];
+                            next[groupIdx] = false;
+                            return next;
+                        });
+                    }
+                }, 200);
+            };
+
+            const getInputs = [group1NamesInput, group2NamesInput, group3NamesInput];
+            const setInputs = [setGroup1NamesInput, setGroup2NamesInput, setGroup3NamesInput];
+
+            return (
+                <div className="min-h-screen bg-[#FDFDFD] font-sans text-[#002D72]">
+                    
+                    {/* Modal Popup Acak Anggota Kelompok (4 Siswa Tetap) */}
+                    {isUsersModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-[#002D72]/80 backdrop-blur-md" onClick={() => setIsUsersModalOpen(false)}></div>
+                            <div className="relative bg-[#FDFDFD] w-full max-w-5xl rounded-none border-t-8 border-[#00A19C] shadow-[0_0_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col text-left text-[#002D72] max-h-[90vh]">
+                                <div className="bg-[#002D72] p-5 flex justify-between items-center text-[#FDFDFD]">
+                                    <div className="flex items-center gap-3">
+                                        <Users size={20} className="text-[#00A19C]" />
+                                        <h2 className="font-black text-sm uppercase tracking-[0.2em]">ACAK ANGGOTA KELOMPOK</h2>
+                                    </div>
+                                    <button onClick={() => setIsUsersModalOpen(false)} className="hover:text-[#E10600] transition-colors">
+                                        <X size={24} />
+                                    </button>
+                                </div>
+                                
+                                <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {[0, 1, 2].map((idx) => (
+                                        <div key={idx} className="bg-[#f8fafc] p-4 border border-slate-200 flex flex-col">
+                                            <h3 className="font-black text-sm uppercase tracking-wider text-[#002D72] mb-3 text-center">{titles[idx]}</h3>
+                                            
+                                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Daftar Nama Siswa (1 Baris = 1 Nama)</label>
+                                            <textarea
+                                                className="w-full bg-[#FDFDFD] border border-slate-200 p-3 text-xs font-bold focus:ring-0 focus:border-[#00A19C] outline-none h-24 mb-4 text-[#002D72] resize-none"
+                                                value={getInputs[idx]}
+                                                onChange={(e) => setInputs[idx](e.target.value)}
+                                                placeholder="Siswa 1&#10;Siswa 2..."
+                                            />
+
+                                            <button
+                                                onClick={() => handleShuffle(idx, getInputs[idx])}
+                                                disabled={shufflingGroups[idx]}
+                                                className="w-full bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black py-2.5 text-xs uppercase tracking-wider transition-all disabled:opacity-50 mb-4"
+                                            >
+                                                {shufflingGroups[idx] ? 'MENGACAK...' : 'ACAK TUGAS'}
+                                            </button>
+
+                                            <div className="space-y-1.5">
+                                                {['A', 'B', 'C', 'D'].map((letter, letterIdx) => (
+                                                    <div 
+                                                        key={letter} 
+                                                        className={`flex items-center border border-slate-200 bg-white h-10 transition-all ${
+                                                            shufflingGroups[idx] ? 'blur-[1px] opacity-70 animate-pulse' : ''
+                                                        }`}
+                                                    >
+                                                        <div className="w-10 h-full bg-[#002D72] text-[#FDFDFD] flex items-center justify-center font-black text-sm shrink-0">
+                                                            {letter}
+                                                        </div>
+                                                        <div className="px-3 font-bold text-xs text-[#002D72] truncate">
+                                                            {shuffledLists[idx][letterIdx] || "---"}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Modal Popup Konfigurasi Nama Kelompok */}
+                    {isModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-[#002D72]/80 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
+                            <div className="relative bg-[#FDFDFD] w-full max-w-lg rounded-none border-t-8 border-[#00A19C] shadow-[0_0_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col text-left text-[#002D72]">
+                                <div className="bg-[#002D72] p-5 flex justify-between items-center text-[#FDFDFD]">
+                                    <div className="flex items-center gap-3">
+                                        <Settings size={20} className="text-[#00A19C] animate-[spin_4s_linear_infinite]" />
+                                        <h2 className="font-black text-sm uppercase tracking-[0.2em]">SISTEM KONFIGURASI</h2>
+                                    </div>
+                                    <button onClick={() => setIsModalOpen(false)} className="hover:text-[#E10600] transition-colors">
+                                        <X size={24} />
+                                    </button>
+                                </div>
+                                <div className="p-6 overflow-y-auto max-h-[70vh]">
+                                    <label className="block text-[10px] font-black text-[#002D72]/40 uppercase tracking-widest mb-2">IDENTITAS KELOMPOK (3 BARIS)</label>
+                                    <textarea
+                                        className="w-full bg-[#f1f5f9] border-l-4 border-[#002D72] p-4 text-sm font-bold focus:ring-0 focus:border-[#00A19C] outline-none h-24 mb-6 shadow-inner text-[#002D72]"
+                                        value={rawTitles}
+                                        onChange={(e) => setRawTitles(e.target.value)}
+                                    />
+                                    <button 
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="w-full bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black py-4 uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-lg"
+                                    >
+                                        UPDATE DATA SISTEM
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Header Utama */}
+                    <header className="bg-[#002D72] text-[#FDFDFD] py-4 px-6 sticky top-0 z-40 border-b-4 border-[#00A19C] shadow-2xl">
+                        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-[#00A19C] p-2 skew-x-[-12deg]">
+                                    <RouterIcon className="text-[#FDFDFD] w-7 h-7 skew-x-[12deg]" />
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-black italic tracking-tighter leading-none text-nowrap">PROJEK KK TKJ</h1>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-6">
+                                 <div className="flex flex-col items-end">
+                                    <span className="text-[10px] font-black text-[#00A19C] uppercase tracking-widest">Waktu Global</span>
+                                    <div className="font-mono text-4xl font-black leading-none tabular-nums tracking-tighter">
+                                        {formatTime(time)}
+                                    </div>
+                                 </div>
+                                 
+                                 <div className="flex gap-2">
+                                    <button 
+                                        onClick={toggleTimer} 
+                                        className="px-6 py-3 bg-[#00A19C] text-[#FDFDFD] font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all hover:opacity-90 active:scale-95"
+                                        title={isRunning ? "Pause" : "Start"}
+                                    >
+                                        {isRunning ? <Pause size={18} /> : <Play size={18} />}
+                                        {isRunning ? 'PAUSE' : 'START'}
+                                    </button>
+
+                                    <button 
+                                        onClick={handleStopAndReset} 
+                                        className="px-6 py-3 bg-[#E10600] text-[#FDFDFD] font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all hover:bg-[#b00500] active:scale-95 shadow-sm"
+                                        title="Stop & Reset All"
+                                    >
+                                        <Square size={18} />
+                                        STOP
+                                    </button>
+                                 </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                                {/* Tombol Pengacak Anggota (Users) */}
+                                <button 
+                                    onClick={() => setIsUsersModalOpen(true)} 
+                                    className="p-3 border-2 border-[#00A19C] text-[#00A19C] hover:bg-[#00A19C] hover:text-[#FDFDFD] transition-all flex items-center justify-center group shadow-sm"
+                                    title="Acak Anggota Kelompok"
+                                >
+                                    <Users size={20} className="group-hover:scale-110 transition-transform duration-300" />
+                                </button>
+
+                                {/* Tombol Konfigurasi Nama Kelompok (Gear) */}
+                                <button 
+                                    onClick={() => setIsModalOpen(true)} 
+                                    className="p-3 border-2 border-[#00A19C] text-[#00A19C] hover:bg-[#00A19C] hover:text-[#FDFDFD] transition-all flex items-center justify-center group shadow-sm"
+                                    title="Konfigurasi Kelompok"
+                                >
+                                    <Settings size={20} className="group-hover:rotate-90 transition-transform duration-500" />
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Grid List Kelompok */}
+                    <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {sampleResults.map((sample, sIdx) => {
+                            const groupTime = getDisplayTimeForGroup(sample, sIdx);
+                            const isManualFrozen = groupFreezeTimes[sIdx] !== null;
+                            const isGroupFinished = sample.taskTimes.every(t => t !== null) || isManualFrozen;
+
+                            return (
+                                <div 
+                                    key={sample.id} 
+                                    className={`bg-[#FDFDFD] border-t-8 transition-all duration-300 flex flex-col shadow-xl h-full ${
+                                        isGroupFinished 
+                                        ? 'border-[#00A19C]' 
+                                        : isRunning ? 'border-[#002D72]' : 'border-slate-200'
+                                    }`}
+                                >
+                                    
+                                    {/* Area Display Besar Kelompok (Dapat diklik untuk Selesai / Freeze Manual) */}
+                                    <button 
+                                        onClick={() => handleGroupTimerClick(sIdx)}
+                                        className={`p-6 border-b-2 text-center transition-all min-h-[220px] flex flex-col justify-center items-center w-full focus:outline-none cursor-pointer group/timer ${
+                                            isGroupFinished ? 'bg-[#00A19C]/5 border-[#00A19C]' : 'bg-[#f8fafc] border-[#002D72]/10'
+                                        }`}
+                                        title={isManualFrozen ? "Klik untuk melanjutkan waktu" : "Klik untuk menghentikan & menyelesaikan kelompok"}
+                                    >
+                                         <h3 className={`text-[16px] font-black uppercase tracking-[0.4em] mb-4 transition-colors group-hover/timer:text-[#00A19C] ${
+                                             isGroupFinished ? 'text-[#00A19C]' : 'text-[#002D72]/40'
+                                         }`}>
+                                             {titles[sIdx]}
+                                         </h3>
+                                         
+                                         <div className={`text-[100px] font-mono font-black tabular-nums tracking-tighter leading-none transition-colors group-hover/timer:scale-105 duration-200 transform ${
+                                             isGroupFinished ? 'text-[#00A19C]' : isRunning ? 'text-[#002D72]' : 'text-slate-200'
+                                         }`}>
+                                             {formatTime(groupTime)}
+                                         </div>
+                                         
+                                         {isManualFrozen && (
+                                             <span className="text-[10px] font-black text-[#00A19C] tracking-widest uppercase mt-2 opacity-80 animate-pulse">
+                                                 MANUAL FINISH
+                                             </span>
+                                         )}
+                                    </button>
+
+                                    {/* Area Tugas-Tugas */}
+                                    <div className="p-5 flex-1 space-y-3 bg-[#FDFDFD]">
+                                        {taskNames.map((taskName, tIdx) => {
+                                            const completedAt = sample.taskTimes[tIdx];
+                                            const isDone = completedAt !== null;
+                                            
+                                            const activeIdx = sample.taskTimes.findIndex(t => t === null);
+                                            const isActive = activeIdx === tIdx && (isRunning || time > 0) && !isManualFrozen;
+                                            
+                                            const displaySeconds = getTaskDisplayTime(sample, tIdx, sIdx);
+                                            
+                                            return (
+                                                <div 
+                                                    key={tIdx}
+                                                    onContextMenu={(e) => handleTaskRightClick(e, sIdx, tIdx)}
+                                                    onClick={() => handleTaskClick(sIdx, tIdx)}
+                                                    className={`relative flex items-center justify-between p-4 border-2 transition-all cursor-pointer select-none overflow-hidden group h-[76px] ${
+                                                        isDone 
+                                                        ? 'bg-[#00A19C] border-[#00A19C] text-[#FDFDFD]' 
+                                                        : isActive
+                                                        ? 'bg-[#FDFDFD] border-[#00A19C] text-[#002D72] ring-2 ring-[#00A19C]/20 shadow-md shadow-[#00A19C]/5'
+                                                        : 'bg-[#FDFDFD] border-slate-100 hover:border-[#002D72] text-[#002D72]'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-4 z-10 flex-1 min-w-0 pr-2">
+                                                        <div className={`w-8 h-8 flex items-center justify-center shrink-0 transition-all rounded ${
+                                                            isDone 
+                                                            ? 'bg-[#FDFDFD] text-[#00A19C]' 
+                                                            : isActive 
+                                                            ? 'bg-[#00A19C] text-[#FDFDFD] animate-pulse' 
+                                                            : 'bg-slate-100 text-slate-300'
+                                                        }`}>
+                                                            {isDone ? <Check size={18} /> : <ChevronRight size={18} />}
+                                                        </div>
+                                                        <span className={`text-[13px] font-black uppercase tracking-wider leading-tight text-left ${isDone ? 'italic opacity-80' : ''}`}>
+                                                            {taskName}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    <div className={`font-mono text-sm font-black px-3 py-1 z-10 shrink-0 ${
+                                                        isDone ? 'bg-black/20' : isActive ? 'bg-[#00A19C]/10 text-[#00A19C]' : 'bg-slate-50 text-slate-400'
+                                                    }`}>
+                                                        {formatTime(displaySeconds)}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </main>
+                </div>
+            );
+        };
+
+        // Render Komponen Utama
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
