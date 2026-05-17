@@ -837,7 +837,7 @@
                                                 </div>
 
                                                 {/* Kolom Judul Tabel (Telemetry Header) */}
-                                                <div className="bg-slate-100 border-b border-slate-200 text-[10px] font-black uppercase text-[#002D72]/60 tracking-wider flex justify-between py-1.5 px-4 shrink-0">
+                                                <div className="bg-slate-100 border-b border-slate-200 text-[10px] font-black uppercase text-[#002D72]/60 tracking-wider flex justify-between py-1.5 px-3 shrink-0">
                                                     <span>Segmen Jaringan</span>
                                                     <span>Kebutuhan Host</span>
                                                 </div>
@@ -851,7 +851,7 @@
                                                         return (
                                                             <div 
                                                                 key={itemIdx} 
-                                                                className={`group flex items-center justify-between px-4 border-b border-slate-100 last:border-0 transition-all hover:bg-slate-100 flex-1 min-h-0 ${rowBg}`}
+                                                                className={`group flex items-center justify-between px-3 border-b border-slate-100 last:border-0 transition-all hover:bg-slate-100 flex-1 py-0 min-h-0 ${rowBg}`}
                                                             >
                                                                 <div className="flex items-center gap-2.5">
                                                                     {/* Ikon dengan warna yang kohesif/senada tanpa merah */}
@@ -866,13 +866,14 @@
                                                                             </svg>
                                                                         )}
                                                                     </div>
-                                                                    <span className="font-extrabold text-xs text-[#002D72] uppercase tracking-wide">
+                                                                    {/* Teks Segmen diperbesar ke text-lg, menggunakan font-black tebal */}
+                                                                    <span className="font-black text-lg text-[#002D72] uppercase tracking-wider leading-none">
                                                                         {item.name}
                                                                     </span>
                                                                 </div>
                                                                 <div className="text-right">
-                                                                    {/* Teks Host Sauber Blue, Tanpa Hover Merah yang membingungkan */}
-                                                                    <span className="font-extrabold text-2xl text-[#002D72] leading-none">
+                                                                    {/* Teks Host diperbesar ke text-3xl dengan font Plus Jakarta Sans */}
+                                                                    <span className="font-black text-3xl text-[#002D72] leading-none">
                                                                         {item.hosts}
                                                                     </span>
                                                                 </div>
