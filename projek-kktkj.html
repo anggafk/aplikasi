@@ -707,74 +707,80 @@
                                 >
                                     {/* PANEL ACAK TUGAS (Overlay Absolut Sebesar Kotak Kelompok) */}
                                     {openOverlays[sIdx] && (
-                                        <div className="absolute inset-0 bg-[#FDFDFD] z-30 flex flex-col p-5 border-t-8 border-[#00A19C] overflow-y-auto">
-                                            {/* Header Panel Acak */}
-                                            <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
-                                                <div className="flex items-center gap-2 text-[#002D72]">
-                                                    <Users size={18} className="text-[#00A19C]" />
-                                                    <span className="font-black text-xs uppercase tracking-wider">ACAK ANGGOTA KELOMPOK</span>
+                                        <div className="absolute inset-0 bg-[#FDFDFD] z-30 flex flex-col border-t-8 border-[#00A19C] overflow-hidden">
+                                            {/* Header Panel Acak - Setinggi kotak waktu utama (h-[220px]) */}
+                                            <div className="h-[220px] border-b-2 border-slate-100 bg-[#f8fafc] flex flex-col justify-between p-4 shrink-0">
+                                                <div className="flex justify-between items-center shrink-0">
+                                                    <div className="flex items-center gap-2 text-[#002D72]">
+                                                        <Users size={18} className="text-[#00A19C]" />
+                                                        <span className="font-black text-xs uppercase tracking-wider">{titles[sIdx]} - TUGAS</span>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => {
+                                                            const next = [...openOverlays];
+                                                            next[sIdx] = false;
+                                                            setOpenOverlays(next);
+                                                        }}
+                                                        className="text-slate-400 hover:text-[#E10600] transition-colors"
+                                                        title="Tutup"
+                                                    >
+                                                        <X size={20} />
+                                                    </button>
                                                 </div>
-                                                <button 
-                                                    onClick={() => {
-                                                        const next = [...openOverlays];
-                                                        next[sIdx] = false;
-                                                        setOpenOverlays(next);
-                                                    }}
-                                                    className="text-slate-400 hover:text-[#E10600] transition-colors"
-                                                    title="Tutup"
-                                                >
-                                                    <X size={20} />
-                                                </button>
+
+                                                {/* Textarea Input Nama Anggota Kelompok (Siswa A1 - A4) */}
+                                                <div className="flex-1 flex flex-col justify-end mt-2">
+                                                    <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 text-left">Daftar Nama (1 Baris = 1 Nama)</label>
+                                                    <div className="flex gap-2 items-end">
+                                                        <textarea
+                                                            className="flex-1 bg-white border border-slate-300 px-2.5 py-1.5 text-xs font-bold focus:ring-0 focus:border-[#00A19C] outline-none h-[100px] text-[#002D72] resize-none rounded shadow-inner"
+                                                            value={getInputs[sIdx]}
+                                                            onChange={(e) => handleInputChange(sIdx, e.target.value)}
+                                                            placeholder="Masukkan nama siswa..."
+                                                        />
+                                                        <button
+                                                            onClick={() => handleShuffle(sIdx, getInputs[sIdx])}
+                                                            disabled={shufflingGroups[sIdx]}
+                                                            className="bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black px-4 h-[100px] text-xs uppercase tracking-wider transition-all rounded shadow-sm shrink-0 flex items-center justify-center"
+                                                        >
+                                                            {shufflingGroups[sIdx] ? 'ACAK...' : 'ACAK'}
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
 
-                                            {/* Textarea Input Nama Anggota Kelompok (Siswa A1 - A4) */}
-                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-left">Daftar Nama Siswa (1 Baris = 1 Nama)</label>
-                                            <textarea
-                                                className="w-full bg-[#f1f5f9] border border-slate-200 p-2.5 text-xs font-bold focus:ring-0 focus:border-[#00A19C] outline-none h-[72px] mb-2.5 text-[#002D72] resize-none"
-                                                value={getInputs[sIdx]}
-                                                onChange={(e) => handleInputChange(sIdx, e.target.value)}
-                                                placeholder="Siswa 1&#10;Siswa 2..."
-                                            />
-
-                                            {/* Tombol Acak Nama */}
-                                            <button
-                                                onClick={() => handleShuffle(sIdx, getInputs[sIdx])}
-                                                disabled={shufflingGroups[sIdx]}
-                                                className="w-full bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black py-2.5 text-xs uppercase tracking-wider transition-all disabled:opacity-50 mb-3"
-                                            >
-                                                {shufflingGroups[sIdx] ? 'MENGACAK...' : 'ACAK TUGAS'}
-                                            </button>
-
-                                            {/* Hasil Acak Anggota A, B, C, D */}
-                                            <div className="space-y-1.5 flex-1 overflow-y-auto">
+                                            {/* Hasil Acak Anggota A, B, C, D yang diubah ukurannya SETINGGI kotak tugas di halaman utama (h-[76px]) */}
+                                            <div className="p-5 flex-1 flex flex-col justify-between overflow-hidden gap-3 bg-[#FDFDFD]">
                                                 {['A', 'B', 'C', 'D'].map((letter, letterIdx) => (
                                                     <div 
                                                         key={letter} 
-                                                        className={`flex items-center border border-slate-200 bg-white h-9 transition-all rounded ${
+                                                        className={`relative flex items-center gap-3 pl-2.5 pr-2 py-0 border-2 border-slate-100 bg-white rounded h-[76px] shrink-0 transition-all ${
                                                             shufflingGroups[sIdx] ? 'blur-[1px] opacity-70 animate-pulse' : ''
                                                         }`}
                                                     >
-                                                        <div className="w-9 h-full bg-[#002D72] text-[#FDFDFD] flex items-center justify-center font-black text-xs shrink-0 rounded-l">
+                                                        <div className="w-8 h-8 flex items-center justify-center shrink-0 rounded bg-[#002D72] text-[#FDFDFD] font-black font-bebas text-xl">
                                                             {letter}
                                                         </div>
-                                                        <div className="px-3 font-bold text-xs text-[#002D72] truncate">
+                                                        <span className="text-[15px] font-black uppercase tracking-wider text-[#002D72] truncate">
                                                             {shuffledLists[sIdx][letterIdx] || "---"}
-                                                        </div>
+                                                        </span>
                                                     </div>
                                                 ))}
                                             </div>
 
                                             {/* Tombol Tutup Panel di Bagian Bawah */}
-                                            <button
-                                                onClick={() => {
-                                                    const next = [...openOverlays];
-                                                    next[sIdx] = false;
-                                                    setOpenOverlays(next);
-                                                }}
-                                                className="mt-4 w-full bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black py-2.5 text-xs uppercase tracking-wider transition-all rounded"
-                                            >
-                                                TUTUP
-                                            </button>
+                                            <div className="px-5 pb-5 pt-2 bg-[#FDFDFD] shrink-0">
+                                                <button
+                                                    onClick={() => {
+                                                        const next = [...openOverlays];
+                                                        next[sIdx] = false;
+                                                        setOpenOverlays(next);
+                                                    }}
+                                                    className="w-full bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black py-2.5 text-xs uppercase tracking-wider transition-all rounded shrink-0 border-2 border-slate-200"
+                                                >
+                                                    TUTUP
+                                                </button>
+                                            </div>
                                         </div>
                                     )}
 
