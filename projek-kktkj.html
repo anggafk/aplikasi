@@ -16,6 +16,9 @@
                         'petronas-cyan': '#00A19C',
                         'speed-white': '#FDFDFD',
                         'red-bull-red': '#E10600'
+                    },
+                    fontFamily: {
+                        'bebas': ['"Bebas Neue"', 'sans-serif']
                     }
                 }
             }
@@ -27,8 +30,8 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     
-    <!-- Google Fonts: Plus Jakarta Sans -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Plus Jakarta Sans dan Bebas Neue -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
@@ -144,19 +147,19 @@
             const [isModalOpen, setIsModalOpen] = useState(false);
             const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
             
-            // Konfigurasi awal Kelompok
+            // Konfigurasi awal Kelompok & 4 Tugas terpisah dengan newline (\n) untuk 2 baris
             const [rawTitles, setRawTitles] = useState("KELOMPOK 1\nKELOMPOK 2\nKELOMPOK 3");
-            const [taskNames] = useState([
-                "Splicing FO",
-                "VLSM",
-                "Konfigurasi Router",
-                "Trouble\u200bshooting"
+            const [taskNames, setTaskNames] = useState([
+                "SPLICING\nFO",
+                "HITUNG\nVLSM",
+                "KONFIGURASI\nROUTER",
+                "TROUBLE\nSHOOTING"
             ]);
 
-            // Splicing FO: 60 m (3600s), VLSM: 30 m (1800s), Konfigurasi Router: 30 m (1800s)
+            // Splicing FO: 60m (3600s), VLSM: 30m (1800s), Konfigurasi Router: 30m (1800s)
             const taskMaxTimes = [3600, 1800, 1800, null];
 
-            // Penjaga stabilitas waktu saat tab diminimize / ganti tab
+            // Penjaga stabilitas waktu saat tab tidak aktif (survive background/minimize tab)
             const startTimeRef = useRef(0);
             const elapsedRef = useRef(0);
 
@@ -199,7 +202,7 @@
 
             const titles = getTitles();
 
-            // Interval Timer Utama (Akurat, Survive Tab Inactivity)
+            // Interval Timer Utama (Akurat, Survive Tab Inactivity) - Hitung Mundur dari 165 Menit (9900 Detik)
             useEffect(() => {
                 let interval = null;
 
@@ -208,10 +211,17 @@
 
                     const tick = () => {
                         const nextTime = Math.floor((Date.now() - startTimeRef.current) / 1000);
-                        setTime(nextTime);
-                        elapsedRef.current = nextTime;
+                        
+                        // Batasi maksimum waktu berjalan pada 165 Menit (9900 detik)
+                        const finalTime = Math.min(9900, nextTime);
+                        setTime(finalTime);
+                        elapsedRef.current = finalTime;
 
-                        // Periksa transisi tugas otomatis
+                        if (finalTime >= 9900) {
+                            setIsRunning(false);
+                        }
+
+                        // Periksa transisi tugas otomatis secara real-time
                         setSampleResults((prevResults) => 
                             prevResults.map((sample, sIdx) => {
                                 if (groupFreezeTimesRef.current[sIdx] !== null) return sample;
@@ -220,9 +230,9 @@
                                 if (activeIdx === -1) return sample;
 
                                 const previousTime = activeIdx === 0 ? 0 : sample.taskTimes[activeIdx - 1];
-                                const elapsedInTask = nextTime - previousTime;
+                                const elapsedInTask = finalTime - previousTime;
 
-                                // Auto transition sesuai durasi
+                                // Auto transition sesuai batas waktu (Splicing FO: 60m, VLSM: 30m, Router: 30m)
                                 if (activeIdx === 0 && elapsedInTask >= 3600) {
                                     const newTimes = [...sample.taskTimes];
                                     newTimes[0] = 3600;
@@ -238,10 +248,10 @@
                                     newTimes[2] = previousTime + 1800;
                                     return { ...sample, taskTimes: newTimes };
                                 }
-                                // Selesai otomatis di 3 Jam (10800 Detik)
-                                if (activeIdx === 3 && nextTime >= 10800) {
+                                // Troubleshooting selesai otomatis saat batas maksimal 165 Menit (9900 detik) tercapai
+                                if (activeIdx === 3 && finalTime >= 9900) {
                                     const newTimes = [...sample.taskTimes];
-                                    newTimes[3] = 10800;
+                                    newTimes[3] = 9900;
                                     return { ...sample, taskTimes: newTimes };
                                 }
 
@@ -330,7 +340,7 @@
                 });
             };
 
-            // Format waktu kumulatif Menit:Detik (contoh: 70:12)
+            // Format waktu kumulatif Menit:Detik (contoh: 165:00, 102:44)
             const formatTime = (seconds) => {
                 if (seconds === null) return "--:--";
                 const mins = Math.floor(seconds / 60);
@@ -349,21 +359,62 @@
                 return time;
             };
 
+            // Menghitung Sisa Waktu Tugas secara Mundur (Countdown) - Sangat Presisi & Mendukung Akumulasi Waktu
             const getTaskDisplayTime = (sample, tIdx, sIdx) => {
-                const completedAt = sample.taskTimes[tIdx];
-                if (completedAt !== null) {
-                    if (tIdx === 0) return completedAt;
-                    return completedAt - sample.taskTimes[tIdx - 1];
-                }
-                
+                const T0 = sample.taskTimes[0];
+                const T1 = sample.taskTimes[1];
+                const T2 = sample.taskTimes[2];
+
+                // Hitung sisa waktu hemat dari tugas yang sudah diselesaikan
+                const R0 = T0 !== null ? Math.max(0, 3600 - T0) : 0;
+                const R1 = (T1 !== null && T0 !== null) ? Math.max(0, 1800 - (T1 - T0)) : 0;
+                const R2 = (T2 !== null && T1 !== null) ? Math.max(0, 1800 - (T2 - T1)) : 0;
+
+                // Batas waktu dasar Troubleshooting adalah 45 menit (2700 detik) + bonus sisa waktu tugas sebelumnya
+                const troubleshootingBaseLimit = 2700;
+                const troubleshootingTotalLimit = troubleshootingBaseLimit + R0 + R1 + R2;
+
                 const activeIdx = sample.taskTimes.findIndex(t => t === null);
-                if (activeIdx === tIdx && (isRunning || time > 0)) {
-                    const currentReferenceTime = groupFreezeTimes[sIdx] !== null ? groupFreezeTimes[sIdx] : time;
-                    if (tIdx === 0) return currentReferenceTime;
-                    return currentReferenceTime - sample.taskTimes[tIdx - 1];
+
+                // 1. Jika tugas tertentu sudah selesai diklik (Lock hasil akhir sisa waktunya)
+                if (sample.taskTimes[tIdx] !== null) {
+                    const completedAt = sample.taskTimes[tIdx];
+                    if (tIdx === 0) {
+                        return Math.max(0, 3600 - completedAt);
+                    } else if (tIdx === 1) {
+                        return Math.max(0, 1800 - (completedAt - T0));
+                    } else if (tIdx === 2) {
+                        return Math.max(0, 1800 - (completedAt - T1));
+                    } else { // tIdx === 3 (Troubleshooting selesai)
+                        return Math.max(0, troubleshootingTotalLimit - (completedAt - T2));
+                    }
                 }
                 
-                return null;
+                // 2. Jika tugas tersebut sedang aktif dikerjakan (Sedang berjalan secara real-time)
+                const currentReferenceTime = groupFreezeTimes[sIdx] !== null ? groupFreezeTimes[sIdx] : time;
+                if (activeIdx === tIdx && (isRunning || time > 0)) {
+                    if (tIdx === 0) {
+                        return Math.max(0, 3600 - currentReferenceTime);
+                    } else if (tIdx === 1) {
+                        return Math.max(0, 1800 - (currentReferenceTime - T0));
+                    } else if (tIdx === 2) {
+                        return Math.max(0, 1800 - (currentReferenceTime - T1));
+                    } else { // tIdx === 3 (Troubleshooting sedang aktif berjalan)
+                        return Math.max(0, troubleshootingTotalLimit - (currentReferenceTime - T2));
+                    }
+                }
+
+                // 3. Jika tugas belum aktif / belum dimulai (Menampilkan waktu awal / sisa waktu statis saat ini)
+                if (tIdx === 0) {
+                    return 3600; // Splicing FO: 60:00
+                } else if (tIdx === 1) {
+                    return 1800; // VLSM: 30:00
+                } else if (tIdx === 2) {
+                    return 1800; // Router: 30:00
+                } else { // tIdx === 3 (Troubleshooting belum aktif)
+                    // Menampilkan 45:00 + sisa waktu dari tugas-tugas yang telah selesai sejauh ini (tetap diam/tidak berkurang)
+                    return troubleshootingTotalLimit;
+                }
             };
 
             // Animasi Pengacakan 4 Siswa (Getar & Acak Cepat selama 3 detik)
@@ -419,9 +470,9 @@
                             return next;
                         });
                         setShufflingGroups(prev => {
-                            const next = [...prev];
-                            next[groupIdx] = false;
-                            return next;
+                            const text = [...prev];
+                            text[groupIdx] = false;
+                            return text;
                         });
                     }
                 }, 200);
@@ -514,9 +565,35 @@
                                         value={rawTitles}
                                         onChange={(e) => setRawTitles(e.target.value)}
                                     />
+                                    
+                                    <label className="block text-[10px] font-black text-[#002D72]/40 uppercase tracking-widest mb-2 mt-4">NAMA MODUL TUGAS (EDIT)</label>
+                                    <div className="space-y-2">
+                                        {taskNames.map((name, idx) => (
+                                            <div key={idx} className="flex items-center gap-3">
+                                                <span className="text-xs font-black text-[#00A19C] w-4">0{idx + 1}</span>
+                                                <input 
+                                                    type="text"
+                                                    className="flex-1 bg-[#f1f5f9] border-b-2 border-transparent focus:border-[#00A19C] px-3 py-1.5 text-xs font-bold outline-none transition-all text-[#002D72]"
+                                                    value={name.replace('\n', ' ')}
+                                                    onChange={(e) => {
+                                                        const newNames = [...taskNames];
+                                                        const val = e.target.value;
+                                                        const words = val.split(' ');
+                                                        if (words.length > 1) {
+                                                            newNames[idx] = words[0] + '\n' + words.slice(1).join(' ');
+                                                        } else {
+                                                            newNames[idx] = val;
+                                                        }
+                                                        setTaskNames(newNames);
+                                                    }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+
                                     <button 
                                         onClick={() => setIsModalOpen(false)}
-                                        className="w-full bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black py-4 uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-lg"
+                                        className="w-full mt-6 bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black py-4 uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-lg"
                                     >
                                         UPDATE DATA SISTEM
                                     </button>
@@ -540,8 +617,9 @@
                             <div className="flex items-center gap-6">
                                  <div className="flex flex-col items-end">
                                     <span className="text-[10px] font-black text-[#00A19C] uppercase tracking-widest">Waktu Global</span>
-                                    <div className="font-mono text-4xl font-black leading-none tabular-nums tracking-tighter">
-                                        {formatTime(time)}
+                                    {/* Sisa waktu global yang menghitung mundur dengan font Bebas Neue Tebal */}
+                                    <div className="font-bebas text-5xl font-black leading-none tracking-wider pt-1.5">
+                                        {formatTime(Math.max(0, 9900 - time))}
                                     </div>
                                  </div>
                                  
@@ -619,10 +697,11 @@
                                              {titles[sIdx]}
                                          </h3>
                                          
-                                         <div className={`text-[100px] font-mono font-black tabular-nums tracking-tighter leading-none transition-colors group-hover/timer:scale-105 duration-200 transform ${
+                                         {/* Sisa waktu countdown kelompok menggunakan Bebas Neue Tebal */}
+                                         <div className={`text-[110px] font-bebas font-black tracking-wider leading-none transition-colors group-hover/timer:scale-105 duration-200 transform ${
                                              isGroupFinished ? 'text-[#00A19C]' : isRunning ? 'text-[#002D72]' : 'text-slate-200'
                                          }`}>
-                                             {formatTime(groupTime)}
+                                             {formatTime(Math.max(0, 9900 - groupTime))}
                                          </div>
                                          
                                          {isManualFrozen && (
@@ -639,16 +718,20 @@
                                             const isDone = completedAt !== null;
                                             
                                             const activeIdx = sample.taskTimes.findIndex(t => t === null);
-                                            const isActive = activeIdx === tIdx && (isRunning || time > 0) && !isManualFrozen;
+                                            // Menjaga status isActive tetap aktif meskipun kelompok sedang di-freeze manual (agar tetap hijau)
+                                            const isActive = activeIdx === tIdx && (isRunning || time > 0);
                                             
                                             const displaySeconds = getTaskDisplayTime(sample, tIdx, sIdx);
                                             
+                                            // Split berdasarkan newline (\n) untuk 2 baris
+                                            const lines = taskName.split('\n');
+
                                             return (
                                                 <div 
                                                     key={tIdx}
                                                     onContextMenu={(e) => handleTaskRightClick(e, sIdx, tIdx)}
                                                     onClick={() => handleTaskClick(sIdx, tIdx)}
-                                                    className={`relative flex items-center justify-between p-4 border-2 transition-all cursor-pointer select-none overflow-hidden group h-[76px] ${
+                                                    className={`relative flex items-center justify-between pl-2.5 pr-2 py-0 border-2 transition-all cursor-pointer select-none overflow-hidden group h-[76px] ${
                                                         isDone 
                                                         ? 'bg-[#00A19C] border-[#00A19C] text-[#FDFDFD]' 
                                                         : isActive
@@ -656,23 +739,28 @@
                                                         : 'bg-[#FDFDFD] border-slate-100 hover:border-[#002D72] text-[#002D72]'
                                                     }`}
                                                 >
-                                                    <div className="flex items-center gap-4 z-10 flex-1 min-w-0 pr-2">
+                                                    <div className="flex items-center gap-2.5 z-10 flex-1 min-w-0 pr-1">
                                                         <div className={`w-8 h-8 flex items-center justify-center shrink-0 transition-all rounded ${
                                                             isDone 
                                                             ? 'bg-[#FDFDFD] text-[#00A19C]' 
                                                             : isActive 
-                                                            ? 'bg-[#00A19C] text-[#FDFDFD] animate-pulse' 
+                                                            ? `bg-[#00A19C] text-[#FDFDFD] ${(!isManualFrozen && isRunning) ? 'animate-pulse' : ''}` 
                                                             : 'bg-slate-100 text-slate-300'
                                                         }`}>
                                                             {isDone ? <Check size={18} /> : <ChevronRight size={18} />}
                                                         </div>
-                                                        <span className={`text-[13px] font-black uppercase tracking-wider leading-tight text-left ${isDone ? 'italic opacity-80' : ''}`}>
-                                                            {taskName}
+                                                        <span className={`text-[15px] font-black uppercase tracking-wider leading-[1.05] text-left ${isDone ? 'italic opacity-80' : ''}`}>
+                                                            {lines[0]}<br/>{lines[1] || ''}
                                                         </span>
                                                     </div>
                                                     
-                                                    <div className={`font-mono text-sm font-black px-3 py-1 z-10 shrink-0 ${
-                                                        isDone ? 'bg-black/20' : isActive ? 'bg-[#00A19C]/10 text-[#00A19C]' : 'bg-slate-50 text-slate-400'
+                                                    {/* Waktu countdown tugas berukuran raksasa 6xl dengan font Bebas Neue */}
+                                                    <div className={`font-bebas text-6xl font-black tracking-normal z-10 shrink-0 pl-1 leading-none pt-1 ${
+                                                        isDone 
+                                                        ? 'text-[#FDFDFD]' 
+                                                        : isActive 
+                                                        ? 'text-[#00A19C]' 
+                                                        : 'text-slate-300'
                                                     }`}>
                                                         {formatTime(displaySeconds)}
                                                     </div>
