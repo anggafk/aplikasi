@@ -145,8 +145,13 @@
             const [time, setTime] = useState(0);
             const [isRunning, setIsRunning] = useState(false);
             const [isModalOpen, setIsModalOpen] = useState(false);
-            const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
             
+            // State untuk melacak panel "Acak Tugas" yang terbuka di masing-masing kelompok [Klp1, Klp2, Klp3]
+            const [openOverlays, setOpenOverlays] = useState([false, false, false]);
+
+            // State baru untuk melacak panel "Lihat IP" yang terbuka di masing-masing kelompok
+            const [openIpOverlays, setOpenIpOverlays] = useState([false, false, false]);
+
             // Konfigurasi awal Kelompok & 4 Tugas terpisah dengan newline (\n) untuk 2 baris
             const [rawTitles, setRawTitles] = useState("KELOMPOK 1\nKELOMPOK 2\nKELOMPOK 3");
             const [taskNames, setTaskNames] = useState([
@@ -178,7 +183,7 @@
                 groupFreezeTimesRef.current = groupFreezeTimes;
             }, [groupFreezeTimes]);
 
-            // State Pengacakan Anggota (Maksimal 4 Siswa)
+            // State Pengacakan Anggota (Maksimal 4 Siswa) - TETAP DIATUR SEPERTI INI, JANGAN DIUBAH
             const [group1NamesInput, setGroup1NamesInput] = useState("Siswa A1\nSiswa A2\nSiswa A3\nSiswa A4");
             const [group2NamesInput, setGroup2NamesInput] = useState("Siswa B1\nSiswa B2\nSiswa B3\nSiswa B4");
             const [group3NamesInput, setGroup3NamesInput] = useState("Siswa C1\nSiswa C2\nSiswa C3\nSiswa C4");
@@ -190,6 +195,49 @@
             ]);
 
             const [shufflingGroups, setShufflingGroups] = useState([false, false, false]);
+
+            // State IP dan Host Dinamis untuk masing-masing kelompok (Inisialisasi kosong/strip terlebih dahulu)
+            const [groupIpConfigs, setGroupIpConfigs] = useState([
+                {
+                    baseIp: "---",
+                    segments: [
+                        { name: "PC A", hosts: "-" },
+                        { name: "RA-RB", hosts: "-" },
+                        { name: "PC B", hosts: "-" },
+                        { name: "RB-RC", hosts: "-" },
+                        { name: "PC C", hosts: "-" },
+                        { name: "RC-RD", hosts: "-" },
+                        { name: "PC D", hosts: "-" }
+                    ]
+                },
+                {
+                    baseIp: "---",
+                    segments: [
+                        { name: "PC A", hosts: "-" },
+                        { name: "RA-RB", hosts: "-" },
+                        { name: "PC B", hosts: "-" },
+                        { name: "RB-RC", hosts: "-" },
+                        { name: "PC C", hosts: "-" },
+                        { name: "RC-RD", hosts: "-" },
+                        { name: "PC D", hosts: "-" }
+                    ]
+                },
+                {
+                    baseIp: "---",
+                    segments: [
+                        { name: "PC A", hosts: "-" },
+                        { name: "RA-RB", hosts: "-" },
+                        { name: "PC B", hosts: "-" },
+                        { name: "RB-RC", hosts: "-" },
+                        { name: "PC C", hosts: "-" },
+                        { name: "RC-RD", hosts: "-" },
+                        { name: "PC D", hosts: "-" }
+                    ]
+                }
+            ]);
+
+            // State Input Mentah Format IP & Host untuk masing-masing kelompok (Kosong sepenuhnya sejak awal)
+            const [rawIpInputs, setRawIpInputs] = useState(["", "", ""]);
 
             const getTitles = () => {
                 const lines = rawTitles.split(/\r?\n/);
@@ -417,6 +465,53 @@
                 }
             };
 
+            // Helper reaktif untuk menangani perubahan input nama siswa di parent state
+            const handleInputChange = (sIdx, value) => {
+                if (sIdx === 0) setGroup1NamesInput(value);
+                else if (sIdx === 1) setGroup2NamesInput(value);
+                else if (sIdx === 2) setGroup3NamesInput(value);
+            };
+
+            // Logika Parsing Skema IP dan Kebutuhan Host dari Input Guru/Siswa
+            const handleSaveIpConfig = (sIdx) => {
+                const inputText = rawIpInputs[sIdx].trim();
+                if (!inputText) return;
+                
+                // Split string berdasarkan tanda pipe "|"
+                const parts = inputText.split("|").map(p => p.trim());
+                if (parts.length < 8) {
+                    // Abaikan jika tidak lengkap
+                    return;
+                }
+
+                const baseIp = parts[0];
+                const pcA = parts[1] || "-";
+                const ra_rb = parts[2] || "-";
+                const pcB = parts[3] || "-";
+                const rb_rc = parts[4] || "-";
+                const pcC = parts[5] || "-";
+                const rc_rd = parts[6] || "-";
+                const pcD = parts[7] || "-";
+
+                setGroupIpConfigs(prev => prev.map((config, idx) => {
+                    if (idx === sIdx) {
+                        return {
+                            baseIp: baseIp,
+                            segments: [
+                                { name: "PC A", hosts: pcA },
+                                { name: "RA-RB", hosts: ra_rb },
+                                { name: "PC B", hosts: pcB },
+                                { name: "RB-RC", hosts: rb_rc },
+                                { name: "PC C", hosts: pcC },
+                                { name: "RC-RD", hosts: rc_rd },
+                                { name: "PC D", hosts: pcD }
+                            ]
+                        };
+                    }
+                    return config;
+                }));
+            };
+
             // Animasi Pengacakan 4 Siswa (Getar & Acak Cepat selama 3 detik)
             const handleShuffle = (groupIdx, inputString) => {
                 if (shufflingGroups[groupIdx]) return;
@@ -479,71 +574,10 @@
             };
 
             const getInputs = [group1NamesInput, group2NamesInput, group3NamesInput];
-            const setInputs = [setGroup1NamesInput, setGroup2NamesInput, setGroup3NamesInput];
 
             return (
                 <div className="min-h-screen bg-[#FDFDFD] font-sans text-[#002D72]">
                     
-                    {/* Modal Popup Acak Anggota Kelompok (4 Siswa Tetap) */}
-                    {isUsersModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                            <div className="absolute inset-0 bg-[#002D72]/80 backdrop-blur-md" onClick={() => setIsUsersModalOpen(false)}></div>
-                            <div className="relative bg-[#FDFDFD] w-full max-w-5xl rounded-none border-t-8 border-[#00A19C] shadow-[0_0_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col text-left text-[#002D72] max-h-[90vh]">
-                                <div className="bg-[#002D72] p-5 flex justify-between items-center text-[#FDFDFD]">
-                                    <div className="flex items-center gap-3">
-                                        <Users size={20} className="text-[#00A19C]" />
-                                        <h2 className="font-black text-sm uppercase tracking-[0.2em]">ACAK ANGGOTA KELOMPOK</h2>
-                                    </div>
-                                    <button onClick={() => setIsUsersModalOpen(false)} className="hover:text-[#E10600] transition-colors">
-                                        <X size={24} />
-                                    </button>
-                                </div>
-                                
-                                <div className="p-6 overflow-y-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {[0, 1, 2].map((idx) => (
-                                        <div key={idx} className="bg-[#f8fafc] p-4 border border-slate-200 flex flex-col">
-                                            <h3 className="font-black text-sm uppercase tracking-wider text-[#002D72] mb-3 text-center">{titles[idx]}</h3>
-                                            
-                                            <label className="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Daftar Nama Siswa (1 Baris = 1 Nama)</label>
-                                            <textarea
-                                                className="w-full bg-[#FDFDFD] border border-slate-200 p-3 text-xs font-bold focus:ring-0 focus:border-[#00A19C] outline-none h-24 mb-4 text-[#002D72] resize-none"
-                                                value={getInputs[idx]}
-                                                onChange={(e) => setInputs[idx](e.target.value)}
-                                                placeholder="Siswa 1&#10;Siswa 2..."
-                                            />
-
-                                            <button
-                                                onClick={() => handleShuffle(idx, getInputs[idx])}
-                                                disabled={shufflingGroups[idx]}
-                                                className="w-full bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black py-2.5 text-xs uppercase tracking-wider transition-all disabled:opacity-50 mb-4"
-                                            >
-                                                {shufflingGroups[idx] ? 'MENGACAK...' : 'ACAK TUGAS'}
-                                            </button>
-
-                                            <div className="space-y-1.5">
-                                                {['A', 'B', 'C', 'D'].map((letter, letterIdx) => (
-                                                    <div 
-                                                        key={letter} 
-                                                        className={`flex items-center border border-slate-200 bg-white h-10 transition-all ${
-                                                            shufflingGroups[idx] ? 'blur-[1px] opacity-70 animate-pulse' : ''
-                                                        }`}
-                                                    >
-                                                        <div className="w-10 h-full bg-[#002D72] text-[#FDFDFD] flex items-center justify-center font-black text-sm shrink-0">
-                                                            {letter}
-                                                        </div>
-                                                        <div className="px-3 font-bold text-xs text-[#002D72] truncate">
-                                                            {shuffledLists[idx][letterIdx] || "---"}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {/* Modal Popup Konfigurasi Nama Kelompok */}
                     {isModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -551,7 +585,7 @@
                             <div className="relative bg-[#FDFDFD] w-full max-w-lg rounded-none border-t-8 border-[#00A19C] shadow-[0_0_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col text-left text-[#002D72]">
                                 <div className="bg-[#002D72] p-5 flex justify-between items-center text-[#FDFDFD]">
                                     <div className="flex items-center gap-3">
-                                        <Settings size={20} className="text-[#00A19C] animate-[spin_4s_linear_infinite]" />
+                                        <Settings size={20} className="text-[#00A19C]" />
                                         <h2 className="font-black text-sm uppercase tracking-[0.2em]">SISTEM KONFIGURASI</h2>
                                     </div>
                                     <button onClick={() => setIsModalOpen(false)} className="hover:text-[#E10600] transition-colors">
@@ -645,15 +679,6 @@
                             </div>
 
                             <div className="flex gap-2">
-                                {/* Tombol Pengacak Anggota (Users) */}
-                                <button 
-                                    onClick={() => setIsUsersModalOpen(true)} 
-                                    className="p-3 border-2 border-[#00A19C] text-[#00A19C] hover:bg-[#00A19C] hover:text-[#FDFDFD] transition-all flex items-center justify-center group shadow-sm"
-                                    title="Acak Anggota Kelompok"
-                                >
-                                    <Users size={20} className="group-hover:scale-110 transition-transform duration-300" />
-                                </button>
-
                                 {/* Tombol Konfigurasi Nama Kelompok (Gear) */}
                                 <button 
                                     onClick={() => setIsModalOpen(true)} 
@@ -672,16 +697,211 @@
                             const groupTime = getDisplayTimeForGroup(sample, sIdx);
                             const isManualFrozen = groupFreezeTimes[sIdx] !== null;
                             const isGroupFinished = sample.taskTimes.every(t => t !== null) || isManualFrozen;
+                            const ipConfig = groupIpConfigs[sIdx];
 
                             return (
                                 <div 
                                     key={sample.id} 
-                                    className={`bg-[#FDFDFD] border-t-8 transition-all duration-300 flex flex-col shadow-xl h-full ${
-                                        isGroupFinished 
-                                        ? 'border-[#00A19C]' 
-                                        : isRunning ? 'border-[#002D72]' : 'border-slate-200'
-                                    }`}
+                                    className="relative overflow-hidden bg-[#FDFDFD] border-t-8 transition-all duration-300 flex flex-col shadow-xl h-full border-slate-200"
+                                    style={{
+                                        borderTopColor: isGroupFinished ? '#00A19C' : isRunning ? '#002D72' : '#e2e8f0'
+                                    }}
                                 >
+                                    {/* PANEL ACAK TUGAS (Overlay Absolut Sebesar Kotak Kelompok) */}
+                                    {openOverlays[sIdx] && (
+                                        <div className="absolute inset-0 bg-[#FDFDFD] z-30 flex flex-col p-5 border-t-8 border-[#00A19C] overflow-y-auto">
+                                            {/* Header Panel Acak */}
+                                            <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                                                <div className="flex items-center gap-2 text-[#002D72]">
+                                                    <Users size={18} className="text-[#00A19C]" />
+                                                    <span className="font-black text-xs uppercase tracking-wider">ACAK ANGGOTA KELOMPOK</span>
+                                                </div>
+                                                <button 
+                                                    onClick={() => {
+                                                        const next = [...openOverlays];
+                                                        next[sIdx] = false;
+                                                        setOpenOverlays(next);
+                                                    }}
+                                                    className="text-slate-400 hover:text-[#E10600] transition-colors"
+                                                    title="Tutup"
+                                                >
+                                                    <X size={20} />
+                                                </button>
+                                            </div>
+
+                                            {/* Textarea Input Nama Anggota Kelompok (Siswa A1 - A4) */}
+                                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1 text-left">Daftar Nama Siswa (1 Baris = 1 Nama)</label>
+                                            <textarea
+                                                className="w-full bg-[#f1f5f9] border border-slate-200 p-2.5 text-xs font-bold focus:ring-0 focus:border-[#00A19C] outline-none h-[72px] mb-2.5 text-[#002D72] resize-none"
+                                                value={getInputs[sIdx]}
+                                                onChange={(e) => handleInputChange(sIdx, e.target.value)}
+                                                placeholder="Siswa 1&#10;Siswa 2..."
+                                            />
+
+                                            {/* Tombol Acak Nama */}
+                                            <button
+                                                onClick={() => handleShuffle(sIdx, getInputs[sIdx])}
+                                                disabled={shufflingGroups[sIdx]}
+                                                className="w-full bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black py-2.5 text-xs uppercase tracking-wider transition-all disabled:opacity-50 mb-3"
+                                            >
+                                                {shufflingGroups[sIdx] ? 'MENGACAK...' : 'ACAK TUGAS'}
+                                            </button>
+
+                                            {/* Hasil Acak Anggota A, B, C, D */}
+                                            <div className="space-y-1.5 flex-1 overflow-y-auto">
+                                                {['A', 'B', 'C', 'D'].map((letter, letterIdx) => (
+                                                    <div 
+                                                        key={letter} 
+                                                        className={`flex items-center border border-slate-200 bg-white h-9 transition-all rounded ${
+                                                            shufflingGroups[sIdx] ? 'blur-[1px] opacity-70 animate-pulse' : ''
+                                                        }`}
+                                                    >
+                                                        <div className="w-9 h-full bg-[#002D72] text-[#FDFDFD] flex items-center justify-center font-black text-xs shrink-0 rounded-l">
+                                                            {letter}
+                                                        </div>
+                                                        <div className="px-3 font-bold text-xs text-[#002D72] truncate">
+                                                            {shuffledLists[sIdx][letterIdx] || "---"}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Tombol Tutup Panel di Bagian Bawah */}
+                                            <button
+                                                onClick={() => {
+                                                    const next = [...openOverlays];
+                                                    next[sIdx] = false;
+                                                    setOpenOverlays(next);
+                                                }}
+                                                className="mt-4 w-full bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black py-2.5 text-xs uppercase tracking-wider transition-all rounded"
+                                            >
+                                                TUTUP
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* PANEL DETAIL ALOKASI IP & HOST - TELEMETRY RACING THEME */}
+                                    {openIpOverlays[sIdx] && (
+                                        <div className="absolute inset-0 bg-[#FDFDFD] z-30 flex flex-col p-5 border-t-8 border-[#00A19C] overflow-y-auto">
+                                            {/* Header Panel IP */}
+                                            <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                                                <div className="flex items-center gap-2 text-[#002D72]">
+                                                    <RouterIcon className="text-[#00A19C] w-5 h-5" />
+                                                    {/* Diganti dinamis menjadi nama kelompok menggantikan teks SKEMA IP & HOST PRAKTIK */}
+                                                    <span className="font-black text-xs uppercase tracking-wider">{titles[sIdx]}</span>
+                                                </div>
+                                                <button 
+                                                    onClick={() => {
+                                                        const next = [...openIpOverlays];
+                                                        next[sIdx] = false;
+                                                        setOpenIpOverlays(next);
+                                                    }}
+                                                    className="text-slate-400 hover:text-[#E10600] transition-colors"
+                                                    title="Tutup"
+                                                >
+                                                    <X size={20} />
+                                                </button>
+                                            </div>
+
+                                            {/* Kotak Input Pengisian IP & Kebutuhan Host secara Manual */}
+                                            <div className="mb-4 bg-slate-50 p-3 border border-slate-200 rounded">
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        className="flex-1 bg-white border border-slate-300 px-2.5 py-1.5 text-xs font-bold focus:ring-0 focus:border-[#00A19C] outline-none text-[#002D72] rounded shadow-inner"
+                                                        value={rawIpInputs[sIdx]}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setRawIpInputs(prev => {
+                                                                const next = [...prev];
+                                                                next[sIdx] = val;
+                                                                return next;
+                                                            });
+                                                        }}
+                                                        placeholder="Masukkan skema IP & Host..."
+                                                    />
+                                                    <button
+                                                        onClick={() => handleSaveIpConfig(sIdx)}
+                                                        className="bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black px-4 py-1.5 text-xs uppercase tracking-wider transition-all rounded shadow-sm shrink-0"
+                                                    >
+                                                        SIMPAN
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Tabel Alokasi Telemetry Setema dengan Dashboard */}
+                                            <div className="bg-white rounded-lg border border-slate-200 shadow-md mb-4 flex-1 flex flex-col overflow-hidden">
+                                                {/* Header Blok - "BASE IP NETWORK" ditiadakan, alamat IP berwarna putih dengan font Bebas Neue tebal berukuran besar (text-4xl) */}
+                                                <div className="bg-[#002D72] text-[#FDFDFD] p-3 text-center border-b-4 border-[#00A19C] flex items-center justify-center min-h-[56px]">
+                                                    <div className="font-bebas text-4xl tracking-wider text-white font-black leading-none py-1">
+                                                        {ipConfig.baseIp}
+                                                    </div>
+                                                </div>
+
+                                                {/* Tabel Data Telemetry */}
+                                                <div className="flex-1 overflow-y-auto">
+                                                    <table className="w-full text-left">
+                                                        <thead>
+                                                            <tr className="bg-slate-100 border-b border-slate-200 text-[10px] font-black uppercase text-[#002D72]/60 tracking-wider">
+                                                                <th className="py-2.5 px-4">Segmen Jaringan</th>
+                                                                <th className="py-2.5 px-4 text-right">Kebutuhan Host</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-slate-100">
+                                                            {ipConfig.segments.map((item, itemIdx) => {
+                                                                const isRouter = item.name.includes("-");
+                                                                return (
+                                                                    <tr 
+                                                                        key={itemIdx} 
+                                                                        className={`group transition-all hover:bg-slate-50/80 ${
+                                                                            isRouter ? 'border-l-4 border-[#E10600]' : 'border-l-4 border-[#00A19C]'
+                                                                        }`}
+                                                                    >
+                                                                        <td className="py-2.5 px-4 flex items-center gap-2">
+                                                                            <div className={`p-1.5 rounded shrink-0 ${
+                                                                                isRouter ? 'bg-[#E10600]/10 text-[#E10600]' : 'bg-[#00A19C]/10 text-[#00A19C]'
+                                                                            }`}>
+                                                                                {isRouter ? (
+                                                                                    <RouterIcon className="w-4 h-4" />
+                                                                                ) : (
+                                                                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                                                                                        <line x1="8" y1="21" x2="16" y2="21" />
+                                                                                        <line x1="12" y1="17" x2="12" y2="21" />
+                                                                                    </svg>
+                                                                                )}
+                                                                            </div>
+                                                                            <span className="font-extrabold text-sm text-[#002D72] uppercase tracking-wide">
+                                                                                {item.name}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td className="py-2.5 px-4 text-right">
+                                                                            {/* Kebutuhan host hanya ditampilkan angkanya saja dengan font yang sama dengan segmen (Plus Jakarta Sans) ukuran text-3xl */}
+                                                                            <span className="font-extrabold text-3xl text-[#002D72]/80 group-hover:text-[#E10600] transition-colors leading-none">
+                                                                                {item.hosts}
+                                                                            </span>
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+
+                                            {/* Tombol Tutup Panel di Bagian Bawah */}
+                                            <button
+                                                onClick={() => {
+                                                    const next = [...openIpOverlays];
+                                                    next[sIdx] = false;
+                                                    setOpenIpOverlays(next);
+                                                }}
+                                                className="w-full bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black py-2.5 text-xs uppercase tracking-wider transition-all rounded"
+                                            >
+                                                TUTUP
+                                            </button>
+                                        </div>
+                                    )}
                                     
                                     {/* Area Display Besar Kelompok (Dapat diklik untuk Selesai / Freeze Manual) */}
                                     <button 
@@ -767,6 +987,32 @@
                                                 </div>
                                             );
                                         })}
+                                    </div>
+
+                                    {/* Tombol Aksi di Bagian Bawah Tiap Kelompok (Grid Kolom-2 Simetris) */}
+                                    <div className="px-5 pb-5 pt-2 bg-[#FDFDFD] grid grid-cols-2 gap-3 shrink-0">
+                                        <button
+                                            onClick={() => {
+                                                const next = [...openOverlays];
+                                                next[sIdx] = true;
+                                                setOpenOverlays(next);
+                                            }}
+                                            className="w-full py-2.5 border-2 border-dashed border-[#002D72] text-[#002D72] hover:bg-[#002D72] hover:text-[#FDFDFD] transition-all font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-1.5 rounded"
+                                        >
+                                            <Users size={14} />
+                                            LIHAT TUGAS
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const next = [...openIpOverlays];
+                                                next[sIdx] = true;
+                                                setOpenIpOverlays(next);
+                                            }}
+                                            className="w-full py-2.5 border-2 border-dashed border-[#00A19C] text-[#00A19C] hover:bg-[#00A19C] hover:text-[#FDFDFD] transition-all font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-1.5 rounded"
+                                        >
+                                            <RouterIcon className="w-3.5 h-3.5" />
+                                            LIHAT IP
+                                        </button>
                                     </div>
                                 </div>
                             );
