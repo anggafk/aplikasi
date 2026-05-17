@@ -782,9 +782,9 @@
 
                                     {/* PANEL DETAIL ALOKASI IP & HOST - TELEMETRY RACING THEME */}
                                     {openIpOverlays[sIdx] && (
-                                        <div className="absolute inset-0 bg-[#FDFDFD] z-30 flex flex-col p-5 border-t-8 border-[#00A19C] overflow-y-auto">
+                                        <div className="absolute inset-0 bg-[#FDFDFD] z-30 flex flex-col p-3 border-t-8 border-[#00A19C] overflow-hidden">
                                             {/* Header Panel IP */}
-                                            <div className="flex justify-between items-center mb-3 pb-2 border-b border-slate-100">
+                                            <div className="flex justify-between items-center mb-2 pb-1 border-b border-slate-100">
                                                 <div className="flex items-center gap-2 text-[#002D72]">
                                                     <RouterIcon className="text-[#00A19C] w-5 h-5" />
                                                     {/* Diganti dinamis menjadi nama kelompok menggantikan teks SKEMA IP & HOST PRAKTIK */}
@@ -804,7 +804,7 @@
                                             </div>
 
                                             {/* Kotak Input Pengisian IP & Kebutuhan Host secara Manual */}
-                                            <div className="mb-4 bg-slate-50 p-3 border border-slate-200 rounded">
+                                            <div className="mb-2 bg-slate-50 p-2 border border-slate-200 rounded">
                                                 <div className="flex gap-2">
                                                     <input
                                                         type="text"
@@ -830,21 +830,21 @@
                                             </div>
 
                                             {/* Tabel Alokasi Telemetry Setema dengan Dashboard */}
-                                            <div className="bg-white rounded-lg border border-slate-200 shadow-md mb-4 flex-1 flex flex-col overflow-hidden">
+                                            <div className="bg-white rounded-lg border border-slate-200 shadow-md mb-2 flex-1 flex flex-col overflow-hidden">
                                                 {/* Header Blok - "BASE IP NETWORK" ditiadakan, alamat IP berwarna putih dengan font Bebas Neue tebal berukuran besar (text-4xl) */}
-                                                <div className="bg-[#002D72] text-[#FDFDFD] p-3 text-center border-b-4 border-[#00A19C] flex items-center justify-center min-h-[56px]">
+                                                <div className="bg-[#002D72] text-[#FDFDFD] p-2 text-center border-b-4 border-[#00A19C] flex items-center justify-center min-h-[44px] shrink-0">
                                                     <div className="font-bebas text-4xl tracking-wider text-white font-black leading-none py-1">
                                                         {ipConfig.baseIp}
                                                     </div>
                                                 </div>
 
                                                 {/* Tabel Data Telemetry */}
-                                                <div className="flex-1 overflow-y-auto">
+                                                <div className="flex-1 overflow-hidden">
                                                     <table className="w-full text-left">
                                                         <thead>
                                                             <tr className="bg-slate-100 border-b border-slate-200 text-[10px] font-black uppercase text-[#002D72]/60 tracking-wider">
-                                                                <th className="py-2.5 px-4">Segmen Jaringan</th>
-                                                                <th className="py-2.5 px-4 text-right">Kebutuhan Host</th>
+                                                                <th className="py-1.5 px-4">Segmen Jaringan</th>
+                                                                <th className="py-1.5 px-4 text-right">Kebutuhan Host</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-slate-100">
@@ -857,8 +857,8 @@
                                                                             isRouter ? 'border-l-4 border-[#E10600]' : 'border-l-4 border-[#00A19C]'
                                                                         }`}
                                                                     >
-                                                                        <td className="py-2.5 px-4 flex items-center gap-2">
-                                                                            <div className={`p-1.5 rounded shrink-0 ${
+                                                                        <td className="py-1 px-4 flex items-center gap-2">
+                                                                            <div className={`p-1 rounded shrink-0 ${
                                                                                 isRouter ? 'bg-[#E10600]/10 text-[#E10600]' : 'bg-[#00A19C]/10 text-[#00A19C]'
                                                                             }`}>
                                                                                 {isRouter ? (
@@ -871,13 +871,13 @@
                                                                                     </svg>
                                                                                 )}
                                                                             </div>
-                                                                            <span className="font-extrabold text-sm text-[#002D72] uppercase tracking-wide">
+                                                                            <span className="font-extrabold text-xs text-[#002D72] uppercase tracking-wide">
                                                                                 {item.name}
                                                                             </span>
                                                                         </td>
-                                                                        <td className="py-2.5 px-4 text-right">
+                                                                        <td className="py-1 px-4 text-right">
                                                                             {/* Kebutuhan host hanya ditampilkan angkanya saja dengan font yang sama dengan segmen (Plus Jakarta Sans) ukuran text-3xl */}
-                                                                            <span className="font-extrabold text-3xl text-[#002D72]/80 group-hover:text-[#E10600] transition-colors leading-none">
+                                                                            <span className="font-extrabold text-2xl text-[#002D72]/80 group-hover:text-[#E10600] transition-colors leading-none">
                                                                                 {item.hosts}
                                                                             </span>
                                                                         </td>
@@ -896,7 +896,7 @@
                                                     next[sIdx] = false;
                                                     setOpenIpOverlays(next);
                                                 }}
-                                                className="w-full bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black py-2.5 text-xs uppercase tracking-wider transition-all rounded"
+                                                className="w-full bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black py-2 text-xs uppercase tracking-wider transition-all rounded shrink-0"
                                             >
                                                 TUTUP
                                             </button>
