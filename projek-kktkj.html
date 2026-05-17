@@ -142,102 +142,186 @@
         );
 
         const App = () => {
-            const [time, setTime] = useState(0);
-            const [isRunning, setIsRunning] = useState(false);
-            const [isModalOpen, setIsModalOpen] = useState(false);
-            
-            // State untuk melacak panel "Acak Tugas" yang terbuka di masing-masing kelompok [Klp1, Klp2, Klp3]
-            const [openOverlays, setOpenOverlays] = useState([false, false, false]);
+            // Lazy State Initializer: Memulihkan status penuh dari localStorage jika ada, agar survive dari mati listrik
+            const [time, setTime] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_time');
+                return saved ? parseInt(saved, 10) : 0;
+            });
 
-            // State baru untuk melacak panel "Lihat IP" yang terbuka di masing-masing kelompok
+            const [isRunning, setIsRunning] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_isRunning');
+                return saved === 'true';
+            });
+
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false); // Modal konfirmasi manual
+            
+            // State untuk melacak panel yang terbuka di masing-masing kelompok [Klp1, Klp2, Klp3]
+            const [openOverlays, setOpenOverlays] = useState([false, false, false]);
             const [openIpOverlays, setOpenIpOverlays] = useState([false, false, false]);
 
             // Konfigurasi awal Kelompok & 4 Tugas terpisah dengan newline (\n) untuk 2 baris
-            const [rawTitles, setRawTitles] = useState("KELOMPOK 1\nKELOMPOK 2\nKELOMPOK 3");
-            const [taskNames, setTaskNames] = useState([
-                "SPLICING\nFO",
-                "HITUNG\nVLSM",
-                "KONFIGURASI\nROUTER",
-                "TROUBLE\nSHOOTING"
-            ]);
+            const [rawTitles, setRawTitles] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_rawTitles');
+                return saved || "KELOMPOK 1\nKELOMPOK 2\nKELOMPOK 3";
+            });
+
+            const [taskNames, setTaskNames] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_taskNames');
+                return saved ? JSON.parse(saved) : [
+                    "SPLICING\nFO",
+                    "HITUNG\nVLSM",
+                    "KONFIGURASI\nROUTER",
+                    "TROUBLE\nSHOOTING"
+                ];
+            });
 
             // Splicing FO: 60m (3600s), VLSM: 30m (1800s), Konfigurasi Router: 30m (1800s)
             const taskMaxTimes = [3600, 1800, 1800, null];
 
             // Penjaga stabilitas waktu saat tab tidak aktif (survive background/minimize tab)
             const startTimeRef = useRef(0);
-            const elapsedRef = useRef(0);
+            const elapsedRef = useRef(time); // Inisialisasi Ref sesuai dengan durasi waktu yang dipulihkan
 
             // State hasil tugas kelompok
-            const [sampleResults, setSampleResults] = useState([
-                { id: 1, taskTimes: [null, null, null, null] },
-                { id: 2, taskTimes: [null, null, null, null] },
-                { id: 3, taskTimes: [null, null, null, null] }
-            ]);
+            const [sampleResults, setSampleResults] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_sampleResults');
+                return saved ? JSON.parse(saved) : [
+                    { id: 1, taskTimes: [null, null, null, null] },
+                    { id: 2, taskTimes: [null, null, null, null] },
+                    { id: 3, taskTimes: [null, null, null, null] }
+                ];
+            });
 
             // State toggle freeze / selesai manual
-            const [groupFreezeTimes, setGroupFreezeTimes] = useState([null, null, null]);
-            const groupFreezeTimesRef = useRef([null, null, null]);
+            const [groupFreezeTimes, setGroupFreezeTimes] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_groupFreezeTimes');
+                return saved ? JSON.parse(saved) : [null, null, null];
+            });
+
+            const groupFreezeTimesRef = useRef(groupFreezeTimes);
 
             useEffect(() => {
                 groupFreezeTimesRef.current = groupFreezeTimes;
             }, [groupFreezeTimes]);
 
             // State Pengacakan Anggota (Maksimal 4 Siswa) - TETAP DIATUR SEPERTI INI, JANGAN DIUBAH
-            const [group1NamesInput, setGroup1NamesInput] = useState("Siswa A1\nSiswa A2\nSiswa A3\nSiswa A4");
-            const [group2NamesInput, setGroup2NamesInput] = useState("Siswa B1\nSiswa B2\nSiswa B3\nSiswa B4");
-            const [group3NamesInput, setGroup3NamesInput] = useState("Siswa C1\nSiswa C2\nSiswa C3\nSiswa C4");
+            const [group1NamesInput, setGroup1NamesInput] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_group1NamesInput');
+                return saved || "Siswa A1\nSiswa A2\nSiswa A3\nSiswa A4";
+            });
+            const [group2NamesInput, setGroup2NamesInput] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_group2NamesInput');
+                return saved || "Siswa B1\nSiswa B2\nSiswa B3\nSiswa B4";
+            });
+            const [group3NamesInput, setGroup3NamesInput] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_group3NamesInput');
+                return saved || "Siswa C1\nSiswa C2\nSiswa C3\nSiswa C4";
+            });
 
-            const [shuffledLists, setShuffledLists] = useState([
-                ["Siswa A1", "Siswa A2", "Siswa A3", "Siswa A4"],
-                ["Siswa B1", "Siswa B2", "Siswa B3", "Siswa B4"],
-                ["Siswa C1", "Siswa C2", "Siswa C3", "Siswa C4"]
-            ]);
+            const [shuffledLists, setShuffledLists] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_shuffledLists');
+                return saved ? JSON.parse(saved) : [
+                    ["Siswa A1", "Siswa A2", "Siswa A3", "Siswa A4"],
+                    ["Siswa B1", "Siswa B2", "Siswa B3", "Siswa B4"],
+                    ["Siswa C1", "Siswa C2", "Siswa C3", "Siswa C4"]
+                ];
+            });
 
             const [shufflingGroups, setShufflingGroups] = useState([false, false, false]);
 
-            // State IP dan Host Dinamis untuk masing-masing kelompok (Inisialisasi kosong/strip terlebih dahulu)
-            const [groupIpConfigs, setGroupIpConfigs] = useState([
-                {
-                    baseIp: "---",
-                    segments: [
-                        { name: "PC A", hosts: "-" },
-                        { name: "RA-RB", hosts: "-" },
-                        { name: "PC B", hosts: "-" },
-                        { name: "RB-RC", hosts: "-" },
-                        { name: "PC C", hosts: "-" },
-                        { name: "RC-RD", hosts: "-" },
-                        { name: "PC D", hosts: "-" }
-                    ]
-                },
-                {
-                    baseIp: "---",
-                    segments: [
-                        { name: "PC A", hosts: "-" },
-                        { name: "RA-RB", hosts: "-" },
-                        { name: "PC B", hosts: "-" },
-                        { name: "RB-RC", hosts: "-" },
-                        { name: "PC C", hosts: "-" },
-                        { name: "RC-RD", hosts: "-" },
-                        { name: "PC D", hosts: "-" }
-                    ]
-                },
-                {
-                    baseIp: "---",
-                    segments: [
-                        { name: "PC A", hosts: "-" },
-                        { name: "RA-RB", hosts: "-" },
-                        { name: "PC B", hosts: "-" },
-                        { name: "RB-RC", hosts: "-" },
-                        { name: "PC C", hosts: "-" },
-                        { name: "RC-RD", hosts: "-" },
-                        { name: "PC D", hosts: "-" }
-                    ]
-                }
-            ]);
+            // State IP dan Host Dinamis untuk masing-masing kelompok
+            const [groupIpConfigs, setGroupIpConfigs] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_groupIpConfigs');
+                return saved ? JSON.parse(saved) : [
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    },
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    },
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    }
+                ];
+            });
 
-            // State Input Mentah Format IP & Host untuk masing-masing kelompok (Kosong sepenuhnya sejak awal)
-            const [rawIpInputs, setRawIpInputs] = useState(["", "", ""]);
+            // State Input Mentah Format IP & Host untuk masing-masing kelompok
+            const [rawIpInputs, setRawIpInputs] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_rawIpInputs');
+                return saved ? JSON.parse(saved) : ["", "", ""];
+            });
+
+            // --- EFFECT HOOKS UNTUK PERSISTENSI LOCALSTORAGE SECARA OTOMATIS ---
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_time', time.toString());
+            }, [time]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_isRunning', isRunning.toString());
+            }, [isRunning]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_rawTitles', rawTitles);
+            }, [rawTitles]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_taskNames', JSON.stringify(taskNames));
+            }, [taskNames]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_sampleResults', JSON.stringify(sampleResults));
+            }, [sampleResults]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_groupFreezeTimes', JSON.stringify(groupFreezeTimes));
+            }, [groupFreezeTimes]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_group1NamesInput', group1NamesInput);
+                localStorage.setItem('kk_tkj_group2NamesInput', group2NamesInput);
+                localStorage.setItem('kk_tkj_group3NamesInput', group3NamesInput);
+            }, [group1NamesInput, group2NamesInput, group3NamesInput]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_shuffledLists', JSON.stringify(shuffledLists));
+            }, [shuffledLists]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_groupIpConfigs', JSON.stringify(groupIpConfigs));
+            }, [groupIpConfigs]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_rawIpInputs', JSON.stringify(rawIpInputs));
+            }, [rawIpInputs]);
+
 
             const getTitles = () => {
                 const lines = rawTitles.split(/\r?\n/);
@@ -331,13 +415,71 @@
 
             const toggleTimer = () => setIsRunning(!isRunning);
 
-            // STOP & RESET ALL
+            // Buka Modal Konfirmasi Reset Manual (Stop Button)
             const handleStopAndReset = () => {
+                setIsResetConfirmOpen(true);
+            };
+
+            // Bersihkan semua data LocalStorage saat eksekusi Reset
+            const executeReset = () => {
+                setIsResetConfirmOpen(false);
                 setIsRunning(false);
                 setTime(0);
                 elapsedRef.current = 0;
                 setGroupFreezeTimes([null, null, null]);
-                setSampleResults(sampleResults.map(s => ({ ...s, taskTimes: [null, null, null, null] })));
+                setSampleResults([
+                    { id: 1, taskTimes: [null, null, null, null] },
+                    { id: 2, taskTimes: [null, null, null, null] },
+                    { id: 3, taskTimes: [null, null, null, null] }
+                ]);
+                setGroupIpConfigs([
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    },
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    },
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    }
+                ]);
+                setRawIpInputs(["", "", ""]);
+                
+                // Pembersihan storage bersih
+                localStorage.removeItem('kk_tkj_time');
+                localStorage.removeItem('kk_tkj_isRunning');
+                localStorage.removeItem('kk_tkj_groupFreezeTimes');
+                localStorage.removeItem('kk_tkj_sampleResults');
+                localStorage.removeItem('kk_tkj_shuffledLists');
+                localStorage.removeItem('kk_tkj_groupIpConfigs');
+                localStorage.removeItem('kk_tkj_rawIpInputs');
             };
 
             const handleTaskClick = (sampleIndex, taskIndex) => {
@@ -512,7 +654,7 @@
                 }));
             };
 
-            // Animasi Pengacakan 4 Siswa (Getar & Acak Cepat selama 3 detik)
+            // Animasi Pengacakan 4 Siswa (Didesain pintar agar jika siswa < 4, slot bawah otomatis dikosongkan secara statis)
             const handleShuffle = (groupIdx, inputString) => {
                 if (shufflingGroups[groupIdx]) return;
 
@@ -523,10 +665,8 @@
                 });
 
                 const lines = inputString.split(/\r?\n/).map(name => name.trim()).filter(Boolean);
-                const listToShuffle = [...lines];
-                while (listToShuffle.length < 4) {
-                    listToShuffle.push("---");
-                }
+                const actualNames = lines.slice(0, 4); // Maksimal 4 nama
+                const activeCount = actualNames.length;
 
                 let ticks = 0;
                 const maxTicks = 15;
@@ -535,10 +675,15 @@
                     setShuffledLists(prev => {
                         const next = prev.map((list, idx) => {
                             if (idx === groupIdx) {
-                                const temp = [...listToShuffle];
+                                // Hanya acak data nama siswa yang benar-benar dimasukkan
+                                const temp = [...actualNames];
                                 for (let i = temp.length - 1; i > 0; i--) {
                                     const j = Math.floor(Math.random() * (i + 1));
                                     [temp[i], temp[j]] = [temp[j], temp[i]];
+                                }
+                                // Isi sisa slot bawah yang kosong dengan tanda hubung "---"
+                                while (temp.length < 4) {
+                                    temp.push("---");
                                 }
                                 return temp;
                             }
@@ -553,10 +698,13 @@
                         setShuffledLists(prev => {
                             const next = prev.map((list, idx) => {
                                 if (idx === groupIdx) {
-                                    const final = [...listToShuffle];
+                                    const final = [...actualNames];
                                     for (let i = final.length - 1; i > 0; i--) {
                                         const j = Math.floor(Math.random() * (i + 1));
                                         [final[i], final[j]] = [final[j], final[i]];
+                                    }
+                                    while (final.length < 4) {
+                                        final.push("---");
                                     }
                                     return final;
                                 }
@@ -565,9 +713,9 @@
                             return next;
                         });
                         setShufflingGroups(prev => {
-                            const text = [...prev];
-                            text[groupIdx] = false;
-                            return text;
+                            const next = [...prev];
+                            next[groupIdx] = false;
+                            return next;
                         });
                     }
                 }, 200);
@@ -578,6 +726,36 @@
             return (
                 <div className="min-h-screen bg-[#FDFDFD] font-sans text-[#002D72]">
                     
+                    {/* CUSTOM MODAL KONFIRMASI RESET (STOP) */}
+                    {isResetConfirmOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-[#002D72]/80 backdrop-blur-md" onClick={() => setIsResetConfirmOpen(false)}></div>
+                            <div className="relative bg-[#FDFDFD] w-full max-w-md rounded-none border-t-8 border-[#E10600] shadow-[0_0_50px_rgba(0,0,0,0.3)] p-6 text-left">
+                                <div className="flex items-center gap-3 text-[#E10600] mb-4">
+                                    <Square size={24} className="fill-[#E10600] text-[#E10600]" />
+                                    <h2 className="font-black text-lg uppercase tracking-wider">KONFIRMASI RESET</h2>
+                                </div>
+                                <p className="text-sm font-bold text-[#002D72] mb-6">
+                                    Apakah Anda yakin ingin menghentikan ujian global dan menghapus semua data persisten timer kelompok? Tindakan ini tidak dapat dibatalkan.
+                                </p>
+                                <div className="flex gap-3 justify-end">
+                                    <button
+                                        onClick={() => setIsResetConfirmOpen(false)}
+                                        className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black text-xs uppercase tracking-wider transition-all rounded border-2 border-slate-200"
+                                    >
+                                        BATAL
+                                    </button>
+                                    <button
+                                        onClick={executeReset}
+                                        className="px-5 py-2.5 bg-[#E10600] hover:bg-[#b00500] text-white font-black text-xs uppercase tracking-wider transition-all rounded"
+                                    >
+                                        YA, RESET SEMUA
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Modal Popup Konfigurasi Nama Kelompok */}
                     {isModalOpen && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -820,7 +998,7 @@
                                                                 const next = [...prev];
                                                                 next[sIdx] = val;
                                                                 return next;
-                                                            });
+                                                                });
                                                         }}
                                                         placeholder="Masukkan skema IP & Host..."
                                                     />
