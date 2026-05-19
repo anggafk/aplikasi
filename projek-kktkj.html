@@ -143,14 +143,21 @@
 
         const App = () => {
             // Lazy State Initializer: Memulihkan status penuh dari localStorage jika ada, agar survive dari mati listrik
-            const [time, setTime] = useState(() => {
-                const saved = localStorage.getItem('kk_tkj_time');
-                return saved ? parseInt(saved, 10) : 0;
-            });
-
             const [isRunning, setIsRunning] = useState(() => {
                 const saved = localStorage.getItem('kk_tkj_isRunning');
                 return saved === 'true';
+            });
+
+            // Waktu berjalan spesifik untuk masing-masing kelompok (elapsed seconds)
+            const [groupTimes, setGroupTimes] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_groupTimes');
+                return saved ? JSON.parse(saved) : [0, 0, 0];
+            });
+
+            // Status keaktifan individu masing-masing kelompok
+            const [groupIsRunning, setGroupIsRunning] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_groupIsRunning');
+                return saved ? JSON.parse(saved) : [true, true, true];
             });
 
             const [isModalOpen, setIsModalOpen] = useState(false);
@@ -160,7 +167,7 @@
             const [openOverlays, setOpenOverlays] = useState([false, false, false]);
             const [openIpOverlays, setOpenIpOverlays] = useState([false, false, false]);
 
-            // Konfigurasi awal Kelompok & 4 Tugas terpisah dengan newline (\n) untuk 2 baris
+            // Konfigurasi nama kelompok
             const [rawTitles, setRawTitles] = useState(() => {
                 const saved = localStorage.getItem('kk_tkj_rawTitles');
                 return saved || "KELOMPOK 1\nKELOMPOK 2\nKELOMPOK 3";
@@ -180,8 +187,7 @@
             const taskMaxTimes = [3600, 1800, 1800, null];
 
             // Penjaga stabilitas waktu saat tab tidak aktif (survive background/minimize tab)
-            const startTimeRef = useRef(0);
-            const elapsedRef = useRef(time); // Inisialisasi Ref sesuai dengan durasi waktu yang dipulihkan
+            const lastTimeRef = useRef(Date.now());
 
             // State hasil tugas kelompok
             const [sampleResults, setSampleResults] = useState(() => {
@@ -193,17 +199,10 @@
                 ];
             });
 
-            // State toggle freeze / selesai manual
-            const [groupFreezeTimes, setGroupFreezeTimes] = useState(() => {
-                const saved = localStorage.getItem('kk_tkj_groupFreezeTimes');
-                return saved ? JSON.parse(saved) : [null, null, null];
-            });
-
-            const groupFreezeTimesRef = useRef(groupFreezeTimes);
-
+            const sampleResultsRef = useRef(sampleResults);
             useEffect(() => {
-                groupFreezeTimesRef.current = groupFreezeTimes;
-            }, [groupFreezeTimes]);
+                sampleResultsRef.current = sampleResults;
+            }, [sampleResults]);
 
             // State Pengacakan Anggota (Maksimal 4 Siswa) - TETAP DIATUR SEPERTI INI, JANGAN DIUBAH
             const [group1NamesInput, setGroup1NamesInput] = useState(() => {
@@ -230,7 +229,7 @@
 
             const [shufflingGroups, setShufflingGroups] = useState([false, false, false]);
 
-            // State IP dan Host Dinamis untuk masing-masing kelompok
+            // State IP dan Host Dinamis untuk masing-masing kelompok (Inisialisasi kosong/strip terlebih dahulu)
             const [groupIpConfigs, setGroupIpConfigs] = useState(() => {
                 const saved = localStorage.getItem('kk_tkj_groupIpConfigs');
                 return saved ? JSON.parse(saved) : [
@@ -273,7 +272,7 @@
                 ];
             });
 
-            // State Input Mentah Format IP & Host untuk masing-masing kelompok
+            // State Input Mentah Format IP & Host untuk masing-masing kelompok (Kosong sepenuhnya sejak awal)
             const [rawIpInputs, setRawIpInputs] = useState(() => {
                 const saved = localStorage.getItem('kk_tkj_rawIpInputs');
                 return saved ? JSON.parse(saved) : ["", "", ""];
@@ -281,8 +280,12 @@
 
             // --- EFFECT HOOKS UNTUK PERSISTENSI LOCALSTORAGE SECARA OTOMATIS ---
             useEffect(() => {
-                localStorage.setItem('kk_tkj_time', time.toString());
-            }, [time]);
+                localStorage.setItem('kk_tkj_groupTimes', JSON.stringify(groupTimes));
+            }, [groupTimes]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_groupIsRunning', JSON.stringify(groupIsRunning));
+            }, [groupIsRunning]);
 
             useEffect(() => {
                 localStorage.setItem('kk_tkj_isRunning', isRunning.toString());
@@ -299,10 +302,6 @@
             useEffect(() => {
                 localStorage.setItem('kk_tkj_sampleResults', JSON.stringify(sampleResults));
             }, [sampleResults]);
-
-            useEffect(() => {
-                localStorage.setItem('kk_tkj_groupFreezeTimes', JSON.stringify(groupFreezeTimes));
-            }, [groupFreezeTimes]);
 
             useEffect(() => {
                 localStorage.setItem('kk_tkj_group1NamesInput', group1NamesInput);
@@ -334,66 +333,76 @@
 
             const titles = getTitles();
 
-            // Interval Timer Utama (Akurat, Survive Tab Inactivity) - Hitung Mundur dari 165 Menit (9900 Detik)
+            // Interval Timer Utama (Akurat, Survive Tab Inactivity) - Tiap Kelompok memiliki Waktu Sendiri
             useEffect(() => {
                 let interval = null;
 
                 if (isRunning) {
-                    startTimeRef.current = Date.now() - elapsedRef.current * 1000;
+                    lastTimeRef.current = Date.now();
 
                     const tick = () => {
-                        const nextTime = Math.floor((Date.now() - startTimeRef.current) / 1000);
-                        
-                        // Batasi maksimum waktu berjalan pada 165 Menit (9900 detik)
-                        const finalTime = Math.min(9900, nextTime);
-                        setTime(finalTime);
-                        elapsedRef.current = finalTime;
+                        const now = Date.now();
+                        const deltaMs = now - lastTimeRef.current;
+                        if (deltaMs >= 1000) {
+                            const secondsPassed = Math.floor(deltaMs / 1000);
+                            lastTimeRef.current = lastTimeRef.current + (secondsPassed * 1000);
 
-                        if (finalTime >= 9900) {
-                            setIsRunning(false);
+                            setGroupTimes(prevTimes => {
+                                const nextTimes = [...prevTimes];
+                                let resultsChanged = false;
+                                
+                                const nextResults = sampleResultsRef.current.map((sample, sIdx) => {
+                                    const isFinished = sample.taskTimes.every(t => t !== null) || prevTimes[sIdx] >= 9900;
+                                    
+                                    // Hanya kurangi waktu jika kelompok dalam status jalan dan belum selesai seluruh tugas
+                                    if (groupIsRunning[sIdx] && !isFinished) {
+                                        nextTimes[sIdx] = Math.min(9900, prevTimes[sIdx] + secondsPassed);
+
+                                        // Auto transition check secara real-time
+                                        const activeIdx = sample.taskTimes.findIndex(t => t === null);
+                                        if (activeIdx !== -1) {
+                                            const previousTime = activeIdx === 0 ? 0 : sample.taskTimes[activeIdx - 1];
+                                            const elapsedInTask = nextTimes[sIdx] - previousTime;
+
+                                            if (activeIdx === 0 && elapsedInTask >= 3600) {
+                                                resultsChanged = true;
+                                                const newTimes = [...sample.taskTimes];
+                                                newTimes[0] = 3600;
+                                                return { ...sample, taskTimes: newTimes };
+                                            }
+                                            if (activeIdx === 1 && elapsedInTask >= 1800) {
+                                                resultsChanged = true;
+                                                const newTimes = [...sample.taskTimes];
+                                                newTimes[1] = previousTime + 1800;
+                                                return { ...sample, taskTimes: newTimes };
+                                            }
+                                            if (activeIdx === 2 && elapsedInTask >= 1800) {
+                                                resultsChanged = true;
+                                                const newTimes = [...sample.taskTimes];
+                                                newTimes[2] = previousTime + 1800;
+                                                return { ...sample, taskTimes: newTimes };
+                                            }
+                                            if (activeIdx === 3 && nextTimes[sIdx] >= 9900) {
+                                                resultsChanged = true;
+                                                const newTimes = [...sample.taskTimes];
+                                                newTimes[3] = 9900;
+                                                return { ...sample, taskTimes: newTimes };
+                                            }
+                                        }
+                                    }
+                                    return sample;
+                                });
+
+                                if (resultsChanged) {
+                                    setSampleResults(nextResults);
+                                }
+                                return nextTimes;
+                            });
                         }
-
-                        // Periksa transisi tugas otomatis secara real-time
-                        setSampleResults((prevResults) => 
-                            prevResults.map((sample, sIdx) => {
-                                if (groupFreezeTimesRef.current[sIdx] !== null) return sample;
-
-                                const activeIdx = sample.taskTimes.findIndex(t => t === null);
-                                if (activeIdx === -1) return sample;
-
-                                const previousTime = activeIdx === 0 ? 0 : sample.taskTimes[activeIdx - 1];
-                                const elapsedInTask = finalTime - previousTime;
-
-                                // Auto transition sesuai batas waktu (Splicing FO: 60m, VLSM: 30m, Router: 30m)
-                                if (activeIdx === 0 && elapsedInTask >= 3600) {
-                                    const newTimes = [...sample.taskTimes];
-                                    newTimes[0] = 3600;
-                                    return { ...sample, taskTimes: newTimes };
-                                }
-                                if (activeIdx === 1 && elapsedInTask >= 1800) {
-                                    const newTimes = [...sample.taskTimes];
-                                    newTimes[1] = previousTime + 1800;
-                                    return { ...sample, taskTimes: newTimes };
-                                }
-                                if (activeIdx === 2 && elapsedInTask >= 1800) {
-                                    const newTimes = [...sample.taskTimes];
-                                    newTimes[2] = previousTime + 1800;
-                                    return { ...sample, taskTimes: newTimes };
-                                }
-                                // Troubleshooting selesai otomatis saat batas maksimal 165 Menit (9900 detik) tercapai
-                                if (activeIdx === 3 && finalTime >= 9900) {
-                                    const newTimes = [...sample.taskTimes];
-                                    newTimes[3] = 9900;
-                                    return { ...sample, taskTimes: newTimes };
-                                }
-
-                                return sample;
-                            })
-                        );
                     };
 
                     tick();
-                    interval = setInterval(tick, 200);
+                    interval = setInterval(tick, 100);
 
                     // Sinkronisasi paksa saat tab dibuka kembali dari status minimize
                     const handleTabActive = () => {
@@ -411,7 +420,7 @@
                         window.removeEventListener('focus', handleTabActive);
                     };
                 }
-            }, [isRunning]);
+            }, [isRunning, groupIsRunning]);
 
             const toggleTimer = () => setIsRunning(!isRunning);
 
@@ -424,9 +433,8 @@
             const executeReset = () => {
                 setIsResetConfirmOpen(false);
                 setIsRunning(false);
-                setTime(0);
-                elapsedRef.current = 0;
-                setGroupFreezeTimes([null, null, null]);
+                setGroupTimes([0, 0, 0]);
+                setGroupIsRunning([true, true, true]);
                 setSampleResults([
                     { id: 1, taskTimes: [null, null, null, null] },
                     { id: 2, taskTimes: [null, null, null, null] },
@@ -473,9 +481,9 @@
                 setRawIpInputs(["", "", ""]);
                 
                 // Pembersihan storage bersih
-                localStorage.removeItem('kk_tkj_time');
+                localStorage.removeItem('kk_tkj_groupTimes');
+                localStorage.removeItem('kk_tkj_groupIsRunning');
                 localStorage.removeItem('kk_tkj_isRunning');
-                localStorage.removeItem('kk_tkj_groupFreezeTimes');
                 localStorage.removeItem('kk_tkj_sampleResults');
                 localStorage.removeItem('kk_tkj_shuffledLists');
                 localStorage.removeItem('kk_tkj_groupIpConfigs');
@@ -483,8 +491,8 @@
             };
 
             const handleTaskClick = (sampleIndex, taskIndex) => {
-                if (!isRunning && time === 0) return; 
-                if (groupFreezeTimes[sampleIndex] !== null) return;
+                if (!isRunning && groupTimes[sampleIndex] === 0) return; 
+                if (!groupIsRunning[sampleIndex]) return; // Tidak bisa checklist saat dijeda
 
                 setSampleResults(prev => prev.map((s, sIdx) => {
                     if (sIdx === sampleIndex) {
@@ -493,7 +501,7 @@
 
                         const newTimes = [...s.taskTimes];
                         if (newTimes[taskIndex] === null) {
-                            newTimes[taskIndex] = time;
+                            newTimes[taskIndex] = groupTimes[sampleIndex];
                         }
                         return { ...s, taskTimes: newTimes };
                     }
@@ -503,7 +511,7 @@
 
             const handleTaskRightClick = (e, sampleIndex, taskIndex) => {
                 e.preventDefault(); 
-                if (groupFreezeTimes[sampleIndex] !== null) return;
+                if (!groupIsRunning[sampleIndex]) return; // Tidak bisa reset saat dijeda
 
                 setSampleResults(prev => prev.map((s, sIdx) => {
                     if (sIdx === sampleIndex) {
@@ -515,17 +523,13 @@
                 }));
             };
 
-            // Klik waktu utama kelompok untuk freeze manual / unfreeze (antisipasi salah klik)
+            // Klik 1X waktu kelompok untuk pause, klik 1X lagi untuk resume
             const handleGroupTimerClick = (sIdx) => {
-                if (!isRunning && time === 0) return;
+                if (!isRunning) return; // Harus dalam keadaan mulai (START aktif)
                 
-                setGroupFreezeTimes(prev => {
+                setGroupIsRunning(prev => {
                     const next = [...prev];
-                    if (next[sIdx] !== null) {
-                        next[sIdx] = null;
-                    } else {
-                        next[sIdx] = time;
-                    }
+                    next[sIdx] = !next[sIdx];
                     return next;
                 });
             };
@@ -538,18 +542,7 @@
                 return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             };
 
-            const getDisplayTimeForGroup = (sample, sIdx) => {
-                if (groupFreezeTimes[sIdx] !== null) {
-                    return groupFreezeTimes[sIdx];
-                }
-                const allTasksFinished = sample.taskTimes.every(t => t !== null);
-                if (allTasksFinished) {
-                    return Math.max(...sample.taskTimes);
-                }
-                return time;
-            };
-
-            // Menghitung Sisa Waktu Tugas secara Mundur (Countdown) - Sangat Presisi & Mendukung Akumulasi Waktu
+            // Menghitung Sisa Waktu Tugas secara Mundur (Countdown) - Sangat Presisi & Mengikuti Waktu Kelompok Sendiri
             const getTaskDisplayTime = (sample, tIdx, sIdx) => {
                 const T0 = sample.taskTimes[0];
                 const T1 = sample.taskTimes[1];
@@ -581,8 +574,8 @@
                 }
                 
                 // 2. Jika tugas tersebut sedang aktif dikerjakan (Sedang berjalan secara real-time)
-                const currentReferenceTime = groupFreezeTimes[sIdx] !== null ? groupFreezeTimes[sIdx] : time;
-                if (activeIdx === tIdx && (isRunning || time > 0)) {
+                const currentReferenceTime = groupTimes[sIdx];
+                if (activeIdx === tIdx && (isRunning || currentReferenceTime > 0)) {
                     if (tIdx === 0) {
                         return Math.max(0, 3600 - currentReferenceTime);
                     } else if (tIdx === 1) {
@@ -721,6 +714,7 @@
                 }, 200);
             };
 
+            // Menduplikasi/mendefinisikan variabel input
             const getInputs = [group1NamesInput, group2NamesInput, group3NamesInput];
 
             return (
@@ -812,9 +806,9 @@
                         </div>
                     )}
 
-                    {/* Header Utama */}
+                    {/* Header Utama (Jam Global Dihapus) */}
                     <header className="bg-[#002D72] text-[#FDFDFD] py-4 px-6 sticky top-0 z-40 border-b-4 border-[#00A19C] shadow-2xl">
-                        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-6">
+                        <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
                                 <div className="bg-[#00A19C] p-2 skew-x-[-12deg]">
                                     <RouterIcon className="text-[#FDFDFD] w-7 h-7 skew-x-[12deg]" />
@@ -825,18 +819,10 @@
                             </div>
 
                             <div className="flex items-center gap-6">
-                                 <div className="flex flex-col items-end">
-                                    <span className="text-[10px] font-black text-[#00A19C] uppercase tracking-widest">Waktu Global</span>
-                                    {/* Sisa waktu global yang menghitung mundur dengan font Bebas Neue Tebal */}
-                                    <div className="font-bebas text-5xl font-black leading-none tracking-wider pt-1.5">
-                                        {formatTime(Math.max(0, 9900 - time))}
-                                    </div>
-                                 </div>
-                                 
                                  <div className="flex gap-2">
                                     <button 
                                         onClick={toggleTimer} 
-                                        className="px-6 py-3 bg-[#00A19C] text-[#FDFDFD] font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all hover:opacity-90 active:scale-95"
+                                        className="px-6 py-3 bg-[#00A19C] text-[#FDFDFD] font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-sm"
                                         title={isRunning ? "Pause" : "Start"}
                                     >
                                         {isRunning ? <Pause size={18} /> : <Play size={18} />}
@@ -870,17 +856,16 @@
                     {/* Grid List Kelompok */}
                     <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
                         {sampleResults.map((sample, sIdx) => {
-                            const groupTime = getDisplayTimeForGroup(sample, sIdx);
-                            const isManualFrozen = groupFreezeTimes[sIdx] !== null;
-                            const isGroupFinished = sample.taskTimes.every(t => t !== null) || isManualFrozen;
-                            const ipConfig = groupIpConfigs[sIdx];
+                            const groupTime = groupTimes[sIdx];
+                            const isGroupFinished = sample.taskTimes.every(t => t !== null);
+                            const isGroupPaused = !groupIsRunning[sIdx] && !isGroupFinished;
 
                             return (
                                 <div 
                                     key={sample.id} 
                                     className="relative overflow-hidden bg-[#FDFDFD] border-t-8 transition-all duration-300 flex flex-col shadow-xl h-full border-slate-200"
                                     style={{
-                                        borderTopColor: isGroupFinished ? '#00A19C' : isRunning ? '#002D72' : '#e2e8f0'
+                                        borderTopColor: isGroupFinished ? '#00A19C' : (isRunning && groupIsRunning[sIdx]) ? '#002D72' : '#e2e8f0'
                                     }}
                                 >
                                     {/* PANEL ACAK TUGAS (Overlay Absolut Sebesar Kotak Kelompok) */}
@@ -1081,13 +1066,13 @@
                                         </div>
                                     )}
                                     
-                                    {/* Area Display Besar Kelompok (Dapat diklik untuk Selesai / Freeze Manual) */}
+                                    {/* Area Display Besar Kelompok - Klik 1x untuk Pause / resume kelompok mandiri */}
                                     <button 
                                         onClick={() => handleGroupTimerClick(sIdx)}
                                         className={`p-6 border-b-2 text-center transition-all min-h-[220px] flex flex-col justify-center items-center w-full focus:outline-none cursor-pointer group/timer ${
                                             isGroupFinished ? 'bg-[#00A19C]/5 border-[#00A19C]' : 'bg-[#f8fafc] border-[#002D72]/10'
                                         }`}
-                                        title={isManualFrozen ? "Klik untuk melanjutkan waktu" : "Klik untuk menghentikan & menyelesaikan kelompok"}
+                                        title={isGroupFinished ? "Selesai" : isGroupPaused ? "Klik untuk memulai lagi" : "Klik untuk menjeda (pause)"}
                                     >
                                          <h3 className={`text-[16px] font-black uppercase tracking-[0.4em] mb-4 transition-colors group-hover/timer:text-[#00A19C] ${
                                              isGroupFinished ? 'text-[#00A19C]' : 'text-[#002D72]/40'
@@ -1097,14 +1082,20 @@
                                          
                                          {/* Sisa waktu countdown kelompok menggunakan Bebas Neue Tebal */}
                                          <div className={`text-[110px] font-bebas font-black tracking-wider leading-none transition-colors group-hover/timer:scale-105 duration-200 transform ${
-                                             isGroupFinished ? 'text-[#00A19C]' : isRunning ? 'text-[#002D72]' : 'text-slate-200'
+                                             isGroupFinished ? 'text-[#00A19C]' : (isRunning && groupIsRunning[sIdx]) ? 'text-[#002D72]' : 'text-slate-200'
                                          }`}>
                                              {formatTime(Math.max(0, 9900 - groupTime))}
                                          </div>
                                          
-                                         {isManualFrozen && (
-                                             <span className="text-[10px] font-black text-[#00A19C] tracking-widest uppercase mt-2 opacity-80 animate-pulse">
-                                                 MANUAL FINISH
+                                         {isGroupFinished && (
+                                             <span className="text-[10px] font-black text-[#00A19C] tracking-widest uppercase mt-2 opacity-80">
+                                                 FINISHED
+                                             </span>
+                                         )}
+                                         
+                                         {isGroupPaused && (
+                                             <span className="text-[10px] font-black text-[#E10600] tracking-widest uppercase mt-2 opacity-80 animate-pulse">
+                                                 PAUSED
                                              </span>
                                          )}
                                     </button>
@@ -1117,7 +1108,7 @@
                                             
                                             const activeIdx = sample.taskTimes.findIndex(t => t === null);
                                             // Menjaga status isActive tetap aktif meskipun kelompok sedang di-freeze manual (agar tetap hijau)
-                                            const isActive = activeIdx === tIdx && (isRunning || time > 0);
+                                            const isActive = activeIdx === tIdx && (isRunning || groupTime > 0);
                                             
                                             const displaySeconds = getTaskDisplayTime(sample, tIdx, sIdx);
                                             
@@ -1142,7 +1133,7 @@
                                                             isDone 
                                                             ? 'bg-[#FDFDFD] text-[#00A19C]' 
                                                             : isActive 
-                                                            ? `bg-[#00A19C] text-[#FDFDFD] ${(!isManualFrozen && isRunning) ? 'animate-pulse' : ''}` 
+                                                            ? `bg-[#00A19C] text-[#FDFDFD] ${(groupIsRunning[sIdx] && isRunning) ? 'animate-pulse' : ''}` 
                                                             : 'bg-slate-100 text-slate-300'
                                                         }`}>
                                                             {isDone ? <Check size={18} /> : <ChevronRight size={18} />}
