@@ -859,6 +859,7 @@
                             const groupTime = groupTimes[sIdx];
                             const isGroupFinished = sample.taskTimes.every(t => t !== null);
                             const isGroupPaused = !groupIsRunning[sIdx] && !isGroupFinished;
+                            const ipConfig = groupIpConfigs[sIdx];
 
                             return (
                                 <div 
