@@ -647,8 +647,49 @@
                 }));
             };
 
-            // Animasi Pengacakan 4 Siswa (Didesain pintar agar jika siswa < 4, slot bawah otomatis dikosongkan secara statis)
-            const handleShuffle = (groupIdx, inputString) => {
+            // Fungsi Generator Pengacak Array Penugasan Cerdas (Mendukung Mode Normal dan Ganda)
+            const generateShuffledList = (names, mode) => {
+                if (names.length === 0) return ["---", "---", "---", "---"];
+                
+                const shuffle = (arr) => {
+                    const temp = [...arr];
+                    for (let i = temp.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [temp[i], temp[j]] = [temp[j], temp[i]];
+                    }
+                    return temp;
+                };
+
+                if (mode === 'duplicate') {
+                    if (names.length >= 4) {
+                        return shuffle(names.slice(0, 4));
+                    } else if (names.length === 3) {
+                        // 3 nama mengisi 3 posisi teratas (teracak), posisi ke-4 dipilih acak dari mereka bertiga
+                        const shuffled3 = shuffle(names);
+                        const extra = names[Math.floor(Math.random() * 3)];
+                        return [shuffled3[0], shuffled3[1], shuffled3[2], extra];
+                    } else if (names.length === 2) {
+                        // 2 nama mengisi 2 posisi teratas, posisi C dan D diisi acak dari mereka berdua
+                        const shuffled2 = shuffle(names);
+                        const extra1 = names[Math.floor(Math.random() * 2)];
+                        const extra2 = names[Math.floor(Math.random() * 2)];
+                        return [shuffled2[0], shuffled2[1], extra1, extra2];
+                    } else if (names.length === 1) {
+                        // Hanya ada 1 nama, isi semua posisi
+                        return [names[0], names[0], names[0], names[0]];
+                    }
+                } else {
+                    // Mode normal (kelompok kurang dari 4, kosongkan bagian bawah dengan '---')
+                    const temp = shuffle(names.slice(0, 4));
+                    while (temp.length < 4) {
+                        temp.push("---");
+                    }
+                    return temp;
+                }
+            };
+
+            // Animasi Pengacakan 4 Siswa (Mendukung mode normal dan duplicate/ganda)
+            const handleShuffle = (groupIdx, inputString, mode = 'normal') => {
                 if (shufflingGroups[groupIdx]) return;
 
                 setShufflingGroups(prev => {
@@ -659,26 +700,15 @@
 
                 const lines = inputString.split(/\r?\n/).map(name => name.trim()).filter(Boolean);
                 const actualNames = lines.slice(0, 4); // Maksimal 4 nama
-                const activeCount = actualNames.length;
 
                 let ticks = 0;
-                const maxTicks = 15;
+                const maxTicks = 15; // Berjalan selama 3 detik (200ms per tick)
 
                 const interval = setInterval(() => {
                     setShuffledLists(prev => {
                         const next = prev.map((list, idx) => {
                             if (idx === groupIdx) {
-                                // Hanya acak data nama siswa yang benar-benar dimasukkan
-                                const temp = [...actualNames];
-                                for (let i = temp.length - 1; i > 0; i--) {
-                                    const j = Math.floor(Math.random() * (i + 1));
-                                    [temp[i], temp[j]] = [temp[j], temp[i]];
-                                }
-                                // Isi sisa slot bawah yang kosong dengan tanda hubung "---"
-                                while (temp.length < 4) {
-                                    temp.push("---");
-                                }
-                                return temp;
+                                return generateShuffledList(actualNames, mode);
                             }
                             return list;
                         });
@@ -688,18 +718,11 @@
                     ticks++;
                     if (ticks >= maxTicks) {
                         clearInterval(interval);
+                        // Menentukan hasil acak final
                         setShuffledLists(prev => {
                             const next = prev.map((list, idx) => {
                                 if (idx === groupIdx) {
-                                    const final = [...actualNames];
-                                    for (let i = final.length - 1; i > 0; i--) {
-                                        const j = Math.floor(Math.random() * (i + 1));
-                                        [final[i], final[j]] = [final[j], final[i]];
-                                    }
-                                    while (final.length < 4) {
-                                        final.push("---");
-                                    }
-                                    return final;
+                                    return generateShuffledList(actualNames, mode);
                                 }
                                 return list;
                             });
@@ -714,7 +737,7 @@
                 }, 200);
             };
 
-            // Menduplikasi/mendefinisikan variabel input
+            // Mendefinisikan variabel input
             const getInputs = [group1NamesInput, group2NamesInput, group3NamesInput];
 
             return (
@@ -902,13 +925,25 @@
                                                             onChange={(e) => handleInputChange(sIdx, e.target.value)}
                                                             placeholder="Masukkan nama siswa..."
                                                         />
-                                                        <button
-                                                            onClick={() => handleShuffle(sIdx, getInputs[sIdx])}
-                                                            disabled={shufflingGroups[sIdx]}
-                                                            className="bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black px-4 h-[100px] text-xs uppercase tracking-wider transition-all rounded shadow-sm shrink-0 flex items-center justify-center"
-                                                        >
-                                                            {shufflingGroups[sIdx] ? 'ACAK...' : 'ACAK'}
-                                                        </button>
+                                                        {/* Dua Tombol Acak Berdampingan dengan Textarea */}
+                                                        <div className="flex flex-col gap-1.5 shrink-0 h-[100px]">
+                                                            <button
+                                                                onClick={() => handleShuffle(sIdx, getInputs[sIdx], 'normal')}
+                                                                disabled={shufflingGroups[sIdx]}
+                                                                className="flex-1 bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black px-2.5 text-[9px] uppercase tracking-wider transition-all rounded shadow-sm flex items-center justify-center text-center w-[96px]"
+                                                                title="Siswa kurang dari 4 dikosongkan"
+                                                            >
+                                                                {shufflingGroups[sIdx] ? 'ACAK...' : 'ACAK BIASA'}
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleShuffle(sIdx, getInputs[sIdx], 'duplicate')}
+                                                                disabled={shufflingGroups[sIdx]}
+                                                                className="flex-1 bg-[#002D72] hover:bg-[#00A19C] text-[#FDFDFD] font-black px-2.5 text-[9px] uppercase tracking-wider transition-all rounded shadow-sm flex items-center justify-center text-center w-[96px]"
+                                                                title="Siswa kurang dari 4 ditugaskan ganda"
+                                                            >
+                                                                {shufflingGroups[sIdx] ? 'ACAK...' : 'ACAK GANDA'}
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
