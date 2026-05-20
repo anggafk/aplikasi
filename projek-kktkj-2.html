@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projek KK TKJ - Timer Praktikum</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sauber-blue': '#002D72',
+                        'petronas-cyan': '#00A19C',
+                        'speed-white': '#FDFDFD',
+                        'red-bull-red': '#E10600'
+                    },
+                    fontFamily: {
+                        'bebas': ['"Bebas Neue"', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- React, ReactDOM, dan Babel CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Google Fonts: Plus Jakarta Sans dan Bebas Neue -->
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-[#FDFDFD]">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Custom Router Icon (Gaya Cisco Sirkular dengan tanda panah keluar)
+        const RouterIcon = ({ className }) => (
+            <svg 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+            >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 3v18M3 12h18" />
+                <path d="M12 3.5l2 2m-2-2l-2 2" /> 
+                <path d="M12 20.5l2-2m-2 2l-2-2" /> 
+                <path d="M3.5 12l2-2m-2 2l2 2" /> 
+                <path d="M20.5 12l-2-2m2 2l-2 2" /> 
+            </svg>
+        );
+
+        // Komponen Ikon Inline untuk kenyamanan tanpa library eksternal npm
+        const Play = ({ className, size = 18 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/>
+            </svg>
+        );
+
+        const Pause = ({ className, size = 18 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="6" y="4" width="4" height="16" fill="currentColor"/>
+                <rect x="14" y="4" width="4" height="16" fill="currentColor"/>
+            </svg>
+        );
+
+        const RotateCcw = ({ className, size = 20 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <polyline points="3 3 3 8 8 8"/>
+            </svg>
+        );
+
+        const ClockIcon = ({ className, size = 24 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+        );
+
+        const Type = ({ className, size = 18 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="4 7 4 4 20 4 20 7"/>
+                <line x1="9" y1="20" x2="15" y2="20"/>
+                <line x1="12" y1="4" x2="12" y2="20"/>
+            </svg>
+        );
+
+        const X = ({ className, size = 24 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        );
+
+        const Check = ({ className, size = 14 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+        );
+
+        const ChevronRight = ({ className, size = 18 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+            </svg>
+        );
+
+        const Settings = ({ className, size = 20 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+        );
+
+        const Square = ({ className, size = 18 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            </svg>
+        );
+
+        const Users = ({ className, size = 20 }) => (
+            <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        );
+
+        const App = () => {
+            // Lazy State Initializer: Memulihkan status penuh dari localStorage jika ada, agar survive dari mati listrik
+            const [isRunning, setIsRunning] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_isRunning');
+                return saved === 'true';
+            });
+
+            // Waktu berjalan spesifik untuk masing-masing kelompok (elapsed seconds)
+            const [groupTimes, setGroupTimes] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_groupTimes');
+                return saved ? JSON.parse(saved) : [0, 0, 0];
+            });
+
+            // Status keaktifan individu masing-masing kelompok
+            const [groupIsRunning, setGroupIsRunning] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_groupIsRunning');
+                return saved ? JSON.parse(saved) : [true, true, true];
+            });
+
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false); // Modal konfirmasi manual
+            
+            // State untuk melacak panel yang terbuka di masing-masing kelompok [Klp1, Klp2, Klp3]
+            const [openOverlays, setOpenOverlays] = useState([false, false, false]);
+            const [openIpOverlays, setOpenIpOverlays] = useState([false, false, false]);
+
+            // Konfigurasi nama kelompok
+            const [rawTitles, setRawTitles] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_rawTitles');
+                return saved || "KELOMPOK 1\nKELOMPOK 2\nKELOMPOK 3";
+            });
+
+            const [taskNames, setTaskNames] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_taskNames');
+                return saved ? JSON.parse(saved) : [
+                    "SPLICING\nFO",
+                    "HITUNG\nVLSM",
+                    "KONFIGURASI\nROUTER",
+                    "TROUBLE\nSHOOTING"
+                ];
+            });
+
+            // Splicing FO: 60m (3600s), VLSM: 30m (1800s), Konfigurasi Router: 30m (1800s)
+            const taskMaxTimes = [3600, 1800, 1800, null];
+
+            // Penjaga stabilitas waktu saat tab tidak aktif (survive background/minimize tab)
+            const lastTimeRef = useRef(Date.now());
+
+            // State hasil tugas kelompok
+            const [sampleResults, setSampleResults] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_sampleResults');
+                return saved ? JSON.parse(saved) : [
+                    { id: 1, taskTimes: [null, null, null, null] },
+                    { id: 2, taskTimes: [null, null, null, null] },
+                    { id: 3, taskTimes: [null, null, null, null] }
+                ];
+            });
+
+            const sampleResultsRef = useRef(sampleResults);
+            useEffect(() => {
+                sampleResultsRef.current = sampleResults;
+            }, [sampleResults]);
+
+            // State Pengacakan Anggota (Maksimal 4 Siswa) - TETAP DIATUR SEPERTI INI, JANGAN DIUBAH
+            const [group1NamesInput, setGroup1NamesInput] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_group1NamesInput');
+                return saved || "Siswa A1\nSiswa A2\nSiswa A3\nSiswa A4";
+            });
+            const [group2NamesInput, setGroup2NamesInput] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_group2NamesInput');
+                return saved || "Siswa B1\nSiswa B2\nSiswa B3\nSiswa B4";
+            });
+            const [group3NamesInput, setGroup3NamesInput] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_group3NamesInput');
+                return saved || "Siswa C1\nSiswa C2\nSiswa C3\nSiswa C4";
+            });
+
+            const [shuffledLists, setShuffledLists] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_shuffledLists');
+                return saved ? JSON.parse(saved) : [
+                    ["Siswa A1", "Siswa A2", "Siswa A3", "Siswa A4"],
+                    ["Siswa B1", "Siswa B2", "Siswa B3", "Siswa B4"],
+                    ["Siswa C1", "Siswa C2", "Siswa C3", "Siswa C4"]
+                ];
+            });
+
+            const [shufflingGroups, setShufflingGroups] = useState([false, false, false]);
+
+            // State IP dan Host Dinamis untuk masing-masing kelompok (Inisialisasi kosong/strip terlebih dahulu)
+            const [groupIpConfigs, setGroupIpConfigs] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_groupIpConfigs');
+                return saved ? JSON.parse(saved) : [
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    },
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    },
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    }
+                ];
+            });
+
+            // State Input Mentah Format IP & Host untuk masing-masing kelompok (Kosong sepenuhnya sejak awal)
+            const [rawIpInputs, setRawIpInputs] = useState(() => {
+                const saved = localStorage.getItem('kk_tkj_rawIpInputs');
+                return saved ? JSON.parse(saved) : ["", "", ""];
+            });
+
+            // --- EFFECT HOOKS UNTUK PERSISTENSI LOCALSTORAGE SECARA OTOMATIS ---
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_groupTimes', JSON.stringify(groupTimes));
+            }, [groupTimes]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_groupIsRunning', JSON.stringify(groupIsRunning));
+            }, [groupIsRunning]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_isRunning', isRunning.toString());
+            }, [isRunning]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_rawTitles', rawTitles);
+            }, [rawTitles]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_taskNames', JSON.stringify(taskNames));
+            }, [taskNames]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_sampleResults', JSON.stringify(sampleResults));
+            }, [sampleResults]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_group1NamesInput', group1NamesInput);
+                localStorage.setItem('kk_tkj_group2NamesInput', group2NamesInput);
+                localStorage.setItem('kk_tkj_group3NamesInput', group3NamesInput);
+            }, [group1NamesInput, group2NamesInput, group3NamesInput]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_shuffledLists', JSON.stringify(shuffledLists));
+            }, [shuffledLists]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_groupIpConfigs', JSON.stringify(groupIpConfigs));
+            }, [groupIpConfigs]);
+
+            useEffect(() => {
+                localStorage.setItem('kk_tkj_rawIpInputs', JSON.stringify(rawIpInputs));
+            }, [rawIpInputs]);
+
+
+            const getTitles = () => {
+                const lines = rawTitles.split(/\r?\n/);
+                return [
+                    lines[0] || 'KELOMPOK 1',
+                    lines[1] || 'KELOMPOK 2',
+                    lines[2] || 'KELOMPOK 3'
+                ];
+            };
+
+            const titles = getTitles();
+
+            // Interval Timer Utama (Akurat, Survive Tab Inactivity) - Tiap Kelompok memiliki Waktu Sendiri
+            useEffect(() => {
+                let interval = null;
+
+                if (isRunning) {
+                    lastTimeRef.current = Date.now();
+
+                    const tick = () => {
+                        const now = Date.now();
+                        const deltaMs = now - lastTimeRef.current;
+                        if (deltaMs >= 1000) {
+                            const secondsPassed = Math.floor(deltaMs / 1000);
+                            lastTimeRef.current = lastTimeRef.current + (secondsPassed * 1000);
+
+                            setGroupTimes(prevTimes => {
+                                const nextTimes = [...prevTimes];
+                                let resultsChanged = false;
+                                
+                                const nextResults = sampleResultsRef.current.map((sample, sIdx) => {
+                                    const isFinished = sample.taskTimes.every(t => t !== null) || prevTimes[sIdx] >= 9900;
+                                    
+                                    // Hanya kurangi waktu jika kelompok dalam status jalan dan belum selesai seluruh tugas
+                                    if (groupIsRunning[sIdx] && !isFinished) {
+                                        nextTimes[sIdx] = Math.min(9900, prevTimes[sIdx] + secondsPassed);
+
+                                        // Auto transition check secara real-time
+                                        const activeIdx = sample.taskTimes.findIndex(t => t === null);
+                                        if (activeIdx !== -1) {
+                                            const previousTime = activeIdx === 0 ? 0 : sample.taskTimes[activeIdx - 1];
+                                            const elapsedInTask = nextTimes[sIdx] - previousTime;
+
+                                            if (activeIdx === 0 && elapsedInTask >= 3600) {
+                                                resultsChanged = true;
+                                                const newTimes = [...sample.taskTimes];
+                                                newTimes[0] = 3600;
+                                                return { ...sample, taskTimes: newTimes };
+                                            }
+                                            if (activeIdx === 1 && elapsedInTask >= 1800) {
+                                                resultsChanged = true;
+                                                const newTimes = [...sample.taskTimes];
+                                                newTimes[1] = previousTime + 1800;
+                                                return { ...sample, taskTimes: newTimes };
+                                            }
+                                            if (activeIdx === 2 && elapsedInTask >= 1800) {
+                                                resultsChanged = true;
+                                                const newTimes = [...sample.taskTimes];
+                                                newTimes[2] = previousTime + 1800;
+                                                return { ...sample, taskTimes: newTimes };
+                                            }
+                                            if (activeIdx === 3 && nextTimes[sIdx] >= 9900) {
+                                                resultsChanged = true;
+                                                const newTimes = [...sample.taskTimes];
+                                                newTimes[3] = 9900;
+                                                return { ...sample, taskTimes: newTimes };
+                                            }
+                                        }
+                                    }
+                                    return sample;
+                                });
+
+                                if (resultsChanged) {
+                                    setSampleResults(nextResults);
+                                }
+                                return nextTimes;
+                            });
+                        }
+                    };
+
+                    tick();
+                    interval = setInterval(tick, 100);
+
+                    // Sinkronisasi paksa saat tab dibuka kembali dari status minimize
+                    const handleTabActive = () => {
+                        if (document.visibilityState === 'visible') {
+                            tick();
+                        }
+                    };
+
+                    document.addEventListener('visibilitychange', handleTabActive);
+                    window.addEventListener('focus', handleTabActive);
+
+                    return () => {
+                        clearInterval(interval);
+                        document.removeEventListener('visibilitychange', handleTabActive);
+                        window.removeEventListener('focus', handleTabActive);
+                    };
+                }
+            }, [isRunning, groupIsRunning]);
+
+            const toggleTimer = () => setIsRunning(!isRunning);
+
+            // Buka Modal Konfirmasi Reset Manual (Stop Button)
+            const handleStopAndReset = () => {
+                setIsResetConfirmOpen(true);
+            };
+
+            // Bersihkan semua data LocalStorage saat eksekusi Reset
+            const executeReset = () => {
+                setIsResetConfirmOpen(false);
+                setIsRunning(false);
+                setGroupTimes([0, 0, 0]);
+                setGroupIsRunning([true, true, true]);
+                setSampleResults([
+                    { id: 1, taskTimes: [null, null, null, null] },
+                    { id: 2, taskTimes: [null, null, null, null] },
+                    { id: 3, taskTimes: [null, null, null, null] }
+                ]);
+                setGroupIpConfigs([
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    },
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    },
+                    {
+                        baseIp: "---",
+                        segments: [
+                            { name: "PC A", hosts: "-" },
+                            { name: "RA-RB", hosts: "-" },
+                            { name: "PC B", hosts: "-" },
+                            { name: "RB-RC", hosts: "-" },
+                            { name: "PC C", hosts: "-" },
+                            { name: "RC-RD", hosts: "-" },
+                            { name: "PC D", hosts: "-" }
+                        ]
+                    }
+                ]);
+                setRawIpInputs(["", "", ""]);
+                
+                // Pembersihan storage bersih
+                localStorage.removeItem('kk_tkj_groupTimes');
+                localStorage.removeItem('kk_tkj_groupIsRunning');
+                localStorage.removeItem('kk_tkj_isRunning');
+                localStorage.removeItem('kk_tkj_sampleResults');
+                localStorage.removeItem('kk_tkj_shuffledLists');
+                localStorage.removeItem('kk_tkj_groupIpConfigs');
+                localStorage.removeItem('kk_tkj_rawIpInputs');
+            };
+
+            const handleTaskClick = (sampleIndex, taskIndex) => {
+                if (!isRunning && groupTimes[sampleIndex] === 0) return; 
+                if (!groupIsRunning[sampleIndex]) return; // Tidak bisa checklist saat dijeda
+
+                setSampleResults(prev => prev.map((s, sIdx) => {
+                    if (sIdx === sampleIndex) {
+                        const activeIdx = s.taskTimes.findIndex(t => t === null);
+                        if (activeIdx !== taskIndex) return s;
+
+                        const newTimes = [...s.taskTimes];
+                        if (newTimes[taskIndex] === null) {
+                            newTimes[taskIndex] = groupTimes[sampleIndex];
+                        }
+                        return { ...s, taskTimes: newTimes };
+                    }
+                    return s;
+                }));
+            };
+
+            const handleTaskRightClick = (e, sampleIndex, taskIndex) => {
+                e.preventDefault(); 
+                if (!groupIsRunning[sampleIndex]) return; // Tidak bisa reset saat dijeda
+
+                setSampleResults(prev => prev.map((s, sIdx) => {
+                    if (sIdx === sampleIndex) {
+                        const newTimes = [...s.taskTimes];
+                        newTimes[taskIndex] = null;
+                        return { ...s, taskTimes: newTimes };
+                    }
+                    return s;
+                }));
+            };
+
+            // Klik 1X waktu kelompok untuk pause, klik 1X lagi untuk resume
+            const handleGroupTimerClick = (sIdx) => {
+                if (!isRunning) return; // Harus dalam keadaan mulai (START aktif)
+                
+                setGroupIsRunning(prev => {
+                    const next = [...prev];
+                    next[sIdx] = !next[sIdx];
+                    return next;
+                });
+            };
+
+            // Format waktu kumulatif Menit:Detik (contoh: 165:00, 102:44)
+            const formatTime = (seconds) => {
+                if (seconds === null) return "--:--";
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            };
+
+            // Menghitung Sisa Waktu Tugas secara Mundur (Countdown) - Sangat Presisi & Mengikuti Waktu Kelompok Sendiri
+            const getTaskDisplayTime = (sample, tIdx, sIdx) => {
+                const T0 = sample.taskTimes[0];
+                const T1 = sample.taskTimes[1];
+                const T2 = sample.taskTimes[2];
+
+                // Hitung sisa waktu hemat dari tugas yang sudah diselesaikan
+                const R0 = T0 !== null ? Math.max(0, 3600 - T0) : 0;
+                const R1 = (T1 !== null && T0 !== null) ? Math.max(0, 1800 - (T1 - T0)) : 0;
+                const R2 = (T2 !== null && T1 !== null) ? Math.max(0, 1800 - (T2 - T1)) : 0;
+
+                // Batas waktu dasar Troubleshooting adalah 45 menit (2700 detik) + bonus sisa waktu tugas sebelumnya
+                const troubleshootingBaseLimit = 2700;
+                const troubleshootingTotalLimit = troubleshootingBaseLimit + R0 + R1 + R2;
+
+                const activeIdx = sample.taskTimes.findIndex(t => t === null);
+
+                // 1. Jika tugas tertentu sudah selesai diklik (Lock hasil akhir sisa waktunya)
+                if (sample.taskTimes[tIdx] !== null) {
+                    const completedAt = sample.taskTimes[tIdx];
+                    if (tIdx === 0) {
+                        return Math.max(0, 3600 - completedAt);
+                    } else if (tIdx === 1) {
+                        return Math.max(0, 1800 - (completedAt - T0));
+                    } else if (tIdx === 2) {
+                        return Math.max(0, 1800 - (completedAt - T1));
+                    } else { // tIdx === 3 (Troubleshooting selesai)
+                        return Math.max(0, troubleshootingTotalLimit - (completedAt - T2));
+                    }
+                }
+                
+                // 2. Jika tugas tersebut sedang aktif dikerjakan (Sedang berjalan secara real-time)
+                const currentReferenceTime = groupTimes[sIdx];
+                if (activeIdx === tIdx && (isRunning || currentReferenceTime > 0)) {
+                    if (tIdx === 0) {
+                        return Math.max(0, 3600 - currentReferenceTime);
+                    } else if (tIdx === 1) {
+                        return Math.max(0, 1800 - (currentReferenceTime - T0));
+                    } else if (tIdx === 2) {
+                        return Math.max(0, 1800 - (currentReferenceTime - T1));
+                    } else { // tIdx === 3 (Troubleshooting sedang aktif berjalan)
+                        return Math.max(0, troubleshootingTotalLimit - (currentReferenceTime - T2));
+                    }
+                }
+
+                // 3. Jika tugas belum aktif / belum dimulai (Menampilkan waktu awal / sisa waktu statis saat ini)
+                if (tIdx === 0) {
+                    return 3600; // Splicing FO: 60:00
+                } else if (tIdx === 1) {
+                    return 1800; // VLSM: 30:00
+                } else if (tIdx === 2) {
+                    return 1800; // Router: 30:00
+                } else { // tIdx === 3 (Troubleshooting belum aktif)
+                    // Menampilkan 45:00 + sisa waktu dari tugas-tugas yang telah selesai sejauh ini (tetap diam/tidak berkurang)
+                    return troubleshootingTotalLimit;
+                }
+            };
+
+            // Helper reaktif untuk menangani perubahan input nama siswa di parent state
+            const handleInputChange = (sIdx, value) => {
+                if (sIdx === 0) setGroup1NamesInput(value);
+                else if (sIdx === 1) setGroup2NamesInput(value);
+                else if (sIdx === 2) setGroup3NamesInput(value);
+            };
+
+            // Logika Parsing Skema IP dan Kebutuhan Host dari Input Guru/Siswa
+            const handleSaveIpConfig = (sIdx) => {
+                const inputText = rawIpInputs[sIdx].trim();
+                if (!inputText) return;
+                
+                // Split string berdasarkan tanda pipe "|"
+                const parts = inputText.split("|").map(p => p.trim());
+                if (parts.length < 8) {
+                    // Abaikan jika tidak lengkap
+                    return;
+                }
+
+                const baseIp = parts[0];
+                const pcA = parts[1] || "-";
+                const ra_rb = parts[2] || "-";
+                const pcB = parts[3] || "-";
+                const rb_rc = parts[4] || "-";
+                const pcC = parts[5] || "-";
+                const rc_rd = parts[6] || "-";
+                const pcD = parts[7] || "-";
+
+                setGroupIpConfigs(prev => prev.map((config, idx) => {
+                    if (idx === sIdx) {
+                        return {
+                            baseIp: baseIp,
+                            segments: [
+                                { name: "PC A", hosts: pcA },
+                                { name: "RA-RB", hosts: ra_rb },
+                                { name: "PC B", hosts: pcB },
+                                { name: "RB-RC", hosts: rb_rc },
+                                { name: "PC C", hosts: pcC },
+                                { name: "RC-RD", hosts: rc_rd },
+                                { name: "PC D", hosts: pcD }
+                            ]
+                        };
+                    }
+                    return config;
+                }));
+            };
+
+            // Fungsi Generator Pengacak Array Penugasan Cerdas (Mendukung Mode Normal dan Ganda)
+            const generateShuffledList = (names, mode) => {
+                if (names.length === 0) return ["---", "---", "---", "---"];
+                
+                const shuffle = (arr) => {
+                    const temp = [...arr];
+                    for (let i = temp.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [temp[i], temp[j]] = [temp[j], temp[i]];
+                    }
+                    return temp;
+                };
+
+                if (mode === 'duplicate') {
+                    if (names.length >= 4) {
+                        return shuffle(names.slice(0, 4));
+                    } else if (names.length === 3) {
+                        // 3 nama mengisi 3 posisi teratas (teracak), posisi ke-4 dipilih acak dari mereka bertiga
+                        const shuffled3 = shuffle(names);
+                        const extra = names[Math.floor(Math.random() * 3)];
+                        return [shuffled3[0], shuffled3[1], shuffled3[2], extra];
+                    } else if (names.length === 2) {
+                        // 2 nama mengisi 2 posisi teratas, posisi C dan D diisi acak dari mereka berdua
+                        const shuffled2 = shuffle(names);
+                        const extra1 = names[Math.floor(Math.random() * 2)];
+                        const extra2 = names[Math.floor(Math.random() * 2)];
+                        return [shuffled2[0], shuffled2[1], extra1, extra2];
+                    } else if (names.length === 1) {
+                        // Hanya ada 1 nama, isi semua posisi
+                        return [names[0], names[0], names[0], names[0]];
+                    }
+                } else {
+                    // Mode normal (kelompok kurang dari 4, kosongkan bagian bawah dengan '---')
+                    const temp = shuffle(names.slice(0, 4));
+                    while (temp.length < 4) {
+                        temp.push("---");
+                    }
+                    return temp;
+                }
+            };
+
+            // Animasi Pengacakan 4 Siswa (Mendukung mode normal dan duplicate/ganda)
+            const handleShuffle = (groupIdx, inputString, mode = 'normal') => {
+                if (shufflingGroups[groupIdx]) return;
+
+                setShufflingGroups(prev => {
+                    const next = [...prev];
+                    next[groupIdx] = true;
+                    return next;
+                });
+
+                const lines = inputString.split(/\r?\n/).map(name => name.trim()).filter(Boolean);
+                const actualNames = lines.slice(0, 4); // Maksimal 4 nama
+
+                let ticks = 0;
+                const maxTicks = 15; // Berjalan selama 3 detik (200ms per tick)
+
+                const interval = setInterval(() => {
+                    setShuffledLists(prev => {
+                        const next = prev.map((list, idx) => {
+                            if (idx === groupIdx) {
+                                return generateShuffledList(actualNames, mode);
+                            }
+                            return list;
+                        });
+                        return next;
+                    });
+
+                    ticks++;
+                    if (ticks >= maxTicks) {
+                        clearInterval(interval);
+                        // Menentukan hasil acak final
+                        setShuffledLists(prev => {
+                            const next = prev.map((list, idx) => {
+                                if (idx === groupIdx) {
+                                    return generateShuffledList(actualNames, mode);
+                                }
+                                return list;
+                            });
+                            return next;
+                        });
+                        setShufflingGroups(prev => {
+                            const next = [...prev];
+                            next[groupIdx] = false;
+                            return next;
+                        });
+                    }
+                }, 200);
+            };
+
+            // Mendefinisikan variabel input
+            const getInputs = [group1NamesInput, group2NamesInput, group3NamesInput];
+
+            return (
+                <div className="min-h-screen bg-[#FDFDFD] font-sans text-[#002D72]">
+                    
+                    {/* CUSTOM MODAL KONFIRMASI RESET (STOP) */}
+                    {isResetConfirmOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-[#002D72]/80 backdrop-blur-md" onClick={() => setIsResetConfirmOpen(false)}></div>
+                            <div className="relative bg-[#FDFDFD] w-full max-w-md rounded-none border-t-8 border-[#E10600] shadow-[0_0_50px_rgba(0,0,0,0.3)] p-6 text-left">
+                                <div className="flex items-center gap-3 text-[#E10600] mb-4">
+                                    <Square size={24} className="fill-[#E10600] text-[#E10600]" />
+                                    <h2 className="font-black text-lg uppercase tracking-wider">KONFIRMASI RESET</h2>
+                                </div>
+                                <p className="text-sm font-bold text-[#002D72] mb-6">
+                                    Apakah Anda yakin ingin menghentikan ujian global dan menghapus semua data persisten timer kelompok? Tindakan ini tidak dapat dibatalkan.
+                                </p>
+                                <div className="flex gap-3 justify-end">
+                                    <button
+                                        onClick={() => setIsResetConfirmOpen(false)}
+                                        className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black text-xs uppercase tracking-wider transition-all rounded border-2 border-slate-200"
+                                    >
+                                        BATAL
+                                    </button>
+                                    <button
+                                        onClick={executeReset}
+                                        className="px-5 py-2.5 bg-[#E10600] hover:bg-[#b00500] text-white font-black text-xs uppercase tracking-wider transition-all rounded"
+                                    >
+                                        YA, RESET SEMUA
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Modal Popup Konfigurasi Nama Kelompok */}
+                    {isModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                            <div className="absolute inset-0 bg-[#002D72]/80 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
+                            <div className="relative bg-[#FDFDFD] w-full max-w-lg rounded-none border-t-8 border-[#00A19C] shadow-[0_0_50px_rgba(0,0,0,0.3)] overflow-hidden flex flex-col text-left text-[#002D72]">
+                                <div className="bg-[#002D72] p-5 flex justify-between items-center text-[#FDFDFD]">
+                                    <div className="flex items-center gap-3">
+                                        <Settings size={20} className="text-[#00A19C]" />
+                                        <h2 className="font-black text-sm uppercase tracking-[0.2em]">SISTEM KONFIGURASI</h2>
+                                    </div>
+                                    <button onClick={() => setIsModalOpen(false)} className="hover:text-[#E10600] transition-colors"><X size={24} /></button>
+                                </div>
+                                <div className="p-6 overflow-y-auto max-h-[70vh]">
+                                    <label className="block text-[10px] font-black text-[#002D72]/40 uppercase tracking-widest mb-2">IDENTITAS KELOMPOK (3 BARIS)</label>
+                                    <textarea
+                                        className="w-full bg-[#f1f5f9] border-l-4 border-[#002D72] p-4 text-sm font-bold focus:ring-0 focus:border-[#00A19C] outline-none h-24 mb-6 shadow-inner text-[#002D72]"
+                                        value={rawTitles}
+                                        onChange={(e) => setRawTitles(e.target.value)}
+                                    />
+                                    
+                                    <label className="block text-[10px] font-black text-[#002D72]/40 uppercase tracking-widest mb-2 mt-4">NAMA MODUL TUGAS (EDIT)</label>
+                                    <div className="space-y-2">
+                                        {taskNames.map((name, idx) => (
+                                            <div key={idx} className="flex items-center gap-3">
+                                                <span className="text-xs font-black text-[#00A19C] w-4">0{idx + 1}</span>
+                                                <input 
+                                                    type="text"
+                                                    className="flex-1 bg-[#f1f5f9] border-b-2 border-transparent focus:border-[#00A19C] px-3 py-1.5 text-xs font-bold outline-none transition-all text-[#002D72]"
+                                                    value={name.replace('\n', ' ')}
+                                                    onChange={(e) => {
+                                                        const newNames = [...taskNames];
+                                                        const val = e.target.value;
+                                                        const words = val.split(' ');
+                                                        if (words.length > 1) {
+                                                            newNames[idx] = words[0] + '\n' + words.slice(1).join(' ');
+                                                        } else {
+                                                            newNames[idx] = val;
+                                                        }
+                                                        setTaskNames(newNames);
+                                                    }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <button 
+                                        onClick={() => setIsModalOpen(false)}
+                                        className="w-full mt-6 bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black py-4 uppercase tracking-[0.2em] transition-all active:scale-[0.98] shadow-lg"
+                                    >
+                                        UPDATE DATA SISTEM
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Header Utama (Jam Global Dihapus) */}
+                    <header className="bg-[#002D72] text-[#FDFDFD] py-4 px-6 sticky top-0 z-40 border-b-4 border-[#00A19C] shadow-2xl">
+                        <div className="max-w-7xl mx-auto flex items-center justify-between gap-6">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-[#00A19C] p-2 skew-x-[-12deg]">
+                                    <RouterIcon className="text-[#FDFDFD] w-7 h-7 skew-x-[12deg]" />
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-black italic tracking-tighter leading-none text-nowrap">PROJEK KK TKJ</h1>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-6">
+                                 <div className="flex gap-2">
+                                    <button 
+                                        onClick={toggleTimer} 
+                                        className="px-6 py-3 bg-[#00A19C] text-[#FDFDFD] font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all hover:opacity-90 active:scale-95 shadow-sm"
+                                        title={isRunning ? "Pause" : "Start"}
+                                    >
+                                        {isRunning ? <Pause size={18} /> : <Play size={18} />}
+                                        {isRunning ? 'PAUSE' : 'START'}
+                                    </button>
+
+                                    <button 
+                                        onClick={handleStopAndReset} 
+                                        className="px-6 py-3 bg-[#E10600] text-[#FDFDFD] font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all hover:bg-[#b00500] active:scale-95 shadow-sm"
+                                        title="Stop & Reset All"
+                                    >
+                                        <Square size={18} />
+                                        STOP
+                                    </button>
+                                 </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                                {/* Tombol Konfigurasi Nama Kelompok (Gear) */}
+                                <button 
+                                    onClick={() => setIsModalOpen(true)} 
+                                    className="p-3 border-2 border-[#00A19C] text-[#00A19C] hover:bg-[#00A19C] hover:text-[#FDFDFD] transition-all flex items-center justify-center group shadow-sm"
+                                    title="Konfigurasi Kelompok"
+                                >
+                                    <Settings size={20} className="group-hover:rotate-90 transition-transform duration-500" />
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Grid List Kelompok */}
+                    <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {sampleResults.map((sample, sIdx) => {
+                            const groupTime = groupTimes[sIdx];
+                            const isGroupFinished = sample.taskTimes.every(t => t !== null);
+                            const isGroupPaused = !groupIsRunning[sIdx] && !isGroupFinished;
+                            const ipConfig = groupIpConfigs[sIdx];
+
+                            // Menghitung data tugas yang sedang aktif/berjalan saat ini
+                            const activeIdx = sample.taskTimes.findIndex(t => t === null);
+                            const activeTaskTime = activeIdx !== -1 ? getTaskDisplayTime(sample, activeIdx, sIdx) : null;
+
+                            return (
+                                <div 
+                                    key={sample.id} 
+                                    className="relative overflow-hidden bg-[#FDFDFD] border-t-8 transition-all duration-300 flex flex-col shadow-xl h-full border-slate-200"
+                                    style={{
+                                        borderTopColor: isGroupFinished ? '#00A19C' : (isRunning && groupIsRunning[sIdx]) ? '#002D72' : '#e2e8f0'
+                                    }}
+                                >
+                                    {/* PANEL ACAK TUGAS (Overlay Absolut Sebesar Kotak Kelompok) */}
+                                    {openOverlays[sIdx] && (
+                                        <div className="absolute inset-0 bg-[#FDFDFD] z-30 flex flex-col border-t-8 border-[#00A19C] overflow-hidden">
+                                            {/* Header Panel Acak - Dibuat kompak dan presisi agar tidak memakan ruang */}
+                                            <div className="border-b-2 border-slate-100 bg-[#f8fafc] flex justify-between items-center p-3 shrink-0">
+                                                <div className="flex items-center gap-2 text-[#002D72] max-w-[70%] shrink-0">
+                                                    <Users size={16} className="text-[#00A19C] shrink-0" />
+                                                    <span className="font-black text-[10px] uppercase tracking-wider truncate">{titles[sIdx]}</span>
+                                                </div>
+                                                <button 
+                                                    onClick={() => {
+                                                        const next = [...openOverlays];
+                                                        next[sIdx] = false;
+                                                        setOpenOverlays(next);
+                                                    }}
+                                                    className="text-slate-400 hover:text-[#E10600] transition-colors shrink-0 pl-1"
+                                                    title="Tutup"
+                                                >
+                                                    <X size={18} />
+                                                </button>
+                                            </div>
+
+                                            {/* KOTAK WAKTU TUGAS MANDIRI */}
+                                            <div className="bg-[#002D72] flex items-center justify-center p-3 border-b-4 border-[#00A19C] shrink-0 shadow-md z-10">
+                                                <div className="font-bebas text-5xl text-white font-black tracking-wider leading-none pt-1">
+                                                    {activeIdx !== -1 ? formatTime(activeTaskTime) : "--:--"}
+                                                </div>
+                                            </div>
+
+                                            {/* Input Daftar Nama */}
+                                            <div className="bg-slate-50 p-2.5 border-b border-slate-200 shrink-0">
+                                                <label className="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 text-left">Daftar Nama (1 Baris = 1 Nama)</label>
+                                                <div className="flex gap-2 items-start">
+                                                    <textarea
+                                                        className="flex-1 bg-white border border-slate-300 px-2.5 py-1.5 text-xs font-bold focus:ring-0 focus:border-[#00A19C] outline-none h-[68px] text-[#002D72] resize-none rounded shadow-inner"
+                                                        value={getInputs[sIdx]}
+                                                        onChange={(e) => handleInputChange(sIdx, e.target.value)}
+                                                        placeholder="Masukkan nama siswa..."
+                                                    />
+                                                    {/* Dua Tombol Acak Berdampingan dengan Textarea */}
+                                                    <div className="flex flex-col gap-1.5 shrink-0 h-[68px]">
+                                                        <button
+                                                            onClick={() => handleShuffle(sIdx, getInputs[sIdx], 'normal')}
+                                                            disabled={shufflingGroups[sIdx]}
+                                                            className="flex-1 bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black px-2 text-[9px] uppercase tracking-wider transition-all rounded shadow-sm flex items-center justify-center text-center w-[90px]"
+                                                            title="Siswa kurang dari 4 dikosongkan"
+                                                        >
+                                                            {shufflingGroups[sIdx] ? 'ACAK...' : 'ACAK BIASA'}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleShuffle(sIdx, getInputs[sIdx], 'duplicate')}
+                                                            disabled={shufflingGroups[sIdx]}
+                                                            className="flex-1 bg-[#002D72] hover:bg-[#00A19C] text-[#FDFDFD] font-black px-2 text-[9px] uppercase tracking-wider transition-all rounded shadow-sm flex items-center justify-center text-center w-[90px]"
+                                                            title="Siswa kurang dari 4 ditugaskan ganda"
+                                                        >
+                                                            {shufflingGroups[sIdx] ? 'ACAK...' : 'ACAK GANDA'}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Hasil Acak Anggota A, B, C, D (Fleksibel menyesuaikan ruang) */}
+                                            <div className="p-2.5 flex-1 flex flex-col justify-between overflow-hidden gap-2 bg-[#FDFDFD]">
+                                                {['A', 'B', 'C', 'D'].map((letter, letterIdx) => (
+                                                    <div 
+                                                        key={letter} 
+                                                        className={`relative flex items-center gap-3 px-2 border-2 border-slate-100 bg-white rounded flex-1 min-h-0 transition-all ${
+                                                            shufflingGroups[sIdx] ? 'blur-[1px] opacity-70 animate-pulse' : ''
+                                                        }`}
+                                                    >
+                                                        <div className="w-7 h-7 flex items-center justify-center shrink-0 rounded bg-[#002D72] text-[#FDFDFD] font-black font-bebas text-lg">
+                                                            {letter}
+                                                        </div>
+                                                        <span className="text-[14px] font-black uppercase tracking-wider text-[#002D72] truncate">
+                                                            {shuffledLists[sIdx][letterIdx] || "---"}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Tombol Tutup Panel di Bagian Bawah */}
+                                            <div className="px-2.5 pb-2.5 pt-1 shrink-0">
+                                                <button
+                                                    onClick={() => {
+                                                        const next = [...openOverlays];
+                                                        next[sIdx] = false;
+                                                        setOpenOverlays(next);
+                                                    }}
+                                                    className="w-full bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black py-2.5 text-xs uppercase tracking-wider transition-all rounded border border-slate-200"
+                                                >
+                                                    TUTUP PANEL
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* PANEL DETAIL ALOKASI IP & HOST - TELEMETRY RACING THEME */}
+                                    {openIpOverlays[sIdx] && (
+                                        <div className="absolute inset-0 bg-[#FDFDFD] z-30 flex flex-col border-t-8 border-[#00A19C] overflow-hidden">
+                                            {/* Header Panel IP */}
+                                            <div className="flex justify-between items-center p-2.5 border-b border-slate-100 shrink-0">
+                                                <div className="flex items-center gap-2 text-[#002D72] max-w-[70%] shrink-0">
+                                                    <RouterIcon className="text-[#00A19C] w-4 h-4 shrink-0" />
+                                                    {/* Nama kelompok dinamis */}
+                                                    <span className="font-black text-[10px] uppercase tracking-wider truncate">{titles[sIdx]}</span>
+                                                </div>
+                                                <button 
+                                                    onClick={() => {
+                                                        const next = [...openIpOverlays];
+                                                        next[sIdx] = false;
+                                                        setOpenIpOverlays(next);
+                                                    }}
+                                                    className="text-slate-400 hover:text-[#E10600] transition-colors shrink-0 pl-1"
+                                                    title="Tutup"
+                                                >
+                                                    <X size={18} />
+                                                </button>
+                                            </div>
+
+                                            {/* KOTAK WAKTU TUGAS MANDIRI */}
+                                            <div className="bg-[#002D72] flex items-center justify-center p-3 border-b-4 border-[#00A19C] shrink-0 shadow-md z-10">
+                                                <div className="font-bebas text-5xl text-white font-black tracking-wider leading-none pt-1">
+                                                    {activeIdx !== -1 ? formatTime(activeTaskTime) : "--:--"}
+                                                </div>
+                                            </div>
+
+                                            {/* Kotak Input Pengisian IP & Kebutuhan Host secara Manual */}
+                                            <div className="bg-slate-50 p-2.5 border-b border-slate-200 shrink-0">
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        className="flex-1 bg-white border border-slate-300 px-2 py-1.5 text-[10px] font-bold focus:ring-0 focus:border-[#00A19C] outline-none text-[#002D72] rounded shadow-inner"
+                                                        value={rawIpInputs[sIdx]}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setRawIpInputs(prev => {
+                                                                const next = [...prev];
+                                                                next[sIdx] = val;
+                                                                return next;
+                                                                });
+                                                        }}
+                                                        placeholder="Masukkan IP | PC A | RA-RB | dst..."
+                                                    />
+                                                    <button
+                                                        onClick={() => handleSaveIpConfig(sIdx)}
+                                                        className="bg-[#00A19C] hover:bg-[#002D72] text-[#FDFDFD] font-black px-3 py-1.5 text-[10px] uppercase tracking-wider transition-all rounded shadow-sm shrink-0"
+                                                    >
+                                                        SIMPAN
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Tabel Alokasi Telemetry Setema dengan Dashboard */}
+                                            <div className="p-2.5 flex-1 flex flex-col overflow-hidden bg-white">
+                                                <div className="bg-white rounded border border-slate-200 shadow-sm flex-1 flex flex-col overflow-hidden">
+                                                    {/* Header Blok - Alamat IP putih dengan font Bebas Neue tebal */}
+                                                    <div className="bg-[#002D72] text-[#FDFDFD] p-1.5 text-center border-b-4 border-[#00A19C] flex items-center justify-center shrink-0">
+                                                        <div className="font-bebas text-2xl tracking-wider text-white font-black leading-none py-1">
+                                                            {ipConfig.baseIp}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Kolom Judul Tabel (Telemetry Header) */}
+                                                    <div className="bg-slate-100 border-b border-slate-200 text-[9px] font-black uppercase text-[#002D72]/60 tracking-wider flex justify-between py-1 px-3 shrink-0">
+                                                        <span>Segmen Jaringan</span>
+                                                        <span>Kebutuhan Host</span>
+                                                    </div>
+
+                                                    {/* Baris Jaringan yang Terbagi Rata Menjadi 7 Bagian Tanpa Scroll */}
+                                                    <div className="flex-1 flex flex-col justify-between overflow-hidden">
+                                                        {ipConfig.segments.map((item, itemIdx) => {
+                                                            const isRouter = item.name.includes("-");
+                                                            const rowBg = itemIdx % 2 === 0 ? 'bg-slate-50/70' : 'bg-white';
+                                                            return (
+                                                                <div 
+                                                                    key={itemIdx} 
+                                                                    className={`group flex items-center justify-between px-3 border-b border-slate-100 last:border-0 transition-all hover:bg-slate-100 flex-1 min-h-0 ${rowBg}`}
+                                                                >
+                                                                    <div className="flex items-center gap-2.5">
+                                                                        <div className="p-1 rounded shrink-0 bg-[#002D72]/5 text-[#002D72]">
+                                                                            {isRouter ? (
+                                                                                <RouterIcon className="w-3.5 h-3.5" />
+                                                                            ) : (
+                                                                                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                                                                                    <line x1="8" y1="21" x2="16" y2="21" />
+                                                                                    <line x1="12" y1="17" x2="12" y2="21" />
+                                                                                </svg>
+                                                                            )}
+                                                                        </div>
+                                                                        <span className="font-black text-[13px] text-[#002D72] uppercase tracking-wider leading-none">
+                                                                            {item.name}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div className="text-right">
+                                                                        <span className="font-black text-xl text-[#002D72] leading-none">
+                                                                            {item.hosts}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Tombol Tutup Panel di Bagian Bawah */}
+                                            <div className="px-2.5 pb-2.5 shrink-0">
+                                                <button
+                                                    onClick={() => {
+                                                        const next = [...openIpOverlays];
+                                                        next[sIdx] = false;
+                                                        setOpenIpOverlays(next);
+                                                    }}
+                                                    className="w-full bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black py-2.5 text-xs uppercase tracking-wider transition-all rounded border border-slate-200"
+                                                >
+                                                    TUTUP PANEL
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                    
+                                    {/* Area Display Besar Kelompok - Klik 1x untuk Pause / resume kelompok mandiri */}
+                                    <button 
+                                        onClick={() => handleGroupTimerClick(sIdx)}
+                                        className={`p-6 border-b-2 text-center transition-all min-h-[220px] flex flex-col justify-center items-center w-full focus:outline-none cursor-pointer group/timer ${
+                                            isGroupFinished ? 'bg-[#00A19C]/5 border-[#00A19C]' : 'bg-[#f8fafc] border-[#002D72]/10'
+                                        }`}
+                                        title={isGroupFinished ? "Selesai" : isGroupPaused ? "Klik untuk memulai lagi" : "Klik untuk menjeda (pause)"}
+                                    >
+                                         <h3 className={`text-[16px] font-black uppercase tracking-[0.4em] mb-4 transition-colors group-hover/timer:text-[#00A19C] ${
+                                             isGroupFinished ? 'text-[#00A19C]' : 'text-[#002D72]/40'
+                                         }`}>
+                                             {titles[sIdx]}
+                                         </h3>
+                                         
+                                         {/* Sisa waktu countdown kelompok menggunakan Bebas Neue Tebal */}
+                                         <div className={`text-[110px] font-bebas font-black tracking-wider leading-none transition-colors group-hover/timer:scale-105 duration-200 transform ${
+                                             isGroupFinished ? 'text-[#00A19C]' : (isRunning && groupIsRunning[sIdx]) ? 'text-[#002D72]' : 'text-slate-200'
+                                         }`}>
+                                             {formatTime(Math.max(0, 9900 - groupTime))}
+                                         </div>
+                                         
+                                         {isGroupFinished && (
+                                             <span className="text-[10px] font-black text-[#00A19C] tracking-widest uppercase mt-2 opacity-80">
+                                                 FINISHED
+                                             </span>
+                                         )}
+                                         
+                                         {isGroupPaused && (
+                                             <span className="text-[10px] font-black text-[#E10600] tracking-widest uppercase mt-2 opacity-80 animate-pulse">
+                                                 PAUSED
+                                             </span>
+                                         )}
+                                    </button>
+
+                                    {/* Area Tugas-Tugas */}
+                                    <div className="p-5 flex-1 space-y-3 bg-[#FDFDFD]">
+                                        {taskNames.map((taskName, tIdx) => {
+                                            const completedAt = sample.taskTimes[tIdx];
+                                            const isDone = completedAt !== null;
+                                            
+                                            const activeIdx = sample.taskTimes.findIndex(t => t === null);
+                                            // Menjaga status isActive tetap aktif meskipun kelompok sedang di-freeze manual (agar tetap hijau)
+                                            const isActive = activeIdx === tIdx && (isRunning || groupTime > 0);
+                                            
+                                            const displaySeconds = getTaskDisplayTime(sample, tIdx, sIdx);
+                                            
+                                            // Split berdasarkan newline (\n) untuk 2 baris
+                                            const lines = taskName.split('\n');
+
+                                            return (
+                                                <div 
+                                                    key={tIdx}
+                                                    onContextMenu={(e) => handleTaskRightClick(e, sIdx, tIdx)}
+                                                    onClick={() => handleTaskClick(sIdx, tIdx)}
+                                                    className={`relative flex items-center justify-between pl-2.5 pr-2 py-0 border-2 transition-all cursor-pointer select-none overflow-hidden group h-[76px] ${
+                                                        isDone 
+                                                        ? 'bg-[#00A19C] border-[#00A19C] text-[#FDFDFD]' 
+                                                        : isActive
+                                                        ? 'bg-[#FDFDFD] border-[#00A19C] text-[#002D72] ring-2 ring-[#00A19C]/20 shadow-md shadow-[#00A19C]/5'
+                                                        : 'bg-[#FDFDFD] border-slate-100 hover:border-[#002D72] text-[#002D72]'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-center gap-2.5 z-10 flex-1 min-w-0 pr-1">
+                                                        <div className={`w-8 h-8 flex items-center justify-center shrink-0 transition-all rounded ${
+                                                            isDone 
+                                                            ? 'bg-[#FDFDFD] text-[#00A19C]' 
+                                                            : isActive 
+                                                            ? `bg-[#00A19C] text-[#FDFDFD] ${(groupIsRunning[sIdx] && isRunning) ? 'animate-pulse' : ''}` 
+                                                            : 'bg-slate-100 text-slate-300'
+                                                        }`}>
+                                                            {isDone ? <Check size={18} /> : <ChevronRight size={18} />}
+                                                        </div>
+                                                        <span className={`text-[15px] font-black uppercase tracking-wider leading-[1.05] text-left ${isDone ? 'italic opacity-80' : ''}`}>
+                                                            {lines[0]}<br/>{lines[1] || ''}
+                                                        </span>
+                                                    </div>
+                                                    
+                                                    {/* Waktu countdown tugas berukuran raksasa 6xl dengan font Bebas Neue */}
+                                                    <div className={`font-bebas text-6xl font-black tracking-normal z-10 shrink-0 pl-1 leading-none pt-1 ${
+                                                        isDone 
+                                                        ? 'text-[#FDFDFD]' 
+                                                        : isActive 
+                                                        ? 'text-[#00A19C]' 
+                                                        : 'text-slate-300'
+                                                    }`}>
+                                                        {formatTime(displaySeconds)}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Tombol Aksi di Bagian Bawah Tiap Kelompok (Grid Kolom-2 Simetris) */}
+                                    <div className="px-5 pb-5 pt-2 bg-[#FDFDFD] grid grid-cols-2 gap-3 shrink-0">
+                                        <button
+                                            onClick={() => {
+                                                const next = [...openOverlays];
+                                                next[sIdx] = true;
+                                                setOpenOverlays(next);
+                                            }}
+                                            className="w-full py-2.5 border-2 border-dashed border-[#002D72] text-[#002D72] hover:bg-[#002D72] hover:text-[#FDFDFD] transition-all font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-1.5 rounded"
+                                        >
+                                            <Users size={14} />
+                                            LIHAT TUGAS
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const next = [...openIpOverlays];
+                                                next[sIdx] = true;
+                                                setOpenIpOverlays(next);
+                                            }}
+                                            className="w-full py-2.5 border-2 border-dashed border-[#00A19C] text-[#00A19C] hover:bg-[#00A19C] hover:text-[#FDFDFD] transition-all font-black text-[11px] uppercase tracking-wider flex items-center justify-center gap-1.5 rounded"
+                                        >
+                                            <RouterIcon className="w-3.5 h-3.5" />
+                                            LIHAT IP
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </main>
+                </div>
+            );
+        };
+
+        // Render Komponen Utama
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
