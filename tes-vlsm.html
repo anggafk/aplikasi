@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latihan & Ujian Praktik Subnetting VLSM</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            racing: {
+              blue: '#002D72',
+              teal: '#00A19C',
+              darkteal: '#008985',
+              red: '#E10600',
+              bg: '#f8fafc'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-racing-bg text-slate-800 font-sans selection:bg-racing-teal selection:text-white min-h-screen">
+
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- SVG Icons ---
+    const RefreshCw = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    );
+    const CheckCircle = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    );
+    const XCircle = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    );
+    const HelpCircle = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    );
+    const Eye = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    );
+    const Trophy = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+    );
+    const Monitor = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    );
+    const RouterIcon = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <circle cx="12" cy="12" r="10" strokeWidth="2"/>
+        <line x1="12" y1="14" x2="12" y2="6" strokeWidth="1.5"/>
+        <polyline points="10 8 12 6 14 8" strokeWidth="1.5"/>
+        <line x1="12" y1="10" x2="12" y2="18" strokeWidth="1.5"/>
+        <polyline points="10 16 12 18 14 16" strokeWidth="1.5"/>
+        <line x1="14" y1="12" x2="6" y2="12" strokeWidth="1.5"/>
+        <polyline points="8 10 6 12 8 14" strokeWidth="1.5"/>
+        <line x1="10" y1="12" x2="18" y2="12" strokeWidth="1.5"/>
+        <polyline points="16 10 18 12 16 14" strokeWidth="1.5"/>
+      </svg>
+    );
+    const ClockIcon = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    );
+    const PlayIcon = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    );
+
+    // --- Helper Functions for IP Math ---
+    const ipToInt = (ip) => {
+      return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+    };
+
+    const intToIp = (int) => {
+      return [
+        (int >>> 24) & 255,
+        (int >>> 16) & 255,
+        (int >>> 8) & 255,
+        int & 255
+      ].join('.');
+    };
+
+    const getMaskFromCidr = (cidr) => {
+      return -1 << (32 - cidr);
+    };
+
+    const calculateSubnetDetails = (networkInt, hostsNeeded) => {
+      const requiredSize = hostsNeeded + 2;
+      const hostBits = Math.ceil(Math.log2(requiredSize));
+      const cidr = 32 - hostBits;
+      
+      const maskInt = getMaskFromCidr(cidr);
+      const blockSize = Math.pow(2, hostBits);
+      
+      const broadcastInt = networkInt + blockSize - 1;
+      const firstIpInt = networkInt + 1;
+      const lastIpInt = broadcastInt - 1;
+
+      return {
+        network: intToIp(networkInt),
+        cidr: `/${cidr}`,
+        mask: intToIp(maskInt),
+        firstIp: intToIp(firstIpInt),
+        lastIp: intToIp(lastIpInt),
+        broadcast: intToIp(broadcastInt),
+        nextNetworkInt: networkInt + blockSize
+      };
+    };
+
+    const getRandomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    const generateProblem = () => {
+      let firstOctet = getRandomInt(1, 223);
+      while (firstOctet === 127) {
+        firstOctet = getRandomInt(1, 223);
+      }
+      const secondOctet = getRandomInt(0, 255);
+      const thirdOctet = getRandomInt(0, 255);
+
+      const baseNetwork = `${firstOctet}.${secondOctet}.${thirdOctet}.0`;
+      const baseCidr = 24;
+
+      const pcNames = ['PC A', 'PC B', 'PC C', 'PC D'];
+      const routerNames = ['RA-RB', 'RB-RC', 'RC-RD'];
+
+      const cidrRanges = {
+        26: { min: 31, max: 62 },
+        27: { min: 15, max: 30 },
+        28: { min: 7, max: 14 },
+        29: { min: 3, max: 6 }
+      };
+
+      const pcCombinations = [
+        [26, 26, 27, 28],
+        [26, 27, 27, 28],
+        [26, 27, 28, 29],
+        [27, 27, 28, 28]
+      ];
+      
+      let chosenCombination = pcCombinations[Math.floor(Math.random() * pcCombinations.length)];
+      chosenCombination = chosenCombination.sort(() => 0.5 - Math.random());
+
+      let tempSubnets = [];
+      const usedHosts = new Set();
+
+      for (let i = 0; i < pcNames.length; i++) {
+        const cidr = chosenCombination[i];
+        const { min, max } = cidrRanges[cidr];
+        let h = getRandomInt(min, max);
+        
+        let safety = 0;
+        while (usedHosts.has(h) && safety < 100) {
+          h = getRandomInt(min, max);
+          safety++;
+        }
+        usedHosts.add(h);
+
+        tempSubnets.push({
+          name: pcNames[i],
+          hosts: h
+        });
+      }
+
+      for (let i = 0; i < routerNames.length; i++) {
+        tempSubnets.push({
+          name: routerNames[i],
+          hosts: 2
+        });
+      }
+
+      tempSubnets.sort((a, b) => b.hosts - a.hosts);
+
+      let currentIpInt = ipToInt(baseNetwork);
+      let solution = tempSubnets.map(sub => {
+        const details = calculateSubnetDetails(currentIpInt, sub.hosts);
+        currentIpInt = details.nextNetworkInt; 
+        return {
+          ...sub,
+          ...details
+        };
+      });
+
+      const displayOrder = [
+        'PC A', 'RA-RB', 'PC B', 'RB-RC', 'PC C', 'RC-RD', 'PC D'
+      ];
+      solution.sort((a, b) => displayOrder.indexOf(a.name) - displayOrder.indexOf(b.name));
+
+      return {
+        baseNetwork,
+        baseCidr,
+        subnets: solution
+      };
+    };
+
+    function VLSMApp() {
+      const [mode, setMode] = useState('latihan'); // 'latihan' | 'tes'
+      const [problem, setProblem] = useState(null);
+      const [userInputs, setUserInputs] = useState({});
+      const [validation, setValidation] = useState(null);
+      const [score, setScore] = useState(0);
+      const [showSolution, setShowSolution] = useState(false);
+      const [showCheatSheet, setShowCheatSheet] = useState(false);
+      
+      // Test Mode States
+      const [isTestStarted, setIsTestStarted] = useState(false);
+      const [isTestFinished, setIsTestFinished] = useState(false);
+      const [timeLeft, setTimeLeft] = useState(15 * 60);
+
+      useEffect(() => {
+        newProblem('latihan');
+      }, []);
+
+      // Auto-submit test when timer hits 0
+      useEffect(() => {
+        let interval = null;
+        if (mode === 'tes' && isTestStarted && !isTestFinished) {
+          if (timeLeft > 0) {
+            interval = setInterval(() => {
+              setTimeLeft(prev => prev - 1);
+            }, 1000);
+          } else {
+            // Timer expired
+            checkAnswers(true);
+          }
+        }
+        return () => clearInterval(interval);
+      }, [mode, isTestStarted, isTestFinished, timeLeft]);
+
+      const switchMode = (newMode) => {
+        if (newMode === mode) return;
+        setMode(newMode);
+        newProblem(newMode);
+      };
+
+      const newProblem = (currentMode = mode) => {
+        const p = generateProblem();
+        setProblem(p);
+        
+        const initialInputs = {};
+        p.subnets.forEach((_, idx) => {
+          initialInputs[idx] = {
+            network: '',
+            cidr: '',
+            firstIp: '',
+            lastIp: '',
+            broadcast: ''
+          };
+        });
+        setUserInputs(initialInputs);
+        setValidation(null);
+        setScore(0);
+        setShowSolution(false);
+        
+        if (currentMode === 'tes') {
+          setIsTestStarted(false);
+          setIsTestFinished(false);
+          setTimeLeft(15 * 60);
+          setShowCheatSheet(false);
+        }
+      };
+
+      const startTest = () => {
+        setIsTestStarted(true);
+      };
+
+      const handleInputChange = (idx, field, value) => {
+        setUserInputs(prev => ({
+          ...prev,
+          [idx]: {
+            ...prev[idx],
+            [field]: value
+          }
+        }));
+      };
+
+      const checkAnswers = (isTimeout = false) => {
+        if (!problem) return;
+
+        let correctCount = 0;
+        const totalFields = problem.subnets.length * 5; // 7 * 5 = 35
+        const newValidation = {};
+
+        problem.subnets.forEach((sol, idx) => {
+          const user = userInputs[idx];
+          const isNetworkCorrect = user.network.trim() === sol.network;
+          const isCidrCorrect = user.cidr.trim().replace('/','') === sol.cidr.replace('/',''); 
+          const isFirstCorrect = user.firstIp.trim() === sol.firstIp;
+          const isLastCorrect = user.lastIp.trim() === sol.lastIp;
+          const isBroadcastCorrect = user.broadcast.trim() === sol.broadcast;
+
+          if (isNetworkCorrect) correctCount++;
+          if (isCidrCorrect) correctCount++;
+          if (isFirstCorrect) correctCount++;
+          if (isLastCorrect) correctCount++;
+          if (isBroadcastCorrect) correctCount++;
+
+          newValidation[idx] = {
+            network: isNetworkCorrect,
+            cidr: isCidrCorrect,
+            firstIp: isFirstCorrect,
+            lastIp: isLastCorrect,
+            broadcast: isBroadcastCorrect
+          };
+        });
+
+        setValidation(newValidation);
+
+        if (mode === 'tes') {
+          // Sistem Skor Ujian: Total 35 isian x 2 = 70 poin Max.
+          setScore(correctCount * 2);
+          setIsTestFinished(true);
+        } else {
+          // Sistem Skor Latihan Bertingkat
+          if (correctCount === 0) {
+            setScore(0);
+          } else {
+            const BASE_SCORE = 50;
+            const PASSING_SCORE = 70;
+            const THRESHOLD_ANSWERS = 8; 
+            const phase1Weight = (PASSING_SCORE - BASE_SCORE) / THRESHOLD_ANSWERS;
+
+            if (correctCount <= THRESHOLD_ANSWERS) {
+              const calculatedScore = BASE_SCORE + (correctCount * phase1Weight);
+              setScore(Math.round(calculatedScore));
+            } else {
+              const remainingCorrect = correctCount - THRESHOLD_ANSWERS;
+              const remainingFields = totalFields - THRESHOLD_ANSWERS;
+              const remainingScorePool = 100 - PASSING_SCORE; 
+              const phase2Weight = remainingScorePool / remainingFields;
+              
+              const finalScore = PASSING_SCORE + (remainingCorrect * phase2Weight);
+              setScore(Math.round(finalScore));
+            }
+          }
+        }
+      };
+
+      const fillSolution = () => {
+        setShowSolution(true);
+        const solvedInputs = {};
+        problem.subnets.forEach((sol, idx) => {
+          solvedInputs[idx] = {
+            network: sol.network,
+            cidr: sol.cidr,
+            firstIp: sol.firstIp,
+            lastIp: sol.lastIp,
+            broadcast: sol.broadcast
+          };
+        });
+        setUserInputs(solvedInputs);
+        setValidation(null);
+      };
+
+      const getFeedbackMessage = (s) => {
+        if (s === 100) return "Sempurna! Penguasaan Materi Yang Sangat Baik 🏆";
+        if (s >= 90) return "Luar Biasa! Kerja Sangat Bagus 🌟";
+        if (s >= 80) return "Hebat! Terus Tingkatkan 👍";
+        if (s >= 70) return "Cukup Baik! Terus Berlatih 🙂";
+        return "Jangan Menyerah! Ayo Coba Lagi 💪";
+      };
+
+      const formatTimerDisplay = (seconds) => {
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+      };
+
+      if (!problem) return <div className="p-10 text-center text-racing-blue font-bold">Memuat Modul Aplikasi...</div>;
+
+      const isInputDisabled = showSolution || (mode === 'tes' && (!isTestStarted || isTestFinished));
+
+      return (
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          
+          {/* Top Bar / Header */}
+          <header className="mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div>
+              <h1 className="text-3xl font-bold text-racing-blue flex items-center gap-3">
+                <span className="px-3 py-1.5 bg-racing-red text-white rounded-lg text-xl shadow-sm tracking-widest font-black uppercase">VLSM</span>
+                {mode === 'tes' ? 'Ujian Praktik Subnetting' : 'Latihan Subnetting'}
+              </h1>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              
+              {/* Mode Switcher */}
+              <div className="flex bg-slate-200 p-1 rounded-lg w-full sm:w-auto shadow-inner">
+                <button 
+                  onClick={() => switchMode('latihan')} 
+                  className={`flex-1 sm:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition-all ${mode === 'latihan' ? 'bg-white shadow-sm text-racing-blue' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Mode Latihan
+                </button>
+                <button 
+                  onClick={() => switchMode('tes')} 
+                  className={`flex-1 sm:flex-none px-4 py-1.5 rounded-md text-sm font-bold transition-all ${mode === 'tes' ? 'bg-racing-red text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Mode Tes
+                </button>
+              </div>
+
+              {/* Small Timer & Start Button (Right of toggle) */}
+              {mode === 'tes' && (
+                <div className="flex items-center gap-2 w-full sm:w-auto justify-center">
+                  <div className={`font-mono text-sm font-bold px-3 py-1.5 rounded-md border flex items-center gap-1.5 transition-all
+                    ${isTestFinished ? 'bg-green-50 text-green-600 border-green-200' : 
+                      isTestStarted && timeLeft <= 60 ? 'bg-red-50 text-racing-red border-red-200 animate-pulse' : 
+                      'bg-slate-50 text-slate-700 border-slate-200'}`}
+                  >
+                    <ClockIcon size={14} />
+                    {formatTimerDisplay(timeLeft)}
+                  </div>
+                  {!isTestStarted && !isTestFinished && (
+                    <button 
+                      onClick={startTest} 
+                      className="px-4 py-1.5 bg-racing-teal hover:bg-racing-darkteal text-white text-sm font-bold rounded-md shadow-sm transition-all flex items-center gap-1.5"
+                    >
+                      <PlayIcon size={14} /> Mulai Tes
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Cheat Sheet Toggle (Latihan Mode) */}
+              {mode === 'latihan' && (
+                <button 
+                  onClick={() => setShowCheatSheet(!showCheatSheet)}
+                  className="flex items-center gap-2 text-sm text-racing-teal hover:bg-slate-100 px-3 py-1.5 rounded-md transition-colors font-semibold w-full sm:w-auto justify-center border border-transparent hover:border-slate-200"
+                >
+                  <HelpCircle size={16} />
+                  {showCheatSheet ? 'Tutup Materi' : 'Cara Kerja VLSM'}
+                </button>
+              )}
+            </div>
+          </header>
+
+          {/* Education Section (Latihan Only) */}
+          {mode === 'latihan' && showCheatSheet && (
+            <div className="bg-white border-l-4 border-racing-teal rounded-r-xl p-6 mb-8 shadow-sm">
+              <h3 className="font-bold text-lg mb-3 text-racing-blue">Prinsip Dasar VLSM</h3>
+              <ul className="space-y-2 text-sm text-slate-700 list-disc list-inside">
+                <li>Selalu kerjakan subnet dengan kebutuhan host <strong className="text-racing-red">terbanyak ke terkecil</strong>.</li>
+                <li>Tentukan prefix masing-masing ruang dari tabel subnetting.</li>
+                <li>IP Network pertama dimulai dari <span className="font-mono bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">xxx.xxx.xxx.0</span>. IP Network saat ini + Blok Subnet/Total IP = IP Network subnet berikutnya.</li>
+                <li><strong className="text-racing-blue">IP Broadcast</strong> = IP Network berikutnya - 1</li>
+                <li><strong className="text-racing-blue">IP Host Pertama</strong> = Network ID + 1</li>
+                <li><strong className="text-racing-blue">IP Host Terakhir</strong> = IP Broadcast - 1</li>
+              </ul>
+            </div>
+          )}
+
+          {/* Problem Statement Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6 mb-6">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6">
+              <div>
+                <h2 className="text-lg font-bold text-racing-blue">{mode === 'tes' ? 'Soal Ujian' : 'Soal Latihan'}</h2>
+                <div className="text-sm text-slate-600 mt-1">
+                  Alokasikan jaringan 
+                  <span className="font-mono bg-racing-blue text-white px-2 py-0.5 rounded font-bold shadow-sm mx-1">
+                    {mode === 'tes' && !isTestStarted && !isTestFinished ? '???.???.???.? / ??' : `${problem.baseNetwork}/${problem.baseCidr}`}
+                  </span> 
+                  untuk kebutuhan ruang berikut.
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 mt-4 lg:mt-0">
+                {mode === 'latihan' && (
+                  <button 
+                    onClick={() => newProblem()} 
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 hover:border-racing-teal hover:text-racing-teal text-slate-700 rounded-lg text-sm font-bold transition-all"
+                  >
+                    <RefreshCw size={16} /> Soal Baru
+                  </button>
+                )}
+                {mode === 'tes' && !isTestStarted && !isTestFinished && (
+                  <button 
+                    onClick={() => newProblem()} 
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 hover:border-racing-blue hover:text-racing-blue text-slate-700 rounded-lg text-sm font-bold transition-all"
+                  >
+                    <RefreshCw size={16} /> Acak Ulang Soal
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Interactive Table - Adaptif untuk HP & Desktop */}
+            <div className="overflow-x-hidden md:overflow-x-auto">
+              <table className="w-full text-sm text-left block md:table">
+                <thead className="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200 hidden md:table-header-group">
+                  <tr>
+                    <th className="px-4 py-3 font-bold">Ruang</th>
+                    <th className="px-4 py-3 font-bold">Host</th>
+                    <th className="px-4 py-3 font-bold text-racing-blue">Prefix</th>
+                    <th className="px-4 py-3 font-bold text-racing-blue">IP Network</th>
+                    <th className="px-4 py-3 font-bold text-racing-teal">Host Pertama</th>
+                    <th className="px-4 py-3 font-bold text-racing-teal">Host Terakhir</th>
+                    <th className="px-4 py-3 font-bold text-racing-blue">IP Broadcast</th>
+                  </tr>
+                </thead>
+                <tbody className="block md:table-row-group divide-y-0 md:divide-y divide-slate-100">
+                  {problem.subnets.map((sub, idx) => {
+                    const val = validation ? validation[idx] : null;
+                    const isRouter = sub.name.includes('-');
+                    
+                    return (
+                      <tr key={idx} className={`block md:table-row border border-slate-200 md:border-none rounded-xl md:rounded-none mb-6 md:mb-0 shadow-sm md:shadow-none transition-colors ${
+                        isRouter ? 'bg-blue-50/80 md:bg-blue-50/50 hover:bg-blue-100/60' : 'bg-white hover:bg-slate-50/50'
+                      }`}>
+                        
+                        {/* 1. Ruang */}
+                        <td className={`flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-4 md:py-3 border-b-2 border-slate-200 md:border-none rounded-t-xl md:rounded-none whitespace-nowrap ${
+                          isRouter ? 'bg-blue-100/60 md:bg-transparent' : 'bg-slate-100 md:bg-transparent'
+                        }`}>
+                          <span className="md:hidden font-bold text-slate-500 text-xs uppercase tracking-wider">Ruang</span>
+                          <span className="font-bold text-racing-blue md:font-semibold md:text-slate-700 text-base md:text-sm flex items-center gap-2">
+                            {!isRouter ? <Monitor size={22} className="text-racing-teal" /> : <RouterIcon size={22} className="text-slate-500" />}
+                            {sub.name}
+                          </span>
+                        </td>
+                        
+                        {/* 2. Host */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-4 md:py-3 border-b border-slate-200 md:border-none">
+                          <span className="md:hidden font-bold text-slate-500 text-xs uppercase tracking-wider">Host</span>
+                          <span className={`inline-flex items-center px-2 py-1 rounded-md text-slate-800 font-black text-xs shadow-sm md:shadow-none ${
+                            isRouter ? 'bg-white' : 'bg-slate-200'
+                          }`}>
+                            {mode === 'tes' && !isTestStarted && !isTestFinished ? '??' : sub.hosts}
+                          </span>
+                        </td>
+
+                        {/* 3. Prefix */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none">
+                          <span className="md:hidden font-bold text-racing-blue text-xs uppercase tracking-wider pr-2">Prefix</span>
+                          <div className="relative w-[55%] sm:w-[60%] md:w-[70px]">
+                            <input
+                              type="text"
+                              value={userInputs[idx]['cidr']}
+                              onChange={(e) => handleInputChange(idx, 'cidr', e.target.value)}
+                              placeholder="/24"
+                              disabled={isInputDisabled}
+                              className={`w-full pl-2 pr-7 py-2 rounded border outline-none transition-all font-mono text-sm font-medium bg-white
+                                ${isInputDisabled ? 'cursor-not-allowed opacity-70' : 'focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal'}
+                                ${val 
+                                  ? (val['cidr'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
+                                  : 'border-slate-300 text-slate-800'
+                                }
+                              `}
+                            />
+                            {val && (
+                              <div className="absolute right-1.5 top-2.5">
+                                {val['cidr'] ? <CheckCircle size={16} className="text-green-600" /> : <XCircle size={16} className="text-racing-red" />}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* 4. IP Network */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none">
+                          <span className="md:hidden font-bold text-racing-blue text-xs uppercase tracking-wider pr-2">IP Network</span>
+                          <div className="relative w-[55%] sm:w-[60%] md:w-full">
+                            <input
+                              type="text"
+                              value={userInputs[idx]['network']}
+                              onChange={(e) => handleInputChange(idx, 'network', e.target.value)}
+                              placeholder="x.x.x.x"
+                              disabled={isInputDisabled}
+                              className={`w-full md:min-w-[145px] pl-3 pr-7 py-2 rounded border outline-none transition-all font-mono text-sm font-medium bg-white
+                                ${isInputDisabled ? 'cursor-not-allowed opacity-70' : 'focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal'}
+                                ${val 
+                                  ? (val['network'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
+                                  : 'border-slate-300 text-slate-800'
+                                }
+                              `}
+                            />
+                            {val && (
+                              <div className="absolute right-2 top-2.5">
+                                {val['network'] ? <CheckCircle size={16} className="text-green-600" /> : <XCircle size={16} className="text-racing-red" />}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* 5. Host Pertama */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none">
+                          <span className="md:hidden font-bold text-racing-teal text-xs uppercase tracking-wider pr-2">Host Pertama</span>
+                          <div className="relative w-[55%] sm:w-[60%] md:w-full">
+                            <input
+                              type="text"
+                              value={userInputs[idx]['firstIp']}
+                              onChange={(e) => handleInputChange(idx, 'firstIp', e.target.value)}
+                              placeholder="x.x.x.x"
+                              disabled={isInputDisabled}
+                              className={`w-full md:min-w-[145px] pl-3 pr-7 py-2 rounded border outline-none transition-all font-mono text-sm font-medium bg-white
+                                ${isInputDisabled ? 'cursor-not-allowed opacity-70' : 'focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal'}
+                                ${val 
+                                  ? (val['firstIp'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
+                                  : 'border-slate-300 text-slate-800'
+                                }
+                              `}
+                            />
+                            {val && (
+                              <div className="absolute right-2 top-2.5">
+                                {val['firstIp'] ? <CheckCircle size={16} className="text-green-600" /> : <XCircle size={16} className="text-racing-red" />}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* 6. Host Terakhir */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none">
+                          <span className="md:hidden font-bold text-racing-teal text-xs uppercase tracking-wider pr-2">Host Terakhir</span>
+                          <div className="relative w-[55%] sm:w-[60%] md:w-full">
+                            <input
+                              type="text"
+                              value={userInputs[idx]['lastIp']}
+                              onChange={(e) => handleInputChange(idx, 'lastIp', e.target.value)}
+                              placeholder="x.x.x.x"
+                              disabled={isInputDisabled}
+                              className={`w-full md:min-w-[145px] pl-3 pr-7 py-2 rounded border outline-none transition-all font-mono text-sm font-medium bg-white
+                                ${isInputDisabled ? 'cursor-not-allowed opacity-70' : 'focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal'}
+                                ${val 
+                                  ? (val['lastIp'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
+                                  : 'border-slate-300 text-slate-800'
+                                }
+                              `}
+                            />
+                            {val && (
+                              <div className="absolute right-2 top-2.5">
+                                {val['lastIp'] ? <CheckCircle size={16} className="text-green-600" /> : <XCircle size={16} className="text-racing-red" />}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* 7. IP Broadcast */}
+                        <td className="flex md:table-cell justify-between items-center md:justify-start px-4 py-3 md:px-2 md:py-2 border-b border-slate-200 md:border-none last:border-none">
+                          <span className="md:hidden font-bold text-racing-blue text-xs uppercase tracking-wider pr-2">IP Broadcast</span>
+                          <div className="relative w-[55%] sm:w-[60%] md:w-full">
+                            <input
+                              type="text"
+                              value={userInputs[idx]['broadcast']}
+                              onChange={(e) => handleInputChange(idx, 'broadcast', e.target.value)}
+                              placeholder="x.x.x.x"
+                              disabled={isInputDisabled}
+                              className={`w-full md:min-w-[145px] pl-3 pr-7 py-2 rounded border outline-none transition-all font-mono text-sm font-medium bg-white
+                                ${isInputDisabled ? 'cursor-not-allowed opacity-70' : 'focus:ring-2 focus:ring-racing-teal/20 focus:border-racing-teal'}
+                                ${val 
+                                  ? (val['broadcast'] ? 'border-green-500 bg-green-50 text-green-900' : 'border-racing-red bg-red-50 text-racing-red') 
+                                  : 'border-slate-300 text-slate-800'
+                                }
+                              `}
+                            />
+                            {val && (
+                              <div className="absolute right-2 top-2.5">
+                                {val['broadcast'] ? <CheckCircle size={16} className="text-green-600" /> : <XCircle size={16} className="text-racing-red" />}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Action Bar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-white rounded-xl shadow-sm border border-slate-200">
+            <div className="flex items-center gap-4 w-full sm:w-auto justify-center sm:justify-start">
+               {validation && (
+                <div className="flex items-center gap-3">
+                  {score === (mode === 'tes' ? 70 : 100) ? (
+                    <div className="p-2 bg-yellow-100 rounded-full text-yellow-600 shadow-sm border border-yellow-200">
+                      <Trophy size={24} />
+                    </div>
+                  ) : (
+                    <div className={`p-2 rounded-full shadow-sm border ${(mode === 'tes' ? score >= 50 : score >= 70) ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-racing-red border-red-200'}`}>
+                      {(mode === 'tes' ? score >= 50 : score >= 70) ? <CheckCircle size={24} /> : <XCircle size={24} />}
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-0.5">{mode === 'tes' ? 'Skor Akhir' : 'Total Skor'}</div>
+                    <div className="flex items-center gap-2">
+                       <span className={`text-2xl font-black ${(mode === 'tes' ? score >= 50 : score >= 70) ? 'text-green-600' : 'text-racing-red'}`}>
+                         {score} {mode === 'tes' && <span className="text-sm font-bold text-slate-400">/ 70</span>}
+                       </span>
+                       {mode !== 'tes' && (
+                         <span className="text-sm font-bold text-slate-700 border-l-2 pl-2 border-slate-200">
+                           {getFeedbackMessage(score)}
+                         </span>
+                       )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-3 w-full sm:w-auto">
+              {mode === 'latihan' && (
+                <button
+                  onClick={fillSolution}
+                  disabled={showSolution}
+                  className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all
+                    ${showSolution 
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                      : 'bg-white border border-slate-300 text-slate-700 hover:border-racing-blue hover:text-racing-blue'
+                    }`}
+                >
+                  <Eye size={18} />
+                  {showSolution ? 'Jawaban Ditampilkan' : 'Lihat Jawaban'}
+                </button>
+              )}
+              
+              {mode === 'latihan' ? (
+                <button
+                  onClick={() => checkAnswers(false)}
+                  disabled={showSolution}
+                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-racing-teal hover:bg-racing-darkteal text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <CheckCircle size={18} />
+                  Cek Jawaban
+                </button>
+              ) : (
+                <>
+                  {isTestStarted && !isTestFinished && (
+                    <button
+                      onClick={() => checkAnswers(false)}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-racing-red hover:bg-[#c00500] text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all"
+                    >
+                      <CheckCircle size={18} />
+                      Selesai & Kumpulkan
+                    </button>
+                  )}
+                  {isTestFinished && (
+                    <button
+                      onClick={() => newProblem('tes')}
+                      className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 bg-racing-blue hover:bg-[#001f50] text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transition-all"
+                    >
+                      <RefreshCw size={18} />
+                      Mulai Ujian Baru
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          <footer className="mt-12 text-center text-xs font-semibold text-slate-400">
+            Aplikasi Latihan VLSM &copy; {new Date().getFullYear()} anggafk
+          </footer>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<VLSMApp />);
+  </script>
+</body>
+</html>
