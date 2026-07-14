@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Pengacak Kelompok Siswa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sauber: '#002D72',       /* Sauber Racing Blue */
+                        petronas: '#00A19C',     /* Petronas Cyan */
+                        petronasHover: '#008580',/* Petronas Cyan - Hover */
+                        speedWhite: '#FDFDFD',   /* Speed White */
+                        redbull: '#E10600',      /* Aksen Red Bull */
+                        redbullHover: '#B80500'  /* Aksen Red Bull - Hover */
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Animation Utilities */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes slideInDown {
+            from { transform: translateY(-20px) translateX(-50%); opacity: 0; }
+            to { transform: translateY(0) translateX(-50%); opacity: 1; }
+        }
+        
+        .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
+        .animate-zoom-in { animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide-in-down { animation: slideInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-spin-custom { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-700 font-sans pb-20 relative">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 pointer-events-none w-[90%] sm:w-auto"></div>
+
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-[100]" style="display: none;"></canvas>
+
+    <!-- Header Atas -->
+    <header class="bg-sauber text-speedWhite px-4 sm:px-6 py-4 flex justify-between items-center shadow-md sticky top-0 z-40 border-b-[4px] border-petronas">
+        <div class="flex items-center gap-3 sm:gap-4">
+            <div class="bg-petronas p-2 sm:p-2.5 rounded-md text-speedWhite shadow-sm hidden sm:block">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h1 class="text-xl md:text-2xl font-bold uppercase tracking-wide leading-none text-speedWhite">ACAK KELOMPOK</h1>
+        </div>
+        <div class="flex justify-end">
+            <span class="border border-petronas text-petronas bg-sauber px-2 sm:px-3 py-1 sm:py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">
+                VER PRO
+            </span>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6 mt-2">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- PANEL KIRI: Sumber Data (Diperbaiki) -->
+            <section class="lg:col-span-7 bg-speedWhite p-5 rounded-md shadow-sm border border-sauber border-t-[4px] transition-shadow duration-300 hover:shadow-md">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 min-h-[44px]">
+                    <h2 class="text-sm font-extrabold text-sauber uppercase tracking-widest flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        SUMBER DATA KELAS
+                    </h2>
+                    <button onclick="toggleImport()" class="bg-redbull hover:bg-redbullHover text-speedWhite px-3 py-1.5 rounded-md text-[10px] font-bold transition-colors duration-300 shadow-sm hover:shadow flex items-center gap-1 uppercase tracking-wide h-8">
+                        <span id="import-btn-text">+ IMPORT MANUAL</span>
+                    </button>
+                </div>
+
+                <!-- Kontainer tombol dinamis yang dikelompokkan -->
+                <div id="class-buttons" class="w-full">
+                    <!-- Tombol kelas diinjeksi via JavaScript -->
+                </div>
+
+                <!-- Import Panel (Hidden by default) -->
+                <div id="import-panel" class="mt-4 bg-slate-50 p-4 rounded border border-slate-200 hidden animate-fade-in">
+                    <textarea id="import-textarea" class="w-full p-3 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-petronas focus:border-petronas min-h-[100px] outline-none transition-colors" placeholder="Tempel data siswa di sini (Bisa baris baru atau spasi)..."></textarea>
+                    <div class="mt-3 flex justify-end">
+                        <button onclick="handleImport()" class="bg-petronas text-speedWhite px-5 py-2 rounded hover:bg-sauber text-xs font-bold uppercase tracking-wider transition-colors duration-300 hover:shadow-md">
+                            PROSES DATA
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PANEL KANAN: Pengaturan Padat -->
+            <section class="lg:col-span-5 bg-speedWhite p-5 rounded-md shadow-sm border border-sauber border-t-[4px] transition-shadow duration-300 hover:shadow-md">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 min-h-[44px]">
+                    <h2 class="text-sm font-extrabold text-sauber uppercase tracking-widest flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                        PENGATURAN
+                    </h2>
+                </div>
+
+                <!-- Kontainer Horizontal Padat (Sama tinggi dengan tombol kelas) -->
+                <div class="flex flex-col gap-2 items-center">
+                    
+                    <!-- Toggle Mode -->
+                    <div class="flex p-1 bg-slate-100 rounded-md shrink-0 w-full h-[36px]">
+                        <button id="mode-group-btn" onclick="setMode('group')" class="flex-1 bg-speedWhite text-sauber shadow-sm rounded px-3 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider transition-all duration-300">
+                            BAGI KELOMPOK
+                        </button>
+                        <button id="mode-pick-btn" onclick="setMode('pick')" class="flex-1 text-slate-500 hover:text-sauber rounded px-3 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider transition-all duration-300">
+                            PILIH SISWA
+                        </button>
+                    </div>
+
+                    <div class="flex gap-2 w-full h-[36px]">
+                        <!-- Dropdown Angka -->
+                        <div class="relative shrink-0 w-1/4 h-full">
+                            <select id="group-count-select" class="w-full h-full appearance-none bg-slate-50 border border-slate-200 text-sauber px-2 rounded-md focus:outline-none focus:border-petronas text-sm font-bold cursor-pointer outline-none text-center transition-colors hover:border-petronas shadow-sm">
+                                <!-- Options generated by JS -->
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-sauber">
+                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Acak -->
+                        <button id="shuffle-btn" onclick="startShuffling()" class="flex-1 w-full h-full bg-petronas hover:bg-sauber text-speedWhite font-bold px-4 rounded-md shadow-sm uppercase tracking-wider text-[11px] transition-colors duration-300 hover:shadow-lg flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> 
+                            ACAK SEKARANG
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- MAIN CONTENT VIEW (Daftar & Hasil) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start mt-6">
+            
+            <!-- Left Column: Data Source List -->
+            <div class="bg-speedWhite lg:col-span-5 rounded-md shadow-sm border border-sauber border-t-[4px] overflow-hidden flex flex-col h-[650px]">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center shrink-0">
+                    <h3 class="text-sm font-extrabold text-sauber uppercase tracking-widest flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        DAFTAR SISWA
+                    </h3>
+                    <span id="total-students" class="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-1 rounded uppercase tracking-wider">
+                        0 SISWA
+                    </span>
+                </div>
+                
+                <div class="overflow-y-auto flex-1 p-0 custom-scrollbar bg-speedWhite">
+                    <div id="student-list-container"></div>
+                </div>
+            </div>
+
+            <!-- Right Column: Results List -->
+            <div id="main-results-container" class="lg:col-span-7 rounded-md h-[650px] flex flex-col bg-speedWhite border border-sauber border-t-[4px] shadow-sm relative cursor-pointer hover:shadow-lg transition-shadow duration-300" onclick="if(groups.length > 0) openResultModal()">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center shrink-0">
+                    <h3 class="text-sm font-extrabold text-sauber uppercase tracking-widest flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                        HASIL PENGACAKAN
+                    </h3>
+                    <div id="result-header-actions" class="flex items-center gap-2 hidden">
+                        <span id="count-label" class="text-[10px] font-bold bg-sauber text-speedWhite border-none px-3 py-1.5 rounded-md uppercase tracking-wider shadow-sm mr-2 hidden sm:block"></span>
+                        
+                        <!-- Action Copy & Download -->
+                        <button onclick="event.stopPropagation(); copyAllResults()" class="bg-speedWhite border border-petronas hover:bg-sauber hover:border-sauber text-petronas hover:text-speedWhite p-1.5 rounded-md transition-colors duration-300 shadow-sm" title="Salin Teks">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                        <button onclick="event.stopPropagation(); downloadCSV()" class="bg-speedWhite border border-petronas hover:bg-sauber hover:border-sauber text-petronas hover:text-speedWhite p-1.5 rounded-md transition-colors duration-300 shadow-sm" title="Download CSV">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto flex-1 p-4 md:p-5 custom-scrollbar bg-slate-50 rounded-b-md relative" id="result-scroll-area">
+                    <div id="main-groups-grid" class="h-full pointer-events-none">
+                        <div class="h-full flex flex-col items-center justify-center text-slate-400">
+                            <div class="w-16 h-16 bg-speedWhite border border-slate-200 rounded-xl flex items-center justify-center text-slate-300 shadow-sm mb-3">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                            </div>
+                            <span class="text-xs font-bold uppercase tracking-widest text-slate-400">PILIH KELAS & ACAK</span>
+                        </div>
+                    </div>
+
+                    <!-- Overlay Shuffling Loader -->
+                    <div id="shuffle-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center hidden">
+                        <svg class="animate-spin-custom w-10 h-10 text-petronas mb-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        <span class="text-sm font-extrabold text-sauber tracking-widest uppercase">Sistem Mengacak...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Zoom Detail Kelompok -->
+    <div id="group-zoom-modal" class="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/40 p-4 hidden animate-fade-in" onclick="closeGroupDetail()">
+        <div class="bg-speedWhite w-full max-w-md rounded-md shadow-2xl flex flex-col overflow-hidden animate-zoom-in border border-sauber border-t-[4px]" onclick="event.stopPropagation()">
+            <div class="px-5 py-4 flex justify-between items-center border-b border-slate-100 bg-slate-50">
+                <h3 id="zoom-title" class="text-sm font-extrabold text-sauber uppercase tracking-widest">KELOMPOK</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="copySingleGroup()" class="bg-petronas text-speedWhite hover:bg-sauber px-3 py-1.5 rounded text-[10px] font-bold transition-colors uppercase tracking-wider flex items-center gap-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        SALIN
+                    </button>
+                    <button onclick="closeGroupDetail()" class="text-slate-400 hover:text-redbull transition-colors p-1 bg-speedWhite rounded border border-slate-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 max-h-[70vh] overflow-y-auto custom-scrollbar bg-speedWhite">
+                <ul id="zoom-list" class="space-y-2"></ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Overlay Pengacakan (Popup Non-Blur) -->
+    <div id="result-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 p-4 md:p-6 hidden animate-fade-in" onclick="closeModal()">
+        <div class="bg-slate-100 w-full max-w-6xl h-[90vh] rounded-md shadow-2xl flex flex-col overflow-hidden relative animate-zoom-in border border-sauber border-t-[4px]" id="modal-content" onclick="event.stopPropagation()">
+            
+            <!-- Header Modal -->
+            <div class="px-6 py-4 flex justify-between items-center border-b border-slate-200 bg-speedWhite shrink-0 h-16">
+                <h3 id="modal-title" class="text-sm font-extrabold text-sauber uppercase tracking-widest">HASIL PENGACAKAN</h3>
+                <div class="flex items-center gap-2">
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-redbull transition-colors p-1 bg-speedWhite rounded border border-slate-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="flex-1 p-4 bg-slate-100 overflow-hidden relative">
+                <div class="h-full w-full overflow-y-auto custom-scrollbar px-2 pb-10">
+                    <div id="modal-groups-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-start">
+                        <!-- Groups injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Class (Telah Diperbarui Sesuai Permintaan)
+        const classData = {
+            "XII TJKT 1": ["AISA WULANSARI", "ANGGI MELANI SAPUTRI", "ANGGRAINI KUSUMA WARDANI", "ARDHITA DEWI PRATIWI", "ASYSYIFA MAWAR DHUHA ENI", "CANTIKA SALSABILLA MAFBUBAH", "CARISA DIAS JULIA ANDINI", "CINTA NAILA SALSABILA", "DIKA PRATAMA", "DINA MARHAYATI", "DINDA PUTRI ADILA", "ENO DARLA AGESTI", "EVITA SAHWA ADHELIA", "EXSEL PRAWIRA ADI WINATA", "FINDA MEILINA NUR AINI", "GALIH LARAS LISTYANI", "HUSEIN NASUHA ADNAN KAHFI", "JIHAN PUTRI ANJANI", "KHAILA DWI SAFITRI", "LUQMAN DAFFA MUMTAZ", "LUTFI NUR LATIFAH", "MANIS MIZELA FISMAURA", "MARSHA DEA AYU PUSPITA SARI", "MAULIDIA QURROTI A'YUN", "MUTIARA ADELIA PUTRI", "NADIA PUSPITA SARI", "NAYARA SAL SABILA AL GHIFARI", "NOVAL SAPUTRA", "NUR ALI IBROHIM", "SHELA MUDMAINAH", "UMMUL KAHFI", "YUNDA SUSILOWATI", "YUSUF ARLIN NUGROHO"],
+            "XII TJKT 2": ["ADELIA OCTAVIANI", "AILSYA ANIN DYASUCI", "AL FIYATUN NUR MARFUAH", "ALIFA HEPY FEBRIANA", "ALMIRA PUTRIANA ARIFIAH", "ALYA NUR ROHIDAH", "AMALIA CITRA OKTAVIA", "ANASTASYA INDAH PRATIWI", "AULIA PUTRI RAHMAWATI", "CHOIRUN NISA AYU SOLEHAH", "CIKA AYU DIAH SASMITA", "DHIMAS BASRI PRANATA", "DZAKY HELMI ADITYA", "EKA FEBRIANA", "FAIDZIN ABELTINO", "FHARIZ NUR KOSASIH", "FIANZA BINTANG PERMANA", "HAZNA NUR RAHMADANI", "HERLINA SINDY CAHYA NOFFIANTI", "JESSECA ANASTASYA DEWI", "KHUMAIRO MAHFUZAH", "LINDA NIMAS PUSPITANINGRUM", "LUKMAN DWI JAMALUDIN", "MARTA RAMADANI", "NIKEN SARI ANGGRAINI", "OKTAVIANO ARYAN PRATAMA", "RESA MAGHFIROH RAHMADANI", "RINDY OKTA VIANI", "RISDA AYATUN HUSNA", "RIZKY WAHYU SHAPUTRA", "RIZMA YUNISA PUTRI", "SHANTIKA SHERLY NOVIANA", "SHELLSI KHOIRUNNISA", "TAFDHILAA AWAYNA ASHILAA HUSNA"],
+            "XII TJKT 3": ["ANDIVA FAUSAN ROHIM", "ANGGRA SATRIA", "AULIA AYU OKTAVIA", "CICI MAULIDA", "DESI PUSPITA SARI", "DHIANDRA FAHMI AFNANTA", "DINI WAHYU ASTUTI", "FADZILLA DYAN PUTRI RAHMATIKA", "FARICH ABIDAR ROCHMAN", "FIFI ERNIYATY", "GALIH PERMANA PUTRI", "GENDIS", "HALUD MARLINO SUPRIYANTO", "INALA AILEEN SYAHARJITO", "INDAH PRASASTI", "KHISMA TSU'UMI FATKHULJANAH", "LUTFI BUNGA SAFIRA", "MELANI PUSPITASARI", "MUHAMMAD ZANDIKA MISBAHUDDIN ASSUYUTI", "NAMIRA DWICAHYANI", "PERTIWI WENING WISANTI", "RADITNAHYA PRIYA PUTRA ARDIANA", "RAFI ARDYANSAH", "RIRIN ROHMA SARI", "RODATUL TRI ANIFAH", "SANI PURBA SARI", "SAVIRA NUR AINAYA", "SEPTIA AYU LESTARI", "SHINTA MEI DANIA", "SYAFIRA SEPTIANA", "VERA DWI YULIANA", "WAHYU DESTIKA SARI", "ZAHRA ANANDA PANSA"],
+            "XI TJKT 1": ["AINISYA DANYA ISTIQOMAH", "AISYAHLA NUGRAHAENING VEKTONI", "ALVINO REZA ADI PRADANA", "ANITA PRASTIWI", "ASYFA AWALIA RAMADHANI", "AURA NILAM SAPUTRI", "DAFFA FADILA PRATAMA", "DENIS AGUSTIAN HAMBALI", "DHELYA YASIFA VIYANTI", "DINA APRILIA", "FAJRY EVAN RONALDA", "IMROATUL INDASAH ALFA KHUSNA", "INDAH YOLANDA PUTRI SETYANINGRUM", "KANSA NUR OLIFIA", "LULU ALZAZIRA KHASANAH", "MELODI APRILIA", "NA'IMAH MULIA DAFIQ NURJANAH", "NAILA EKA NUR PUSPIANA", "NIA RAMADHANI", "NOVI AFIFA SYAHRANI", "OKTAVIA YULIANTI", "QONA'AH NUR ROHMAH", "RAHAYU DIAH PITALOKA", "REEY FACHRY ATMOKO", "RISKA INDAH LESTARI", "SALMA MAULIDA FITRI", "SATRIA RIZKY RISTYAILMI", "SEKAR PUTRI ANDINI", "SEPTIANI AJAHRA SINTYA NUR", "SITI AYSAH NUR KUMALA SARI", "TANIA TRI UTAMI", "THESA SETIA RAMADANI", "UNTARI", "VETI R VIASARI", "YUSTIANA DELA RAMADANI"],
+            "XI TJKT 2": ["AIRLANGGA RADHITYA ARIYAN PUTRA", "AURA SHINTA AGUSTIAYU", "BELLA NOVIA MAHARANI", "BIMO NUR CAHYO", "CHANTIKA ELIN AGUSTINA", "DAMARA ELITA FABIOLA", "DHIMAS ARIZKI ARDIANSYAH", "DINDA PUTRI ARINI", "ELISTHA NOVIANA SUSANTI", "ELVI LAILATUL BADRIYAH", "FIRMANSYAH HIKMAT PERMANA", "FITRIYA ANGGRIYANI", "INAYAH WAHYU NINGSIH", "JEFRIN REVANO", "JELIN ANDIA SAH PUTRI", "KEYSA MELATI", "LEICA ANGELINA", "MARSHEYLA KLARISA PUTRI", "MAY SHAFA PUTRI RAMADHANI", "MUHAMMAD RIDWAN SAPUTRA", "NABILA RETIVA QHOTIMAH", "NADIEN NAYSILA PUTRI", "NAILA PUTRI MIFTAFUL KOIRIAH", "NELY AGUSTINA", "PUTRI AYUNINGTIAS", "RESKA AZZILA ZAHRA", "RIANI DWIPASARI", "SAFA SEPTYA NURFITRIANY", "SELINSA NURIL ANGGRAINI", "SHERIL MULAN ARNIA", "SILVIA WAHYU FIRNANDA", "TANIA DINDA AMBARWATI", "VANESYA EGA OCTAVIANA", "VIA NOVIANA", "YEZA DIAH AYU PRAMESTI", "ZULIA TRI ARDIANINGSIH"],
+            "XI TJKT 3": ["ADITIYA AGUS PRATAMA", "ALVIN ANANDA", "ANGEL PUTRI LESTIAWATI", "ARUM DWI ANGGRAHENI", "CARLA NUR ALIFAH", "CINDY SELVIANA MEYRA", "CLARIN AVITA JULIASARI", "DENIS TRI RAHAYU", "DEVINA AULIA ZAHRA", "DINDA PUTRI OKTAVIANI", "ELSA", "FERA FERNANDA", "GADIS FAITHA SILMI", "GAZA PINDHO RHEHANSYAH", "GEBY PURNAMA AMINAH PUTRI", "M. DHAFA AL ZAKI", "MARVELIN SOFI MAULIDHA", "MELANIFA CAHYA PUTRI", "MELINDA PUJI LESTARI", "NABILA AISA PUTRI", "NADIYA LATHIFATUL HUMAYRO'", "NAYLA ANGGUN PRATIWI", "NAZILA MUTIARA ALTHOFUNNISA", "NAZWA DIAN APRIYANTI", "NOPITA ANGGRAINI", "PUTRI DWI YULIANI", "QUINSHA ADILA IYUANITA", "RA'UF ANUGRAH GEMILANG", "RADISYA DIMAS ELKIANGGARA", "RESTU DINI ANDAFI AMELIA", "REVILDA DWI CAROLYNA CINDY", "SHOFA ADI WALOYO", "SILVIA MEGA JULIANI", "TRI CAHYANI", "VANEZA HARMAYU LESTARI"]
+        };
+
+        // State Global
+        let students = [];
+        let groups = [];
+        let groupCount = 4; // Default to 4
+        let shuffleMode = 'group'; // 'group' or 'pick'
+        let selectedClass = "";
+        let isImportOpen = false;
+        let isShuffling = false;
+        let currentlyViewingGroupIndex = -1;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderClassButtons();
+            renderGroupCountOptions();
+            setMode('group'); 
+        });
+
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'bg-petronas' : 'bg-redbull';
+            toast.className = `${bgClass} text-speedWhite px-4 py-3 rounded shadow-lg text-xs font-bold flex items-center gap-2 animate-slide-in-down uppercase tracking-wide border border-white/20`;
+            toast.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    ${type === 'success' ? '<polyline points="20 6 9 17 4 12"></polyline>' : '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>'}
+                </svg>
+                ${message}
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'fadeIn 0.3s ease-in reverse forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function renderClassButtons() {
+            const container = document.getElementById('class-buttons');
+            if(!container) return;
+            
+            let html = '<div class="flex gap-2 w-full">'; 
+            let currentGrade = 'XII';
+            
+            for (const cls in classData) {
+                const grade = cls.split(' ')[0]; // Ambil XII atau XI
+                
+                // Pisahkan baris jika grade berubah
+                if (grade !== currentGrade) {
+                    html += '</div><div class="flex gap-2 w-full mt-2">';
+                    currentGrade = grade;
+                }
+
+                const isSelected = selectedClass === cls;
+                const classes = isSelected 
+                    ? 'bg-petronas text-speedWhite border-petronas shadow-sm ring-1 ring-petronas/20' 
+                    : 'bg-speedWhite text-slate-600 hover:bg-petronas hover:text-speedWhite hover:border-petronas border-slate-200 hover:shadow-sm';
+                
+                // flex-1 agar lebar rata
+                html += `<button onclick="loadClass('${cls}')" class="flex-1 px-2 py-2 rounded-md text-[10px] sm:text-xs font-bold transition-all duration-300 border ${classes} uppercase tracking-tight sm:tracking-wider truncate text-center" title="${cls}">${cls}</button>`;
+            }
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        function renderGroupCountOptions() {
+            const select = document.getElementById('group-count-select');
+            if(!select) return;
+            let html = '';
+            for (let i = 1; i <= 40; i++) {
+                const selected = i === 4 ? 'selected' : '';
+                html += `<option value="${i}" ${selected}>${i}</option>`;
+            }
+            select.innerHTML = html;
+            select.onchange = (e) => groupCount = parseInt(e.target.value);
+        }
+
+        function setMode(mode) {
+            shuffleMode = mode;
+            const groupBtn = document.getElementById('mode-group-btn');
+            const pickBtn = document.getElementById('mode-pick-btn');
+            
+            if (mode === 'group') {
+                groupBtn.className = "flex-1 bg-speedWhite text-sauber shadow-sm rounded px-3 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider transition-all duration-300";
+                pickBtn.className = "flex-1 text-slate-500 hover:text-sauber rounded px-3 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider transition-all duration-300";
+            } else {
+                pickBtn.className = "flex-1 bg-speedWhite text-sauber shadow-sm rounded px-3 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider transition-all duration-300";
+                groupBtn.className = "flex-1 text-slate-500 hover:text-sauber rounded px-3 py-1 text-[10px] sm:text-[11px] font-black uppercase tracking-wider transition-all duration-300";
+            }
+            updateResultHeader();
+        }
+
+        function renderStudentTable() {
+            const container = document.getElementById('student-list-container');
+            const totalStudents = document.getElementById('total-students');
+            
+            if(totalStudents) totalStudents.innerText = `${students.length} SISWA`;
+            if(!container) return;
+            
+            if (students.length === 0) {
+                container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-slate-400 p-8 text-center min-h-[400px]"><p class="text-xs font-bold text-slate-400 uppercase tracking-widest">DATA KOSONG</p></div>`;
+                return;
+            }
+
+            let html = `
+                <table class="w-full text-sm text-left border-collapse">
+                    <thead class="bg-speedWhite text-slate-400 font-bold sticky top-0 z-10 text-[10px] uppercase tracking-wider border-b border-slate-100 shadow-sm">
+                        <tr><th class="px-4 py-3 w-12 text-center">NO</th><th class="px-2 py-3">NAMA LENGKAP</th><th class="px-4 py-3 w-16 text-center">AKSI</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50 text-xs">
+            `;
+
+            students.forEach((student, idx) => {
+                const rowClass = student.excluded ? 'bg-slate-50 opacity-60' : 'hover:bg-slate-50 bg-speedWhite';
+                const nameClass = student.excluded ? 'text-slate-400 line-through decoration-slate-400' : 'text-slate-700 font-bold';
+                const btnClass = student.excluded ? 'text-redbull hover:bg-redbull hover:text-speedWhite hover:shadow-md' : 'text-slate-300 hover:text-speedWhite hover:bg-petronas hover:shadow-md';
+                const icon = student.excluded ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+                html += `
+                    <tr class="transition-colors ${rowClass}">
+                        <td class="px-4 py-2.5 text-center text-slate-400">${idx + 1}</td>
+                        <td class="px-2 py-2.5 transition-colors ${nameClass} uppercase">${student.name}</td>
+                        <td class="px-4 py-2.5 text-center">
+                            <button onclick="toggleExclusion(${student.id})" class="w-6 h-6 rounded flex items-center justify-center transition-colors duration-300 mx-auto ${btnClass}">${icon}</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+        }
+
+        // Clipboard logic
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                if(document.execCommand('copy')) showToast('Teks berhasil disalin!', 'success');
+                else showToast('Gagal menyalin teks.', 'error');
+            } catch (err) {
+                showToast('Browser tidak mendukung copy otomatis.', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function copyToClipboard(text) {
+            if (!navigator.clipboard) { fallbackCopyTextToClipboard(text); return; }
+            navigator.clipboard.writeText(text).then(() => showToast('Berhasil disalin!', 'success'), (err) => fallbackCopyTextToClipboard(text));
+        }
+
+        function copySingleGroup() {
+            if(currentlyViewingGroupIndex === -1) return;
+            const group = groups[currentlyViewingGroupIndex];
+            let text = shuffleMode === 'pick' ? `*SISWA TERPILIH*\n` : `*KELOMPOK ${currentlyViewingGroupIndex + 1}*\n`;
+            group.forEach((s, idx) => text += `${idx + 1}. ${s.name}\n`);
+            copyToClipboard(text);
+        }
+
+        function copyAllResults() {
+            if(groups.length === 0) return;
+            let text = `*HASIL PEMBAGIAN*\n${selectedClass ? `Kelas: ${selectedClass}\n` : ''}\n`;
+            groups.forEach((group, groupIndex) => {
+                text += shuffleMode === 'pick' ? `*SISWA TERPILIH*\n` : `*KELOMPOK ${groupIndex + 1}*\n`;
+                group.forEach((student, studentIndex) => text += `${studentIndex + 1}. ${student.name}\n`);
+                text += '\n';
+            });
+            copyToClipboard(text);
+        }
+
+        function openGroupDetail(groupIndex) {
+            if (isShuffling) return;
+            const group = groups[groupIndex];
+            if (!group) return;
+            
+            currentlyViewingGroupIndex = groupIndex;
+            const modal = document.getElementById('group-zoom-modal');
+            const title = document.getElementById('zoom-title');
+            const list = document.getElementById('zoom-list');
+
+            if(title) title.innerText = shuffleMode === 'pick' ? "SISWA TERPILIH" : `KELOMPOK ${groupIndex + 1}`;
+            
+            let listHtml = '';
+            group.forEach((student, sIdx) => {
+                listHtml += `
+                    <li class="flex items-center gap-3 bg-slate-50 p-3 rounded border border-slate-200 shadow-sm transition-colors hover:bg-speedWhite">
+                        <div class="w-7 h-7 rounded bg-petronas text-speedWhite font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">${sIdx + 1}</div>
+                        <span class="font-extrabold text-slate-700 text-sm uppercase truncate">${student.name}</span>
+                    </li>`;
+            });
+            if(list) list.innerHTML = listHtml;
+            modal?.classList.remove('hidden');
+        }
+
+        function closeGroupDetail() {
+            document.getElementById('group-zoom-modal')?.classList.add('hidden');
+            currentlyViewingGroupIndex = -1;
+        }
+
+        function openResultModal() {
+            if(groups.length === 0 || isShuffling) return;
+            document.getElementById('result-modal')?.classList.remove('hidden');
+            
+            const modalTitle = document.getElementById('modal-title');
+            if (modalTitle) modalTitle.innerText = "HASIL PENGACAKAN";
+            
+            renderGroups(groups, 'modal-groups-grid');
+        }
+
+        function closeModal() {
+            if(isShuffling) return; // Mencegah popup ditutup saat sedang mengacak
+            document.getElementById('result-modal')?.classList.add('hidden');
+        }
+
+        function renderGroups(groupsToRender, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (!groupsToRender || groupsToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="h-full flex flex-col items-center justify-center text-slate-400 p-6 text-center">
+                        <div class="w-16 h-16 bg-speedWhite border border-slate-200 rounded-xl flex items-center justify-center text-slate-300 shadow-sm mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+                        </div>
+                        <span class="text-xs font-bold uppercase tracking-widest text-slate-400">PILIH KELAS & ACAK</span>
+                    </div>`;
+                return;
+            }
+
+            const gridClass = shuffleMode === 'pick' || groupsToRender.length === 1 
+                ? 'grid-cols-1 sm:grid-cols-2 gap-4' 
+                : (containerId === 'modal-groups-grid' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4');
+            
+            container.className = `grid ${gridClass} items-start pb-10`;
+            const maxSlots = Math.max(...groupsToRender.map(g => g.length));
+            let html = '';
+
+            groupsToRender.forEach((group, idx) => {
+                const isPickMode = shuffleMode === 'pick';
+                const cardScale = isShuffling ? 'opacity-80' : 'opacity-100 hover:shadow-md hover:border-petronas cursor-pointer';
+
+                html += `
+                    <div onclick="event.stopPropagation(); openGroupDetail(${idx})" class="bg-speedWhite rounded-md shadow-sm border border-slate-200 border-t-[4px] border-t-sauber transition-all duration-300 flex flex-col ${cardScale}">
+                        <div class="px-3 py-2.5 border-b border-slate-100 bg-slate-50 transition-colors flex justify-between items-center">
+                            <h4 class="font-extrabold text-sauber uppercase tracking-widest text-[11px] sm:text-xs">
+                                ${isPickMode ? 'SISWA TERPILIH' : 'KELOMPOK ' + (idx + 1)}
+                            </h4>
+                        </div>
+                        <div class="p-2 sm:p-3 flex-1 rounded-b-md">
+                            <ul class="space-y-1">
+                `;
+
+                for (let sIdx = 0; sIdx < maxSlots; sIdx++) {
+                    const student = group[sIdx];
+                    if (student) {
+                        html += `
+                            <li class="flex items-center font-bold text-slate-600 hover:bg-slate-50 transition-colors rounded text-[10px] sm:text-[11px] p-1.5 gap-2">
+                                <div class="w-5 h-5 text-[10px] rounded-sm bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200">${sIdx + 1}</div>
+                                <span class="truncate uppercase font-extrabold text-slate-700">${student.name}</span>
+                            </li>`;
+                    } else if(!isPickMode) {
+                        html += `
+                            <li class="flex items-center font-bold text-transparent bg-transparent rounded text-[10px] sm:text-[11px] p-1.5 gap-2 invisible pointer-events-none select-none">
+                                <div class="w-5 h-5 text-[10px] rounded-sm bg-transparent text-transparent flex items-center justify-center shrink-0">0</div><span class="truncate">X</span>
+                            </li>`;
+                    }
+                }
+                html += `</ul></div></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function loadClass(className) {
+            selectedClass = className;
+            const names = classData[className];
+            students = names.map((name, index) => ({ id: Date.now() + index, name: name, excluded: false }));
+            groups = [];
+            renderClassButtons();
+            renderStudentTable();
+            renderGroups([], 'main-groups-grid');
+            updateResultHeader();
+        }
+
+        function toggleImport() {
+            isImportOpen = !isImportOpen;
+            const panel = document.getElementById('import-panel');
+            const btnText = document.getElementById('import-btn-text');
+            if (panel) {
+                if (isImportOpen) {
+                    panel.classList.remove('hidden');
+                    if(btnText) btnText.innerText = 'TUTUP IMPORT';
+                } else {
+                    panel.classList.add('hidden');
+                    if(btnText) btnText.innerText = '+ IMPORT MANUAL';
+                }
+            }
+        }
+
+        function handleImport() {
+            const textarea = document.getElementById('import-textarea');
+            if (!textarea) return;
+            const text = textarea.value;
+            if (!text.trim()) {
+                showToast("Data teks masih kosong!");
+                return;
+            }
+            
+            let parsedStudents = [];
+            const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+            
+            lines.forEach((line, idx) => {
+                let name = line.replace(/[,;]/g, ' ').replace(/\s+/g, ' ').trim();
+                if (name) {
+                    parsedStudents.push({ id: Date.now() + idx, name, excluded: false });
+                }
+            });
+            
+            students = parsedStudents;
+            selectedClass = "Custom Import";
+            toggleImport();
+            textarea.value = '';
+            groups = [];
+            renderClassButtons();
+            renderStudentTable();
+            renderGroups([], 'main-groups-grid');
+            updateResultHeader();
+            showToast("Data berhasil di-import!", "success");
+        }
+
+        function toggleExclusion(id) {
+            students = students.map(student => student.id === id ? { ...student, excluded: !student.excluded } : student);
+            renderStudentTable();
+        }
+
+        function updateResultHeader() {
+            const headerActions = document.getElementById('result-header-actions');
+            const label = document.getElementById('count-label');
+            
+            if (headerActions) {
+                if (groups.length > 0) {
+                    headerActions.classList.remove('hidden');
+                    if(label) label.innerText = shuffleMode === 'pick' ? `${groups[0].length} TERPILIH` : `${groups.length} KELOMPOK`;
+                } else {
+                    headerActions.classList.add('hidden');
+                }
+            }
+        }
+
+        function startShuffling() {
+            const activeStudents = students.filter(s => !s.excluded);
+            if (activeStudents.length === 0) {
+                showToast("Tidak ada siswa yang aktif untuk diacak!");
+                return;
+            }
+
+            if (shuffleMode === 'pick' && activeStudents.length < groupCount) {
+                showToast(`Siswa aktif (${activeStudents.length}) lebih sedikit dari jumlah pilihan (${groupCount})!`);
+                return;
+            }
+
+            isShuffling = true;
+            const btn = document.getElementById('shuffle-btn');
+            const overlay = document.getElementById('shuffle-overlay');
+            
+            // Buka modal di awal dan ubah judulnya
+            const modal = document.getElementById('result-modal');
+            const modalTitle = document.getElementById('modal-title');
+            if (modal) modal.classList.remove('hidden');
+            if (modalTitle) modalTitle.innerText = "SISTEM MENGACAK...";
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `MEMPROSES...`;
+            }
+            if (overlay) overlay.classList.remove('hidden');
+            
+            let currentDelay = 50;
+            const maxDelay = 400;
+            const slowDownFactor = 1.15;
+
+            const shuffleArr = (arr) => {
+                let curr = arr.length, rand;
+                while (curr !== 0) {
+                    rand = Math.floor(Math.random() * curr);
+                    curr--;
+                    [arr[curr], arr[rand]] = [arr[rand], arr[curr]];
+                }
+                return arr;
+            };
+
+            const doShuffleStep = () => {
+                let tempGroups = [];
+
+                if (shuffleMode === 'pick') {
+                    let array = [...activeStudents];
+                    shuffleArr(array);
+                    tempGroups.push(array.slice(0, groupCount));
+                } else {
+                    tempGroups = Array.from({ length: groupCount }, () => []);
+                    let array = [...activeStudents];
+                    shuffleArr(array);
+                    
+                    let targetSizes = Array(groupCount).fill(Math.floor(array.length / groupCount));
+                    let remainder = array.length % groupCount;
+                    let extraIndices = Array.from({length: groupCount}, (_, i) => i);
+                    shuffleArr(extraIndices);
+                    for(let i=0; i<remainder; i++) targetSizes[extraIndices[i]]++;
+
+                    let sIdx = 0;
+                    for (let g = 0; g < groupCount; g++) {
+                        for (let i = 0; i < targetSizes[g]; i++) {
+                            if (sIdx < array.length) {
+                                tempGroups[g].push(array[sIdx++]);
+                            }
+                        }
+                    }
+                }
+
+                groups = tempGroups;
+                renderGroups(groups, 'main-groups-grid');
+                renderGroups(groups, 'modal-groups-grid'); // Render animasi live ke dalam modal
+
+                if (currentDelay < maxDelay) {
+                    currentDelay = Math.floor(currentDelay * slowDownFactor);
+                    setTimeout(doShuffleStep, currentDelay);
+                } else {
+                    groups.forEach(group => group.sort((a, b) => a.name.localeCompare(b.name, 'id', { sensitivity: 'base' })));
+                    
+                    renderGroups(groups, 'main-groups-grid');
+                    renderGroups(groups, 'modal-groups-grid'); // Render hasil akhir ke modal
+                    updateResultHeader();
+                    
+                    isShuffling = false;
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = `<svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> ACAK SEKARANG`;
+                    }
+                    if (overlay) overlay.classList.add('hidden');
+                    
+                    // Kembalikan judul modal setelah selesai
+                    if (modalTitle) modalTitle.innerText = "HASIL PENGACAKAN";
+
+                    startConfetti();
+                }
+            };
+            
+            doShuffleStep();
+        }
+
+        function downloadCSV() {
+            if (groups.length === 0) return;
+            let csvContent = "Status,No,Nama Siswa\n";
+            groups.forEach((group, groupIndex) => {
+                group.forEach((student, studentIndex) => {
+                    const safeName = student.name.replace(/"/g, '""');
+                    const label = shuffleMode === 'pick' ? 'Terpilih' : `Kelompok ${groupIndex + 1}`;
+                    csvContent += `${label},${studentIndex + 1},"${safeName}"\n`;
+                });
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `hasil_acak_${(selectedClass || 'data').replace(/\s+/g, '_')}_${new Date().getTime()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function startConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            if(!canvas) return;
+            canvas.style.display = 'block';
+            const ctx = canvas.getContext('2d');
+            if(!ctx) return;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#002D72', '#00A19C', '#B80500', '#FDFDFD'];
+
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    vx: Math.random() * 5 - 2.5,
+                    vy: Math.random() * 5 + 3,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 8 + 4,
+                    rotation: Math.random() * 360,
+                    rotationSpeed: Math.random() * 10 - 5
+                });
+            }
+
+            let animationId;
+            const animate = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.y += p.vy;
+                    p.x += p.vx;
+                    p.rotation += p.rotationSpeed;
+                    if (p.y > canvas.height) {
+                        p.y = -20;
+                        p.x = Math.random() * canvas.width;
+                    }
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                });
+                animationId = requestAnimationFrame(animate);
+            };
+            animate();
+
+            setTimeout(() => {
+                cancelAnimationFrame(animationId);
+                canvas.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
