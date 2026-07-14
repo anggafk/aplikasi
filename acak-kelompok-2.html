@@ -59,9 +59,6 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 pointer-events-none w-[90%] sm:w-auto"></div>
 
-    <!-- Confetti Canvas -->
-    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-[100]" style="display: none;"></canvas>
-
     <!-- Header Atas -->
     <header class="bg-sauber text-speedWhite px-4 sm:px-6 py-4 flex justify-between items-center shadow-md sticky top-0 z-40 border-b-[4px] border-petronas">
         <div class="flex items-center gap-3 sm:gap-4">
@@ -497,11 +494,32 @@
                 return;
             }
 
-            const gridClass = shuffleMode === 'pick' || groupsToRender.length === 1 
-                ? 'grid-cols-1 sm:grid-cols-2 gap-4' 
-                : (containerId === 'modal-groups-grid' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4');
+            let gridClass = '';
+            const len = groupsToRender.length;
+            const isModal = containerId === 'modal-groups-grid';
+
+            if (shuffleMode === 'pick') {
+                gridClass = 'grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto gap-4';
+            } else {
+                if (isModal) {
+                    // Smart Grid Logic agar grid fleksibel, simetris & rata tengah tanpa ruang kosong
+                    if (len === 1) gridClass = 'grid-cols-1 max-w-md mx-auto gap-4';
+                    else if (len === 2) gridClass = 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto gap-4';
+                    else if (len === 3) gridClass = 'grid-cols-1 sm:grid-cols-3 max-w-5xl mx-auto gap-4';
+                    else if (len === 4) gridClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-full gap-4';
+                    else if (len === 5) gridClass = 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 max-w-full gap-4';
+                    else if (len === 6) gridClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto gap-4 lg:gap-6'; // 3 atas 3 bawah
+                    else if (len === 7 || len === 8) gridClass = 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 max-w-full gap-4'; // max 4 kolom, 2 baris
+                    else if (len === 9) gridClass = 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 max-w-5xl mx-auto gap-4 lg:gap-6'; // 3 baris x 3 kolom
+                    else if (len === 10) gridClass = 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 max-w-full gap-4'; // 2 baris x 5 kolom
+                    else gridClass = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 max-w-full gap-4';
+                } else {
+                    // Dashboard grid
+                    gridClass = len === 1 ? 'grid-cols-1 gap-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4';
+                }
+            }
             
-            container.className = `grid ${gridClass} items-start pb-10`;
+            container.className = `grid ${gridClass} items-start pb-10 w-full`;
             const maxSlots = Math.max(...groupsToRender.map(g => g.length));
             let html = '';
 
@@ -709,8 +727,6 @@
                     
                     // Kembalikan judul modal setelah selesai
                     if (modalTitle) modalTitle.innerText = "HASIL PENGACAKAN";
-
-                    startConfetti();
                 }
             };
             
@@ -735,59 +751,6 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-        }
-
-        function startConfetti() {
-            const canvas = document.getElementById('confetti-canvas');
-            if(!canvas) return;
-            canvas.style.display = 'block';
-            const ctx = canvas.getContext('2d');
-            if(!ctx) return;
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            const particles = [];
-            const colors = ['#002D72', '#00A19C', '#B80500', '#FDFDFD'];
-
-            for (let i = 0; i < 150; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height - canvas.height,
-                    vx: Math.random() * 5 - 2.5,
-                    vy: Math.random() * 5 + 3,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    size: Math.random() * 8 + 4,
-                    rotation: Math.random() * 360,
-                    rotationSpeed: Math.random() * 10 - 5
-                });
-            }
-
-            let animationId;
-            const animate = () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                particles.forEach(p => {
-                    p.y += p.vy;
-                    p.x += p.vx;
-                    p.rotation += p.rotationSpeed;
-                    if (p.y > canvas.height) {
-                        p.y = -20;
-                        p.x = Math.random() * canvas.width;
-                    }
-                    ctx.save();
-                    ctx.translate(p.x, p.y);
-                    ctx.rotate((p.rotation * Math.PI) / 180);
-                    ctx.fillStyle = p.color;
-                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-                    ctx.restore();
-                });
-                animationId = requestAnimationFrame(animate);
-            };
-            animate();
-
-            setTimeout(() => {
-                cancelAnimationFrame(animationId);
-                canvas.style.display = 'none';
-            }, 3000);
         }
     </script>
 </body>
