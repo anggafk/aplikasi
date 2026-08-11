@@ -121,6 +121,30 @@
   body.state-warn .progress-fill{ background:var(--warn); }
   body.state-danger .progress-fill{ background:var(--danger); }
 
+  .title-setup input[type="text"]{
+    font-family:'DM Sans',sans-serif;
+    font-size:15px;
+    padding:9px 12px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    color:var(--navy-dark);
+    outline:none;
+    width:240px;
+  }
+  .title-setup input[type="text"]:focus{ border-color:var(--navy); }
+
+  .exam-title{
+    display:none;
+    text-align:center;
+    font-family:'DM Sans',sans-serif;
+    font-weight:700;
+    color:var(--navy-dark);
+    font-size:clamp(20px, 3vw, 34px);
+    margin:0 0 18px;
+    word-break:break-word;
+  }
+  body.is-running .exam-title.has-text{ display:block; }
+
   .setup{
     display:flex;
     gap:10px;
@@ -264,6 +288,12 @@
 
   <div class="card">
 
+    <div class="setup title-setup">
+      <input type="text" id="titleInput" maxlength="60">
+    </div>
+
+    <h2 class="exam-title" id="examTitleDisplay"></h2>
+
     <div class="display-wrap">
       <div class="time" id="timeDisplay">30:00</div>
     </div>
@@ -295,6 +325,8 @@
 (function(){
   const timeDisplay = document.getElementById('timeDisplay');
   const progressFill = document.getElementById('progressFill');
+  const titleInput = document.getElementById('titleInput');
+  const examTitleDisplay = document.getElementById('examTitleDisplay');
   const minInput = document.getElementById('minInput');
   const startBtn = document.getElementById('startBtn');
   const pauseBtn = document.getElementById('pauseBtn');
@@ -401,9 +433,13 @@
     timerId = setInterval(tick, 1000);
     startBtn.disabled = true;
     minInput.disabled = true;
+    titleInput.disabled = true;
     pauseBtn.disabled = false;
     resetBtn.disabled = false;
     body.classList.add('is-running');
+    const titleText = titleInput.value.trim();
+    examTitleDisplay.textContent = titleText;
+    examTitleDisplay.classList.toggle('has-text', titleText.length > 0);
     updateDisplay();
     requestAnimationFrame(sizeTimeDisplay);
   }
@@ -427,7 +463,9 @@
     pauseBtn.disabled = true;
     resetBtn.disabled = true;
     minInput.disabled = false;
+    titleInput.disabled = false;
     body.classList.remove('state-warn','state-danger','is-running');
+    examTitleDisplay.classList.remove('has-text');
     updateDisplay();
   }
 
