@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timer Ujian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#002D72;
+    --navy-dark:#001A45;
+    --paper:#F7F8FA;
+    --white:#ffffff;
+    --line:#DCE1EA;
+    --warn:#C97A2B;
+    --danger:#C0392B;
+    --text-muted:#5A6478;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'DM Sans',sans-serif;
+    background:var(--paper);
+    background-image:
+      repeating-linear-gradient(135deg, rgba(0,45,114,0.035) 0px, rgba(0,45,114,0.035) 2px, transparent 2px, transparent 26px);
+    color:var(--navy-dark);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    transition:background-color .4s ease;
+  }
+  body.state-warn{ background-color:#FBF0E4; }
+  body.state-danger{ background-color:#FBE9E7; animation:pulse-bg 1.4s ease-in-out infinite; }
+  @keyframes pulse-bg{
+    0%,100%{ background-color:#FBE9E7; }
+    50%{ background-color:#F6D3CE; }
+  }
+
+  .card{
+    width:100%;
+    max-width:640px;
+    background:var(--white);
+    border:1px solid var(--line);
+    border-radius:20px;
+    box-shadow:0 1px 2px rgba(0,45,114,0.04), 0 20px 40px -20px rgba(0,45,114,0.15);
+    padding:40px 32px 32px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;
+    height:6px;
+    background:var(--navy);
+  }
+  body.state-warn .card::before{ background:var(--warn); }
+  body.state-danger .card::before{ background:var(--danger); }
+
+  h1{
+    font-size:22px;
+    font-weight:700;
+    text-align:center;
+    margin:0 0 28px;
+    color:var(--navy-dark);
+  }
+
+  .display-wrap{
+    text-align:center;
+    margin-bottom:8px;
+    width:100%;
+  }
+  .time{
+    font-family:'DM Mono',monospace;
+    font-weight:700;
+    font-size:clamp(64px, 15vw, 110px);
+    line-height:1;
+    letter-spacing:-.02em;
+    color:var(--navy);
+    transition:color .3s ease;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+    display:inline-block;
+  }
+  body.state-warn .time{ color:var(--warn); }
+  body.state-danger .time{ color:var(--danger); }
+
+  .status-label{
+    font-family:'DM Mono',monospace;
+    font-size:13px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--text-muted);
+    text-align:center;
+    margin:6px 0 28px;
+    min-height:18px;
+  }
+  body.state-warn .status-label{ color:var(--warn); }
+  body.state-danger .status-label{ color:var(--danger); font-weight:600; }
+
+  .progress-track{
+    width:100%;
+    height:8px;
+    background:#EDEFF4;
+    border-radius:99px;
+    overflow:hidden;
+    margin-bottom:32px;
+  }
+  .progress-fill{
+    height:100%;
+    width:100%;
+    background:var(--navy);
+    border-radius:99px;
+    transition:width 1s linear, background-color .4s ease;
+  }
+  body.state-warn .progress-fill{ background:var(--warn); }
+  body.state-danger .progress-fill{ background:var(--danger); }
+
+  .setup{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  .setup label{
+    font-size:13px;
+    color:var(--text-muted);
+    font-weight:500;
+  }
+  .setup input[type="number"]{
+    width:88px;
+    font-family:'DM Mono',monospace;
+    font-size:18px;
+    padding:9px 10px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    text-align:center;
+    color:var(--navy-dark);
+    outline:none;
+  }
+  .setup input[type="number"]:focus{ border-color:var(--navy); }
+  .preset-row{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  .preset-btn{
+    font-family:'DM Sans',sans-serif;
+    font-size:13px;
+    font-weight:500;
+    padding:7px 14px;
+    border-radius:99px;
+    border:1.5px solid var(--line);
+    background:var(--white);
+    color:var(--navy);
+    cursor:pointer;
+    transition:.15s ease;
+  }
+  .preset-btn:hover{ border-color:var(--navy); background:#F0F3FA; }
+
+  .controls{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+  }
+  button.main-btn{
+    font-family:'DM Sans',sans-serif;
+    font-size:15px;
+    font-weight:600;
+    padding:13px 26px;
+    border-radius:12px;
+    border:none;
+    cursor:pointer;
+    transition:.15s ease;
+  }
+  .btn-start{ background:var(--navy); color:#fff; }
+  .btn-start:hover{ background:var(--navy-dark); }
+  .btn-start:disabled{ background:#B7C1D9; cursor:not-allowed; }
+  .btn-secondary{ background:#EDEFF4; color:var(--navy-dark); }
+  .btn-secondary:hover{ background:#DDE2ED; }
+  .btn-secondary:disabled{ color:#B0B7C4; cursor:not-allowed; }
+
+  .fullscreen-btn{
+    position:fixed;
+    top:20px; right:20px;
+    background:var(--white);
+    border:1.5px solid var(--line);
+    color:var(--navy);
+    font-family:'DM Sans',sans-serif;
+    font-size:13px;
+    font-weight:500;
+    padding:9px 16px;
+    border-radius:99px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .fullscreen-btn:hover{ background:#F0F3FA; }
+
+  body:fullscreen{
+    background-image:none;
+    justify-content:center;
+  }
+  body:fullscreen .card{
+    max-width:none;
+    width:100%;
+    height:100%;
+    border-radius:0;
+    border:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    box-shadow:none;
+  }
+  body:fullscreen .setup, body:fullscreen .preset-row{
+    display:none;
+  }
+  body:fullscreen .time{ }
+  body:fullscreen h1{ font-size:clamp(20px,3vw,32px); margin-bottom:40px;}
+  body:fullscreen .progress-track{ max-width:520px; }
+  body:fullscreen .status-label{ font-size:18px; margin-bottom:40px;}
+
+  body.is-running .setup,
+  body.is-running .preset-row{
+    display:none;
+  }
+  body.is-running .card{
+    max-width:100%;
+    width:100%;
+    border:none;
+    border-radius:0;
+    box-shadow:none;
+    min-height:80vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+  }
+  body.is-running .progress-track{
+    max-width:640px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    body.state-danger{ animation:none; }
+    .progress-fill{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+  <button class="fullscreen-btn" id="fsBtn" title="Tampilan layar penuh">⛶ Layar Penuh</button>
+
+  <div class="card">
+
+    <div class="display-wrap">
+      <div class="time" id="timeDisplay">30:00</div>
+    </div>
+
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="setup">
+      <label for="minInput">Durasi (menit)</label>
+      <input type="number" id="minInput" min="1" max="600" value="30">
+    </div>
+
+    <div class="preset-row">
+      <button class="preset-btn" data-min="15">15 menit</button>
+      <button class="preset-btn" data-min="30">30 menit</button>
+      <button class="preset-btn" data-min="60">60 menit</button>
+      <button class="preset-btn" data-min="90">90 menit</button>
+      <button class="preset-btn" data-min="120">120 menit</button>
+    </div>
+
+    <div class="controls">
+      <button class="main-btn btn-start" id="startBtn">▶ Mulai</button>
+      <button class="main-btn btn-secondary" id="pauseBtn" disabled>⏸ Jeda</button>
+      <button class="main-btn btn-secondary" id="resetBtn" disabled>↺ Reset</button>
+    </div>
+
+  </div>
+
+<script>
+(function(){
+  const timeDisplay = document.getElementById('timeDisplay');
+  const progressFill = document.getElementById('progressFill');
+  const minInput = document.getElementById('minInput');
+  const startBtn = document.getElementById('startBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const fsBtn = document.getElementById('fsBtn');
+  const body = document.body;
+
+  let totalSeconds = 30*60;
+  let remaining = totalSeconds;
+  let timerId = null;
+  let running = false;
+  let ended = false;
+
+  const WARN_RATIO = 0.10;   // 10% waktu tersisa -> kuning/oranye
+  const DANGER_SEC = 60;     // 60 detik terakhir -> merah
+
+  function formatTime(sec){
+    sec = Math.max(0, Math.round(sec));
+    const h = Math.floor(sec/3600);
+    const m = Math.floor((sec%3600)/60);
+    const s = sec%60;
+    const pad = n => String(n).padStart(2,'0');
+    return h>0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+  }
+
+  function shouldBigSize(){
+    return body.classList.contains('is-running') || !!document.fullscreenElement;
+  }
+
+  function sizeTimeDisplay(){
+    if(!shouldBigSize()){
+      timeDisplay.style.fontSize = '';
+      return;
+    }
+    const container = timeDisplay.parentElement;
+    const containerWidth = container.clientWidth;
+    const containerHeight = window.innerHeight;
+
+    timeDisplay.style.fontSize = '100px';
+    const naturalWidth = timeDisplay.scrollWidth;
+    const widthPerPx = naturalWidth / 100;
+
+    const targetWidth = containerWidth * 0.8;
+    const fontSizeByWidth = targetWidth / widthPerPx;
+    const fontSizeByHeight = containerHeight * 0.5;
+
+    const finalSize = Math.max(60, Math.min(fontSizeByWidth, fontSizeByHeight));
+    timeDisplay.style.fontSize = finalSize + 'px';
+  }
+
+  function updateDisplay(){
+    timeDisplay.textContent = formatTime(remaining);
+    sizeTimeDisplay();
+    const pct = totalSeconds>0 ? (remaining/totalSeconds)*100 : 0;
+    progressFill.style.width = pct+'%';
+
+    body.classList.remove('state-warn','state-danger');
+    if(remaining<=0){
+      body.classList.add('state-danger');
+    } else if(remaining<=DANGER_SEC){
+      body.classList.add('state-danger');
+    } else if(remaining <= totalSeconds*WARN_RATIO){
+      body.classList.add('state-warn');
+    }
+  }
+
+  function playBeep(){
+    try{
+      const ctx = new (window.AudioContext||window.webkitAudioContext)();
+      const now = ctx.currentTime;
+      for(let i=0;i<3;i++){
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type='sine';
+        osc.frequency.value=880;
+        gain.gain.setValueAtTime(0.0001, now+i*0.5);
+        gain.gain.exponentialRampToValueAtTime(0.35, now+i*0.5+0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now+i*0.5+0.4);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now+i*0.5);
+        osc.stop(now+i*0.5+0.45);
+      }
+    }catch(e){ /* audio not available */ }
+  }
+
+  function tick(){
+    remaining -= 1;
+    if(remaining<=0){
+      remaining = 0;
+      updateDisplay();
+      stopTimer();
+      ended = true;
+      playBeep();
+      return;
+    }
+    updateDisplay();
+  }
+
+  function startTimer(){
+    if(running) return;
+    if(remaining<=0) return;
+    running = true;
+    ended = false;
+    timerId = setInterval(tick, 1000);
+    startBtn.disabled = true;
+    minInput.disabled = true;
+    pauseBtn.disabled = false;
+    resetBtn.disabled = false;
+    body.classList.add('is-running');
+    updateDisplay();
+    requestAnimationFrame(sizeTimeDisplay);
+  }
+
+  function stopTimer(){
+    running = false;
+    clearInterval(timerId);
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+    updateDisplay();
+  }
+
+  function resetTimer(){
+    clearInterval(timerId);
+    running = false;
+    ended = false;
+    const mins = parseFloat(minInput.value) || 30;
+    totalSeconds = Math.max(1, Math.round(mins*60));
+    remaining = totalSeconds;
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+    resetBtn.disabled = true;
+    minInput.disabled = false;
+    body.classList.remove('state-warn','state-danger','is-running');
+    updateDisplay();
+  }
+
+  startBtn.addEventListener('click', startTimer);
+  pauseBtn.addEventListener('click', stopTimer);
+  resetBtn.addEventListener('click', resetTimer);
+
+  minInput.addEventListener('change', ()=>{
+    if(!running){
+      const mins = parseFloat(minInput.value) || 30;
+      totalSeconds = Math.max(1, Math.round(mins*60));
+      remaining = totalSeconds;
+      resetBtn.disabled = true;
+      updateDisplay();
+    }
+  });
+
+  document.querySelectorAll('.preset-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(running) return;
+      minInput.value = btn.dataset.min;
+      const mins = parseFloat(btn.dataset.min);
+      totalSeconds = mins*60;
+      remaining = totalSeconds;
+      resetBtn.disabled = true;
+      updateDisplay();
+    });
+  });
+
+  fsBtn.addEventListener('click', ()=>{
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen().catch(()=>{});
+      fsBtn.textContent = '⛶ Keluar Layar Penuh';
+    } else {
+      document.exitFullscreen();
+    }
+  });
+  document.addEventListener('fullscreenchange', ()=>{
+    fsBtn.textContent = document.fullscreenElement ? '⛶ Keluar Layar Penuh' : '⛶ Layar Penuh';
+    sizeTimeDisplay();
+  });
+  window.addEventListener('resize', sizeTimeDisplay);
+
+  updateDisplay();
+})();
+</script>
+</body>
+</html>
