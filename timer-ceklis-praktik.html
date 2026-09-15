@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UJI KOMPETENSI KEAHLIAN 2026 - Monitoring Progres</title>
+    <title>UJIAN PRAKTIK - Monitoring Progres</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         
@@ -233,6 +232,23 @@
             width: 70px;
         }
 
+        /* Judul yang bisa diedit langsung */
+        #exam-title {
+            outline: none;
+            cursor: text;
+            border-radius: 6px;
+            padding: 2px 6px;
+            margin: -2px -6px;
+            transition: background-color 0.2s;
+        }
+        #exam-title:hover {
+            background-color: rgba(0, 161, 156, 0.12);
+        }
+        #exam-title:focus {
+            background-color: rgba(253, 253, 253, 0.08);
+            box-shadow: 0 0 0 2px var(--petronas-cyan);
+        }
+
         @keyframes popIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
@@ -303,7 +319,7 @@
             <div class="flex justify-between items-center px-10 py-1 min-h-[90px]">
                 <div class="header-grid">
                     <div class="text-left min-w-0 pr-4">
-                        <h1 class="text-2xl lg:text-3xl font-black tracking-tighter uppercase leading-[0.85] text-[#00A19C]">UJI KOMPETENSI<br>KEAHLIAN 2026</h1>
+                        <h1 id="exam-title" contenteditable="true" spellcheck="false" class="text-2xl lg:text-3xl font-black tracking-tighter uppercase leading-[0.85] text-[#00A19C]">UJIAN PRAKTIK</h1>
                     </div>
                     <div class="text-center px-4">
                         <div id="exam-timer" class="font-black tabular-nums tracking-tighter text-[#FDFDFD] timer-text">00:00</div>
@@ -443,6 +459,32 @@
     </div>
 
     <script>
+        // Ikon SVG ditanam langsung di dalam file (tidak bergantung pada CDN luar sama sekali),
+        // jadi tetap tampil walau tidak ada koneksi internet.
+        const ICONS = {
+            'play': '<svg viewBox="0 0 24 24" fill="currentColor"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
+            'pause': '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>',
+            'square': '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>',
+            'upload': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+            'download': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+            'settings': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+            'trash-2': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>',
+            'chevron-up': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>',
+            'chevron-down': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>',
+            'clock-alert': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14.5"/></svg>',
+            'stop-circle': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><rect x="9" y="9" width="6" height="6"/></svg>',
+            'clock-plus': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14.5"/></svg>'
+        };
+
+        function safeCreateIcons() {
+            document.querySelectorAll('[data-lucide]').forEach(el => {
+                const name = el.getAttribute('data-lucide');
+                if (ICONS[name]) {
+                    el.innerHTML = ICONS[name].replace('<svg ', '<svg style="width:100%;height:100%;display:block" ');
+                }
+            });
+        }
+
         let isExamStarted = false;
         let isExamFinished = false; 
         let isExamPaused = false; 
@@ -457,6 +499,7 @@
         let timerScaleRem = 7.5;
         let studentFontSize = 12;
         let taskFontSize = 20;
+        let examTitleHtml = "UJIAN PRAKTIK";
 
         function loadFromLocal() {
             const savedData = localStorage.getItem('monitoring_ujian_praktik');
@@ -475,17 +518,52 @@
                 timerScaleRem = data.timerScaleRem || 7.5;
                 studentFontSize = data.studentFontSize || 12;
                 taskFontSize = data.taskFontSize || 20;
+                if (typeof data.examTitleHtml === 'string' && data.examTitleHtml.trim() !== '') {
+                    examTitleHtml = data.examTitleHtml;
+                }
                 if (isExamStarted && !isExamFinished) resumeExam();
             } else {
                 initializeDefaultStudents();
             }
+            document.getElementById('exam-title').innerHTML = examTitleHtml;
             applyScales();
             updateUI();
+            setupTitleEditing();
         }
 
         function saveToLocal() {
-            const data = { numTasks, taskConfig, isExamStarted, isExamFinished, isExamPaused, elapsedSeconds, targetSeconds, students, notifTenSent, notifFiveSent, timerScaleRem, studentFontSize, taskFontSize };
+            const data = { numTasks, taskConfig, isExamStarted, isExamFinished, isExamPaused, elapsedSeconds, targetSeconds, students, notifTenSent, notifFiveSent, timerScaleRem, studentFontSize, taskFontSize, examTitleHtml };
             localStorage.setItem('monitoring_ujian_praktik', JSON.stringify(data));
+        }
+
+        function setupTitleEditing() {
+            const titleEl = document.getElementById('exam-title');
+
+            // Simpan setiap kali user selesai mengetik (kehilangan fokus)
+            titleEl.addEventListener('blur', () => {
+                let html = titleEl.innerHTML.trim();
+                if (html === '') {
+                    html = "JUDUL UJIAN";
+                    titleEl.innerHTML = html;
+                }
+                examTitleHtml = html;
+                saveToLocal();
+            });
+
+            // Enter = selesai edit (blur), bukan menambah baris baru
+            titleEl.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    titleEl.blur();
+                }
+            });
+
+            // Tempel teks polos saja saat paste, biar format tidak berantakan
+            titleEl.addEventListener('paste', (e) => {
+                e.preventDefault();
+                const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+                document.execCommand('insertText', false, text);
+            });
         }
 
         function initializeDefaultStudents() {
@@ -734,7 +812,7 @@
             }
             renderTable();
             renderTaskDetailsInHeader();
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         function renderTable() {
@@ -798,7 +876,7 @@
             }
             document.getElementById('config-num-tasks').value = numTasks;
             document.getElementById('modal-tasks-config').style.display = 'flex';
-            lucide.createIcons();
+            safeCreateIcons();
         };
 
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
@@ -851,7 +929,7 @@
                 closeBtn.classList.remove('hidden'); timeUpActions.classList.add('hidden');
                 if (duration > 0) setTimeout(() => { if (overlay.style.display === 'flex') closeNotification(); }, duration * 1000);
             }
-            lucide.createIcons();
+            safeCreateIcons();
         }
 
         window.onload = loadFromLocal;
