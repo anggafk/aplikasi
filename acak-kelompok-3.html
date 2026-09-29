@@ -72,8 +72,8 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
             <div>
-                <h1 class="text-xl md:text-2xl font-bold uppercase tracking-wide leading-none text-speedWhite">ACAK KELOMPOK</h1>
-                <p class="text-[10px] text-teal-200 mt-1 font-medium hidden sm:block">Sistem Pengacak Kelompok & Pemilih Siswa Otomatis</p>
+                <h1 class="text-xl md:text-2xl font-bold uppercase tracking-wide leading-none text-speedWhite">ACAK KELOMPOK PRO</h1>
+                <p class="text-[10px] text-teal-200 mt-1 font-medium hidden sm:block">Sistem Pengacak & Pemerataan Kelompok (Gender & Nilai)</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
@@ -82,7 +82,7 @@
                 <span class="text-[10px] hidden sm:inline" id="sound-status-text">SUARA: ON</span>
             </button>
             <span class="border border-petronas text-petronas bg-sauber px-2 sm:px-3 py-1.5 rounded text-[9px] sm:text-[10px] font-bold uppercase tracking-widest">
-                VER PRO
+                VER PRO 2.0
             </span>
         </div>
     </header>
@@ -108,9 +108,14 @@
                 </div>
 
                 <!-- Import Panel (Hidden by default) -->
-                <div id="import-panel" class="mt-4 bg-slate-50 p-4 rounded border border-slate-200 hidden animate-fade-in">
-                    <textarea id="import-textarea" class="w-full p-3 text-sm border border-slate-200 rounded focus:ring-1 focus:ring-petronas focus:border-petronas min-h-[100px] outline-none transition-colors" placeholder="Tempel data siswa di sini (Gunakan baris baru atau koma)..."></textarea>
-                    <div class="mt-3 flex justify-end gap-2">
+                <div id="import-panel" class="mt-4 bg-slate-50 p-4 rounded border border-slate-200 hidden animate-fade-in space-y-3">
+                    <div class="bg-amber-50 border border-amber-200 p-2.5 rounded text-[11px] text-amber-800 space-y-1">
+                        <p class="font-bold uppercase tracking-wider">💡 Format Input Data (Mendukung Copy-Paste Excel):</p>
+                        <p>Format: <code class="bg-amber-100 px-1 rounded font-mono font-bold">NAMA, GENDER (L/P), NILAI</code></p>
+                        <p class="text-slate-500 italic">Contoh: <span class="font-mono">AISA WULANSARI, P, 88</span> atau langsung salin 3 kolom dari Excel.</p>
+                    </div>
+                    <textarea id="import-textarea" class="w-full p-3 text-xs font-mono border border-slate-200 rounded focus:ring-1 focus:ring-petronas focus:border-petronas min-h-[110px] outline-none transition-colors" placeholder="AISA WULANSARI, P, 88&#10;ANGGI MELANI, P, 75&#10;DIKA PRATAMA, L, 92"></textarea>
+                    <div class="flex justify-end gap-2">
                         <button onclick="handleImport()" class="bg-petronas text-speedWhite px-5 py-2 rounded hover:bg-sauber text-xs font-bold uppercase tracking-wider transition-colors duration-300 hover:shadow-md">
                             PROSES DATA
                         </button>
@@ -119,15 +124,15 @@
             </section>
 
             <!-- PANEL KANAN: Pengaturan Padat -->
-            <section class="lg:col-span-5 bg-speedWhite p-5 rounded-md shadow-sm border border-sauber border-t-[4px] transition-shadow duration-300 hover:shadow-md">
-                <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 min-h-[44px]">
+            <section class="lg:col-span-5 bg-speedWhite p-5 rounded-md shadow-sm border border-sauber border-t-[4px] transition-shadow duration-300 hover:shadow-md space-y-4">
+                <div class="flex justify-between items-center border-b border-slate-100 pb-3">
                     <h2 class="text-sm font-extrabold text-sauber uppercase tracking-widest flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
                         PENGATURAN
                     </h2>
                 </div>
 
-                <div class="flex flex-col gap-3 items-center">
+                <div class="flex flex-col gap-3">
                     
                     <!-- Toggle Mode -->
                     <div class="flex p-1 bg-slate-100 rounded-md shrink-0 w-full h-[38px]">
@@ -167,7 +172,7 @@
             <div class="bg-speedWhite lg:col-span-5 rounded-md shadow-sm border border-sauber border-t-[4px] overflow-hidden flex flex-col h-[650px]">
                 <div class="p-3.5 border-b border-slate-100 flex justify-between items-center shrink-0 bg-slate-50">
                     <h3 class="text-xs font-extrabold text-sauber uppercase tracking-widest flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                         DAFTAR SISWA
                     </h3>
                     <span id="total-students" class="text-[10px] font-bold bg-sauber/10 text-sauber px-2.5 py-1 rounded-full uppercase tracking-wider border border-sauber/20">
@@ -175,14 +180,24 @@
                     </span>
                 </div>
 
-                <!-- Quick Add & Search Bar -->
+                <!-- Quick Add Bar with Gender & Score support -->
                 <div class="p-3 border-b border-slate-100 bg-white space-y-2">
-                    <div class="flex gap-2">
-                        <input id="quick-add-input" type="text" placeholder="Tambah nama siswa baru..." class="flex-1 text-xs px-3 py-1.5 border border-slate-200 rounded outline-none focus:border-petronas transition-colors uppercase" onkeydown="if(event.key==='Enter') addSingleStudent()">
-                        <button onclick="addSingleStudent()" class="bg-petronas text-white text-[10px] font-bold px-3 py-1.5 rounded hover:bg-sauber transition-colors uppercase tracking-wider">
+                    <div class="flex gap-1.5">
+                        <input id="quick-add-input" type="text" placeholder="Nama siswa..." class="flex-1 text-xs px-2.5 py-1.5 border border-slate-200 rounded outline-none focus:border-petronas transition-colors uppercase" onkeydown="if(event.key==='Enter') addSingleStudent()">
+                        
+                        <select id="quick-add-gender" class="text-xs border border-slate-200 rounded px-1.5 py-1.5 font-bold text-slate-600 outline-none focus:border-petronas">
+                            <option value="-">L/P</option>
+                            <option value="L">L</option>
+                            <option value="P">P</option>
+                        </select>
+
+                        <input id="quick-add-score" type="number" min="0" max="100" placeholder="Nilai" class="w-14 text-xs px-1.5 py-1.5 border border-slate-200 rounded outline-none focus:border-petronas transition-colors text-center font-bold" onkeydown="if(event.key==='Enter') addSingleStudent()">
+
+                        <button onclick="addSingleStudent()" class="bg-petronas text-white text-[10px] font-bold px-2.5 py-1.5 rounded hover:bg-sauber transition-colors uppercase tracking-wider shrink-0">
                             + TAMBAH
                         </button>
                     </div>
+
                     <div class="relative">
                         <input id="search-student-input" type="text" placeholder="Cari nama siswa..." oninput="renderStudentTable()" class="w-full text-xs pl-8 pr-3 py-1.5 border border-slate-200 rounded outline-none focus:border-petronas transition-colors">
                         <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -283,14 +298,34 @@
     </div>
 
     <script>
-        // Data Class
-        const classData = {
-            "XII TJKT 1": ["AISA WULANSARI", "ANGGI MELANI SAPUTRI", "ANGGRAINI KUSUMA WARDANI", "ARDHITA DEWI PRATIWI", "ASYSYIFA MAWAR DHUHA ENI", "CANTIKA SALSABILLA MAFBUBAH", "CARISA DIAS JULIA ANDINI", "CINTA NAILA SALSABILA", "DIKA PRATAMA", "DINA MARHAYATI", "DINDA PUTRI ADILA", "ENO DARLA AGESTI", "EVITA SAHWA ADHELIA", "EXSEL PRAWIRA ADI WINATA", "FINDA MEILINA NUR AINI", "GALIH LARAS LISTYANI", "HUSEIN NASUHA ADNAN KAHFI", "JIHAN PUTRI ANJANI", "KHAILA DWI SAFITRI", "LUQMAN DAFFA MUMTAZ", "LUTFI NUR LATIFAH", "MANIS MIZELA FISMAURA", "MARSHA DEA AYU PUSPITA SARI", "MAULIDIA QURROTI A'YUN", "MUTIARA ADELIA PUTRI", "NADIA PUSPITA SARI", "NAYARA SAL SABILA AL GHIFARI", "NOVAL SAPUTRA", "NUR ALI IBROHIM", "SHELA MUDMAINAH", "UMMUL KAHFI", "YUNDA SUSILOWATI", "YUSUF ARLIN NUGROHO"],
-            "XII TJKT 2": ["ADELIA OCTAVIANI", "AILSYA ANIN DYASUCI", "AL FIYATUN NUR MARFUAH", "ALIFA HEPY FEBRIANA", "ALMIRA PUTRIANA ARIFIAH", "ALYA NUR ROHIDAH", "AMALIA CITRA OKTAVIA", "ANASTASYA INDAH PRATIWI", "AULIA PUTRI RAHMAWATI", "CHOIRUN NISA AYU SOLEHAH", "CIKA AYU DIAH SASMITA", "DHIMAS BASRI PRANATA", "DZAKY HELMI ADITYA", "EKA FEBRIANA", "FAIDZIN ABELTINO", "FHARIZ NUR KOSASIH", "FIANZA BINTANG PERMANA", "HAZNA NUR RAHMADANI", "HERLINA SINDY CAHYA NOFFIANTI", "JESSECA ANASTASYA DEWI", "KHUMAIRO MAHFUZAH", "LINDA NIMAS PUSPITANINGRUM", "LUKMAN DWI JAMALUDIN", "MARTA RAMADANI", "NIKEN SARI ANGGRAINI", "OKTAVIANO ARYAN PRATAMA", "RESA MAGHFIROH RAHMADANI", "RINDY OKTA VIANI", "RISDA AYATUN HUSNA", "RIZKY WAHYU SHAPUTRA", "RIZMA YUNISA PUTRI", "SHANTIKA SHERLY NOVIANA", "SHELLSI KHOIRUNNISA", "TAFDHILAA AWAYNA ASHILAA HUSNA"],
-            "XII TJKT 3": ["ANDIVA FAUSAN ROHIM", "ANGGRA SATRIA", "AULIA AYU OKTAVIA", "CICI MAULIDA", "DESI PUSPITA SARI", "DHIANDRA FAHMI AFNANTA", "DINI WAHYU ASTUTI", "FADZILLA DYAN PUTRI RAHMATIKA", "FARICH ABIDAR ROCHMAN", "FIFI ERNIYATY", "GALIH PERMANA PUTRI", "GENDIS", "HALUD MARLINO SUPRIYANTO", "INALA AILEEN SYAHARJITO", "INDAH PRASASTI", "KHISMA TSU'UMI FATKHULJANAH", "LUTFI BUNGA SAFIRA", "MELANI PUSPITASARI", "MUHAMMAD ZANDIKA MISBAHUDDIN ASSUYUTI", "NAMIRA DWICAHYANI", "PERTIWI WENING WISANTI", "RADITNAHYA PRIYA PUTRA ARDIANA", "RAFI ARDYANSAH", "RIRIN ROHMA SARI", "RODATUL TRI ANIFAH", "SANI PURBA SARI", "SAVIRA NUR AINAYA", "SEPTIA AYU LESTARI", "SHINTA MEI DANIA", "SYAFIRA SEPTIANA", "VERA DWI YULIANA", "WAHYU DESTIKA SARI", "ZAHRA ANANDA PANSA"],
-            "XI TJKT 1": ["AINISYA DANYA ISTIQOMAH", "AISYAHLA NUGRAHAENING VEKTONI", "ALVINO REZA ADI PRADANA", "ANITA PRASTIWI", "ASYFA AWALIA RAMADHANI", "AURA NILAM SAPUTRI", "DAFFA FADILA PRATAMA", "DENIS AGUSTIAN HAMBALI", "DHELYA YASIFA VIYANTI", "DINA APRILIA", "FAJRY EVAN RONALDA", "IMROATUL INDASAH ALFA KHUSNA", "INDAH YOLANDA PUTRI SETYANINGRUM", "KANSA NUR OLIFIA", "LULU ALZAZIRA KHASANAH", "MELODI APRILIA", "NA'IMAH MULIA DAFIQ NURJANAH", "NAILA EKA NUR PUSPIANA", "NIA RAMADHANI", "NOVI AFIFA SYAHRANI", "OKTAVIA YULIANTI", "QONA'AH NUR ROHMAH", "RAHAYU DIAH PITALOKA", "REEY FACHRY ATMOKO", "RISKA INDAH LESTARI", "SALMA MAULIDA FITRI", "SATRIA RIZKY RISTYAILMI", "SEKAR PUTRI ANDINI", "SEPTIANI AJAHRA SINTYA NUR", "SITI AYSAH NUR KUMALA SARI", "TANIA TRI UTAMI", "THESA SETIA RAMADANI", "UNTARI", "VETI R VIASARI", "YUSTIANA DELA RAMADANI"],
-            "XI TJKT 2": ["AIRLANGGA RADHITYA ARIYAN PUTRA", "AURA SHINTA AGUSTIAYU", "BELLA NOVIA MAHARANI", "BIMO NUR CAHYO", "CHANTIKA ELIN AGUSTINA", "DAMARA ELITA FABIOLA", "DHIMAS ARIZKI ARDIANSYAH", "DINDA PUTRI ARINI", "ELISTHA NOVIANA SUSANTI", "ELVI LAILATUL BADRIYAH", "FIRMANSYAH HIKMAT PERMANA", "FITRIYA ANGGRIYANI", "INAYAH WAHYU NINGSIH", "JEFRIN REVANO", "JELIN ANDIA SAH PUTRI", "KEYSA MELATI", "LEICA ANGELINA", "MARSHEYLA KLARISA PUTRI", "MAY SHAFA PUTRI RAMADHANI", "MUHAMMAD RIDWAN SAPUTRA", "NABILA RETIVA QHOTIMAH", "NADIEN NAYSILA PUTRI", "NAILA PUTRI MIFTAFUL KOIRIAH", "NELY AGUSTINA", "PUTRI AYUNINGTIAS", "RESKA AZZILA ZAHRA", "RIANI DWIPASARI", "SAFA SEPTYA NURFITRIANY", "SELINSA NURIL ANGGRAINI", "SHERIL MULAN ARNIA", "SILVIA WAHYU FIRNANDA", "TANIA DINDA AMBARWATI", "VANESYA EGA OCTAVIANA", "VIA NOVIANA", "YEZA DIAH AYU PRAMESTI", "ZULIA TRI ARDIANINGSIH"],
-            "XI TJKT 3": ["ADITIYA AGUS PRATAMA", "ALVIN ANANDA", "ANGEL PUTRI LESTIAWATI", "ARUM DWI ANGGRAHENI", "CARLA NUR ALIFAH", "CINDY SELVIANA MEYRA", "CLARIN AVITA JULIASARI", "DENIS TRI RAHAYU", "DEVINA AULIA ZAHRA", "DINDA PUTRI OKTAVIANI", "ELSA", "FERA FERNANDA", "GADIS FAITHA SILMI", "GAZA PINDHO RHEHANSYAH", "GEBY PURNAMA AMINAH PUTRI", "M. DHAFA AL ZAKI", "MARVELIN SOFI MAULIDHA", "MELANIFA CAHYA PUTRI", "MELINDA PUJI LESTARI", "NABILA AISA PUTRI", "NADIYA LATHIFATUL HUMAYRO'", "NAYLA ANGGUN PRATIWI", "NAZILA MUTIARA ALTHOFUNNISA", "NAZWA DIAN APRIYANTI", "NOPITA ANGGRAINI", "PUTRI DWI YULIANI", "QUINSHA ADILA IYUANITA", "RA'UF ANUGRAH GEMILANG", "RADISYA DIMAS ELKIANGGARA", "RESTU DINI ANDAFI AMELIA", "REVILDA DWI CAROLYNA CINDY", "SHOFA ADI WALOYO", "SILVIA MEGA JULIANI", "TRI CAHYANI", "VANEZA HARMAYU LESTARI"]
+        // Data Class dengan contoh awal Nama, Gender (L/P), dan Nilai
+        const rawClassData = {
+            "XII TJKT 1": [
+                ["AISA WULANSARI", "P", 88], ["ANGGI MELANI SAPUTRI", "P", 75], ["ANGGRAINI KUSUMA WARDANI", "P", 90], 
+                ["ARDHITA DEWI PRATIWI", "P", 82], ["ASYSYIFA MAWAR DHUHA ENI", "P", 85], ["CANTIKA SALSABILLA MAFBUBAH", "P", 79], 
+                ["CARISA DIAS JULIA ANDINI", "P", 91], ["CINTA NAILA SALSABILA", "P", 84], ["DIKA PRATAMA", "L", 88], 
+                ["DINA MARHAYATI", "P", 76], ["DINDA PUTRI ADILA", "P", 80], ["ENO DARLA AGESTI", "P", 85], 
+                ["EVITA SAHWA ADHELIA", "P", 93], ["EXSEL PRAWIRA ADI WINATA", "L", 81], ["FINDA MEILINA NUR AINI", "P", 77], 
+                ["GALIH LARAS LISTYANI", "P", 86], ["HUSEIN NASUHA ADNAN KAHFI", "L", 89], ["JIHAN PUTRI ANJANI", "P", 84], 
+                ["KHAILA DWI SAFITRI", "P", 78], ["LUQMAN DAFFA MUMTAZ", "L", 92], ["LUTFI NUR LATIFAH", "P", 80], 
+                ["MANIS MIZELA FISMAURA", "P", 83], ["MARSHA DEA AYU PUSPITA SARI", "P", 87], ["MAULIDIA QURROTI A'YUN", "P", 85], 
+                ["MUTIARA ADELIA PUTRI", "P", 79], ["NADIA PUSPITA SARI", "P", 88], ["NAYARA SAL SABILA AL GHIFARI", "P", 90], 
+                ["NOVAL SAPUTRA", "L", 81], ["NUR ALI IBROHIM", "L", 86], ["SHELA MUDMAINAH", "P", 82], 
+                ["UMMUL KAHFI", "P", 85], ["YUNDA SUSILOWATI", "P", 78], ["YUSUF ARLIN NUGROHO", "L", 94]
+            ],
+            "XII TJKT 2": [
+                ["ADELIA OCTAVIANI", "P", 82], ["AILSYA ANIN DYASUCI", "P", 88], ["AL FIYATUN NUR MARFUAH", "P", 80],
+                ["ALIFA HEPY FEBRIANA", "P", 85], ["ALMIRA PUTRIANA ARIFIAH", "P", 91], ["ALYA NUR ROHIDAH", "P", 76],
+                ["AMALIA CITRA OKTAVIA", "P", 84], ["ANASTASYA INDAH PRATIWI", "P", 89], ["AULIA PUTRI RAHMAWATI", "P", 83],
+                ["CHOIRUN NISA AYU SOLEHAH", "P", 87], ["CIKA AYU DIAH SASMITA", "P", 78], ["DHIMAS BASRI PRANATA", "L", 90],
+                ["DZAKY HELMI ADITYA", "L", 85], ["EKA FEBRIANA", "P", 81], ["FAIDZIN ABELTINO", "L", 86],
+                ["FHARIZ NUR KOSASIH", "L", 88], ["FIANZA BINTANG PERMANA", "L", 92], ["HAZNA NUR RAHMADANI", "P", 84]
+            ],
+            "XI TJKT 1": [
+                ["AINISYA DANYA ISTIQOMAH", "P", 85], ["AISYAHLA NUGRAHAENING VEKTONI", "P", 90], ["ALVINO REZA ADI PRADANA", "L", 88],
+                ["ANITA PRASTIWI", "P", 78], ["ASYFA AWALIA RAMADHANI", "P", 82], ["AURA NILAM SAPUTRI", "P", 87],
+                ["DAFFA FADILA PRATAMA", "L", 91], ["DENIS AGUSTIAN HAMBALI", "L", 83], ["DHELYA YASIFA VIYANTI", "P", 86]
+            ]
         };
 
         // State Global
@@ -395,7 +430,7 @@
             let html = '<div class="flex gap-2 w-full">'; 
             let currentGrade = 'XII';
             
-            for (const cls in classData) {
+            for (const cls in rawClassData) {
                 const grade = cls.split(' ')[0];
                 
                 if (grade !== currentGrade) {
@@ -466,7 +501,13 @@
             let html = `
                 <table class="w-full text-sm text-left border-collapse">
                     <thead class="bg-speedWhite text-slate-400 font-bold sticky top-0 z-10 text-[10px] uppercase tracking-wider border-b border-slate-100 shadow-sm">
-                        <tr><th class="px-4 py-3 w-12 text-center">NO</th><th class="px-2 py-3">NAMA LENGKAP</th><th class="px-4 py-3 w-16 text-center">AKSI</th></tr>
+                        <tr>
+                            <th class="px-2 py-2.5 w-8 text-center">NO</th>
+                            <th class="px-2 py-2.5">NAMA LENGKAP</th>
+                            <th class="px-1 py-2.5 text-center w-10">JK</th>
+                            <th class="px-1 py-2.5 text-center w-12">NILAI</th>
+                            <th class="px-2 py-2.5 w-10 text-center">AKSI</th>
+                        </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-50 text-xs">
             `;
@@ -477,11 +518,21 @@
                 const btnClass = student.excluded ? 'text-redbull hover:bg-redbull hover:text-speedWhite hover:shadow-md' : 'text-slate-300 hover:text-speedWhite hover:bg-petronas hover:shadow-md';
                 const icon = student.excluded ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
 
+                const genderBadge = student.gender === 'L' 
+                    ? `<span class="bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded text-[10px]">L</span>`
+                    : (student.gender === 'P' ? `<span class="bg-pink-100 text-pink-700 font-bold px-1.5 py-0.5 rounded text-[10px]">P</span>` : `<span class="text-slate-300">-</span>`);
+
+                const scoreBadge = student.score > 0 
+                    ? `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-1.5 py-0.5 rounded text-[10px]">${student.score}</span>`
+                    : `<span class="text-slate-300">-</span>`;
+
                 html += `
                     <tr class="transition-colors ${rowClass}">
-                        <td class="px-4 py-2.5 text-center text-slate-400">${idx + 1}</td>
-                        <td class="px-2 py-2.5 transition-colors ${nameClass} uppercase">${student.name}</td>
-                        <td class="px-4 py-2.5 text-center">
+                        <td class="px-2 py-2 text-center text-slate-400 font-mono text-[11px]">${idx + 1}</td>
+                        <td class="px-2 py-2 transition-colors ${nameClass} uppercase text-[11px]">${student.name}</td>
+                        <td class="px-1 py-2 text-center">${genderBadge}</td>
+                        <td class="px-1 py-2 text-center">${scoreBadge}</td>
+                        <td class="px-2 py-2 text-center">
                             <button onclick="toggleExclusion(${student.id})" class="w-6 h-6 rounded flex items-center justify-center transition-colors duration-300 mx-auto ${btnClass}">${icon}</button>
                         </td>
                     </tr>
@@ -494,16 +545,46 @@
 
         function addSingleStudent() {
             const input = document.getElementById('quick-add-input');
+            const genderSelect = document.getElementById('quick-add-gender');
+            const scoreInput = document.getElementById('quick-add-score');
+
             if(!input) return;
             const name = input.value.trim().toUpperCase();
             if(!name) {
                 showToast("Masukkan nama siswa terlebih dahulu!");
                 return;
             }
-            students.push({ id: Date.now(), name: name, excluded: false });
+            const gender = genderSelect ? genderSelect.value : '-';
+            const score = scoreInput && scoreInput.value ? parseFloat(scoreInput.value) : 0;
+
+            students.push({ id: Date.now() + Math.random(), name: name, gender: gender, score: score, excluded: false });
+            
             input.value = '';
+            if(scoreInput) scoreInput.value = '';
+            if(genderSelect) genderSelect.value = '-';
+            
             renderStudentTable();
             showToast("Siswa berhasil ditambahkan!", "success");
+        }
+
+        function parseStudentLine(line, idx) {
+            if (!line.trim()) return null;
+            // Split by comma, tab, or semicolon
+            let parts = line.split(/[\t,;]+/).map(p => p.trim());
+            let name = parts[0] || '';
+            let gender = '-';
+            let score = 0;
+
+            for (let i = 1; i < parts.length; i++) {
+                let p = parts[i].toUpperCase();
+                if ((p === 'L' || p === 'P' || p === 'LAKI-LAKI' || p === 'PEREMPUAN') && gender === '-') {
+                    gender = (p === 'LAKI-LAKI' || p === 'L') ? 'L' : 'P';
+                } else if (!isNaN(parseFloat(p)) && score === 0) {
+                    score = parseFloat(p);
+                }
+            }
+
+            return { id: Date.now() + idx + Math.random(), name: name.toUpperCase(), gender: gender, score: score, excluded: false };
         }
 
         function fallbackCopyTextToClipboard(text) {
@@ -532,7 +613,13 @@
             if(currentlyViewingGroupIndex === -1) return;
             const group = groups[currentlyViewingGroupIndex];
             let text = shuffleMode === 'pick' ? `*SISWA TERPILIH*\n` : `*KELOMPOK ${currentlyViewingGroupIndex + 1}*\n`;
-            group.forEach((s, idx) => text += `${idx + 1}. ${s.name}\n`);
+            group.forEach((s, idx) => {
+                let detail = [];
+                if(s.gender !== '-') detail.push(s.gender);
+                if(s.score > 0) detail.push(`Nilai: ${s.score}`);
+                const extra = detail.length ? ` (${detail.join(', ')})` : '';
+                text += `${idx + 1}. ${s.name}${extra}\n`;
+            });
             copyToClipboard(text);
         }
 
@@ -541,7 +628,13 @@
             let text = `*HASIL PEMBAGIAN*\n${selectedClass ? `Kelas: ${selectedClass}\n` : ''}\n`;
             groups.forEach((group, groupIndex) => {
                 text += shuffleMode === 'pick' ? `*SISWA TERPILIH*\n` : `*KELOMPOK ${groupIndex + 1}*\n`;
-                group.forEach((student, studentIndex) => text += `${studentIndex + 1}. ${student.name}\n`);
+                group.forEach((student, studentIndex) => {
+                    let detail = [];
+                    if(student.gender !== '-') detail.push(student.gender);
+                    if(student.score > 0) detail.push(`Nilai: ${student.score}`);
+                    const extra = detail.length ? ` (${detail.join(', ')})` : '';
+                    text += `${studentIndex + 1}. ${student.name}${extra}\n`;
+                });
                 text += '\n';
             });
             copyToClipboard(text);
@@ -561,10 +654,20 @@
             
             let listHtml = '';
             group.forEach((student, sIdx) => {
+                const gBadge = student.gender === 'L' ? `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded">L</span>`
+                    : (student.gender === 'P' ? `<span class="bg-pink-100 text-pink-700 text-[10px] font-bold px-1.5 py-0.5 rounded">P</span>` : '');
+                
+                const sBadge = student.score > 0 ? `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-1.5 py-0.5 rounded">Nilai: ${student.score}</span>` : '';
+
                 listHtml += `
-                    <li class="flex items-center gap-3 bg-slate-50 p-3 rounded border border-slate-200 shadow-sm transition-colors hover:bg-speedWhite">
-                        <div class="w-7 h-7 rounded bg-petronas text-speedWhite font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">${sIdx + 1}</div>
-                        <span class="font-extrabold text-slate-700 text-sm uppercase truncate">${student.name}</span>
+                    <li class="flex items-center justify-between bg-slate-50 p-3 rounded border border-slate-200 shadow-sm transition-colors hover:bg-speedWhite">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded bg-petronas text-speedWhite font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">${sIdx + 1}</div>
+                            <span class="font-extrabold text-slate-700 text-sm uppercase truncate">${student.name}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            ${gBadge} ${sBadge}
+                        </div>
                     </li>`;
             });
             if(list) list.innerHTML = listHtml;
@@ -618,11 +721,6 @@
                     else if (len === 2) gridClass = 'grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto gap-4';
                     else if (len === 3) gridClass = 'grid-cols-1 sm:grid-cols-3 max-w-5xl mx-auto gap-4';
                     else if (len === 4) gridClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-full gap-4';
-                    else if (len === 5) gridClass = 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 max-w-full gap-4';
-                    else if (len === 6) gridClass = 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-5xl mx-auto gap-4 lg:gap-6';
-                    else if (len === 7 || len === 8) gridClass = 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 max-w-full gap-4';
-                    else if (len === 9) gridClass = 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 max-w-5xl mx-auto gap-4 lg:gap-6';
-                    else if (len === 10) gridClass = 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 max-w-full gap-4';
                     else gridClass = 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 max-w-full gap-4';
                 } else {
                     gridClass = len === 1 ? 'grid-cols-1 gap-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4';
@@ -637,12 +735,23 @@
                 const isPickMode = shuffleMode === 'pick';
                 const cardScale = isShuffling ? 'opacity-80' : 'opacity-100 hover:shadow-md hover:border-petronas cursor-pointer';
 
+                // Hitung Statistik Kelompok
+                const countL = group.filter(s => s.gender === 'L').length;
+                const countP = group.filter(s => s.gender === 'P').length;
+                const scores = group.filter(s => s.score > 0).map(s => s.score);
+                const avgScore = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : null;
+
                 html += `
                     <div onclick="event.stopPropagation(); openGroupDetail(${idx})" class="bg-speedWhite rounded-md shadow-sm border border-slate-200 border-t-[4px] border-t-sauber transition-all duration-300 flex flex-col ${cardScale}">
-                        <div class="px-3 py-2.5 border-b border-slate-100 bg-slate-50 transition-colors flex justify-between items-center">
+                        <div class="px-3 py-2 border-b border-slate-100 bg-slate-50 transition-colors flex justify-between items-center">
                             <h4 class="font-extrabold text-sauber uppercase tracking-widest text-[11px] sm:text-xs">
                                 ${isPickMode ? 'SISWA TERPILIH' : 'KELOMPOK ' + (idx + 1)}
                             </h4>
+                            <div class="flex items-center gap-1 text-[9px] font-bold">
+                                ${countL ? `<span class="text-blue-600 bg-blue-50 px-1 rounded">${countL}L</span>` : ''}
+                                ${countP ? `<span class="text-pink-600 bg-pink-50 px-1 rounded">${countP}P</span>` : ''}
+                                ${avgScore ? `<span class="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded" title="Rata-rata Nilai">⭐ ${avgScore}</span>` : ''}
+                            </div>
                         </div>
                         <div class="p-2 sm:p-3 flex-1 rounded-b-md">
                             <ul class="space-y-1">
@@ -651,10 +760,17 @@
                 for (let sIdx = 0; sIdx < maxSlots; sIdx++) {
                     const student = group[sIdx];
                     if (student) {
+                        const gTag = student.gender === 'L' ? '<span class="text-blue-600 font-bold ml-1 text-[9px]">L</span>'
+                            : (student.gender === 'P' ? '<span class="text-pink-600 font-bold ml-1 text-[9px]">P</span>' : '');
+                        
+                        const sTag = student.score > 0 ? `<span class="text-slate-400 font-normal ml-auto text-[9px]">${student.score}</span>` : '';
+
                         html += `
-                            <li class="flex items-center font-bold text-slate-600 hover:bg-slate-50 transition-colors rounded text-[10px] sm:text-[11px] p-1.5 gap-2">
+                            <li class="flex items-center font-bold text-slate-600 hover:bg-slate-50 transition-colors rounded text-[10px] sm:text-[11px] p-1.5 gap-1.5">
                                 <div class="w-5 h-5 text-[10px] rounded-sm bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200">${sIdx + 1}</div>
                                 <span class="truncate uppercase font-extrabold text-slate-700">${student.name}</span>
+                                ${gTag}
+                                ${sTag}
                             </li>`;
                     } else if(!isPickMode) {
                         html += `
@@ -670,8 +786,14 @@
 
         function loadClass(className) {
             selectedClass = className;
-            const names = classData[className];
-            students = names.map((name, index) => ({ id: Date.now() + index, name: name, excluded: false }));
+            const items = rawClassData[className];
+            students = items.map((item, index) => ({ 
+                id: Date.now() + index, 
+                name: item[0], 
+                gender: item[1] || '-', 
+                score: item[2] || 0, 
+                excluded: false 
+            }));
             groups = [];
             renderClassButtons();
             renderStudentTable();
@@ -707,10 +829,8 @@
             const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
             
             lines.forEach((line, idx) => {
-                let name = line.replace(/[,;]/g, ' ').replace(/\s+/g, ' ').trim();
-                if (name) {
-                    parsedStudents.push({ id: Date.now() + idx, name: name.toUpperCase(), excluded: false });
-                }
+                const s = parseStudentLine(line, idx);
+                if (s && s.name) parsedStudents.push(s);
             });
             
             students = parsedStudents;
@@ -744,6 +864,82 @@
             }
         }
 
+        function shuffleArr(arr) {
+            let curr = arr.length, rand;
+            while (curr !== 0) {
+                rand = Math.floor(Math.random() * curr);
+                curr--;
+                [arr[curr], arr[rand]] = [arr[rand], arr[curr]];
+            }
+            return arr;
+        }
+
+        function distributeSnake(items, resultGroups) {
+            let gCount = resultGroups.length;
+            let forward = true;
+            let gIdx = 0;
+            items.forEach(item => {
+                resultGroups[gIdx].push(item);
+                if (forward) {
+                    gIdx++;
+                    if (gIdx >= gCount) { gIdx = gCount - 1; forward = false; }
+                } else {
+                    gIdx--;
+                    if (gIdx < 0) { gIdx = 0; forward = true; }
+                }
+            });
+        }
+
+        function generateAutoBalancedGroups(activeStudents, count) {
+            let result = Array.from({ length: count }, () => []);
+
+            // Deteksi otomatis keberadaan data Gender dan Nilai
+            const hasGender = activeStudents.some(s => s.gender === 'L' || s.gender === 'P');
+            const hasScore = activeStudents.some(s => s.score > 0);
+
+            if (hasGender && hasScore) {
+                // Otomatis Seimbang Gender & Nilai
+                let males = [...activeStudents.filter(s => s.gender === 'L')].sort((a, b) => b.score - a.score);
+                let females = [...activeStudents.filter(s => s.gender === 'P')].sort((a, b) => b.score - a.score);
+                let others = [...activeStudents.filter(s => s.gender !== 'L' && s.gender !== 'P')].sort((a, b) => b.score - a.score);
+
+                distributeSnake(males, result);
+                distributeSnake(females, result);
+                distributeSnake(others, result);
+            } else if (hasGender) {
+                // Otomatis Seimbang Gender saja
+                let males = shuffleArr(activeStudents.filter(s => s.gender === 'L'));
+                let females = shuffleArr(activeStudents.filter(s => s.gender === 'P'));
+                let others = shuffleArr(activeStudents.filter(s => s.gender !== 'L' && s.gender !== 'P'));
+
+                distributeSnake(males, result);
+                distributeSnake(females, result);
+                distributeSnake(others, result);
+            } else if (hasScore) {
+                // Otomatis Seimbang Nilai saja
+                let sorted = [...activeStudents].sort((a, b) => b.score - a.score);
+                distributeSnake(sorted, result);
+            } else {
+                // Acak Murni jika tidak ada Gender maupun Nilai
+                let array = [...activeStudents];
+                shuffleArr(array);
+                let sIdx = 0;
+                let targetSizes = Array(count).fill(Math.floor(array.length / count));
+                let remainder = array.length % count;
+                let extraIndices = Array.from({length: count}, (_, i) => i);
+                shuffleArr(extraIndices);
+                for(let i=0; i<remainder; i++) targetSizes[extraIndices[i]]++;
+
+                for (let g = 0; g < count; g++) {
+                    for (let i = 0; i < targetSizes[g]; i++) {
+                        if (sIdx < array.length) result[g].push(array[sIdx++]);
+                    }
+                }
+            }
+
+            return result;
+        }
+
         function startShuffling() {
             const activeStudents = students.filter(s => !s.excluded);
             if (activeStudents.length === 0) {
@@ -775,16 +971,6 @@
             const maxDelay = 350;
             const slowDownFactor = 1.15;
 
-            const shuffleArr = (arr) => {
-                let curr = arr.length, rand;
-                while (curr !== 0) {
-                    rand = Math.floor(Math.random() * curr);
-                    curr--;
-                    [arr[curr], arr[rand]] = [arr[rand], arr[curr]];
-                }
-                return arr;
-            };
-
             const doShuffleStep = () => {
                 playTickSound();
                 let tempGroups = [];
@@ -794,24 +980,7 @@
                     shuffleArr(array);
                     tempGroups.push(array.slice(0, groupCount));
                 } else {
-                    tempGroups = Array.from({ length: groupCount }, () => []);
-                    let array = [...activeStudents];
-                    shuffleArr(array);
-                    
-                    let targetSizes = Array(groupCount).fill(Math.floor(array.length / groupCount));
-                    let remainder = array.length % groupCount;
-                    let extraIndices = Array.from({length: groupCount}, (_, i) => i);
-                    shuffleArr(extraIndices);
-                    for(let i=0; i<remainder; i++) targetSizes[extraIndices[i]]++;
-
-                    let sIdx = 0;
-                    for (let g = 0; g < groupCount; g++) {
-                        for (let i = 0; i < targetSizes[g]; i++) {
-                            if (sIdx < array.length) {
-                                tempGroups[g].push(array[sIdx++]);
-                            }
-                        }
-                    }
+                    tempGroups = generateAutoBalancedGroups(activeStudents, groupCount);
                 }
 
                 groups = tempGroups;
@@ -846,12 +1015,12 @@
 
         function downloadCSV() {
             if (groups.length === 0) return;
-            let csvContent = "Status,No,Nama Siswa\n";
+            let csvContent = "Status,No,Nama Siswa,Gender,Nilai\n";
             groups.forEach((group, groupIndex) => {
                 group.forEach((student, studentIndex) => {
                     const safeName = student.name.replace(/"/g, '""');
                     const label = shuffleMode === 'pick' ? 'Terpilih' : `Kelompok ${groupIndex + 1}`;
-                    csvContent += `${label},${studentIndex + 1},"${safeName}"\n`;
+                    csvContent += `${label},${studentIndex + 1},"${safeName}",${student.gender},${student.score}\n`;
                 });
             });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
