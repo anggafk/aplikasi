@@ -73,7 +73,7 @@
             </div>
             <div>
                 <h1 class="text-xl md:text-2xl font-bold uppercase tracking-wide leading-none text-speedWhite">ACAK KELOMPOK PRO</h1>
-                <p class="text-[10px] text-teal-200 mt-1 font-medium hidden sm:block">Sistem Pengacak & Pemerataan Kelompok (Gender & Nilai)</p>
+                <p class="text-[10px] text-teal-200 mt-1 font-medium hidden sm:block">Sistem Pengacak Kelompok Siswa</p>
             </div>
         </div>
         <div class="flex items-center gap-3">
@@ -110,8 +110,8 @@
                 <!-- Import Panel (Hidden by default) -->
                 <div id="import-panel" class="mt-4 bg-slate-50 p-4 rounded border border-slate-200 hidden animate-fade-in space-y-3">
                     <div class="bg-amber-50 border border-amber-200 p-2.5 rounded text-[11px] text-amber-800 space-y-1">
-                        <p class="font-bold uppercase tracking-wider">💡 Format Input Data (Mendukung Copy-Paste Excel):</p>
-                        <p>Format: <code class="bg-amber-100 px-1 rounded font-mono font-bold">NAMA, GENDER (L/P), NILAI</code></p>
+                        <p class="font-bold uppercase tracking-wider">💡 Format Input Data:</p>
+                        <p>Format: <code class="bg-amber-100 px-1 rounded font-mono font-bold">NAMA SISWA [tab/koma] GENDER (L/P) [tab/koma] NILAI</code></p>
                     </div>
                     <textarea id="import-textarea" class="w-full p-3 text-xs font-mono border border-slate-200 rounded focus:ring-1 focus:ring-petronas focus:border-petronas min-h-[110px] outline-none transition-colors" placeholder="-"></textarea>
                     <div class="flex justify-end gap-2">
@@ -181,24 +181,24 @@
 
                 <!-- Quick Add Bar with Gender & Score support -->
                 <div class="p-3 border-b border-slate-100 bg-white space-y-2">
-                    <div class="flex gap-1.5">
+                    <div class="flex gap-1.5 items-center">
                         <input id="quick-add-input" type="text" placeholder="Nama siswa..." class="flex-1 text-xs px-2.5 py-1.5 border border-slate-200 rounded outline-none focus:border-petronas transition-colors uppercase" onkeydown="if(event.key==='Enter') addSingleStudent()">
                         
-                        <select id="quick-add-gender" class="text-xs border border-slate-200 rounded px-1.5 py-1.5 font-bold text-slate-600 outline-none focus:border-petronas">
+                        <select id="quick-add-gender" class="text-xs border border-slate-200 rounded px-2 py-1.5 font-bold text-slate-600 outline-none focus:border-petronas bg-slate-50">
                             <option value="-">L/P</option>
                             <option value="L">L</option>
                             <option value="P">P</option>
                         </select>
 
-                        <input id="quick-add-score" type="number" min="0" max="100" placeholder="Nilai" class="w-14 text-xs px-1.5 py-1.5 border border-slate-200 rounded outline-none focus:border-petronas transition-colors text-center font-bold" onkeydown="if(event.key==='Enter') addSingleStudent()">
+                        <input id="quick-add-score" type="number" min="0" max="100" placeholder="Nilai" class="w-16 text-xs px-2 py-1.5 border border-slate-200 rounded outline-none focus:border-petronas text-center font-semibold bg-slate-50" onkeydown="if(event.key==='Enter') addSingleStudent()">
 
-                        <button onclick="addSingleStudent()" class="bg-petronas text-white text-[10px] font-bold px-2.5 py-1.5 rounded hover:bg-sauber transition-colors uppercase tracking-wider shrink-0">
+                        <button onclick="addSingleStudent()" class="bg-petronas text-white text-[10px] font-bold px-3 py-1.5 rounded hover:bg-sauber transition-colors uppercase tracking-wider shrink-0 shadow-sm">
                             + TAMBAH
                         </button>
                     </div>
 
                     <div class="relative">
-                        <input id="search-student-input" type="text" placeholder="Cari nama siswa..." oninput="renderStudentTable()" class="w-full text-xs pl-8 pr-3 py-1.5 border border-slate-200 rounded outline-none focus:border-petronas transition-colors">
+                        <input id="search-student-input" type="text" placeholder="Cari nama, gender, atau nilai..." oninput="renderStudentTable()" class="w-full text-xs pl-8 pr-3 py-1.5 border border-slate-200 rounded outline-none focus:border-petronas transition-colors">
                         <svg class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
                     </div>
                 </div>
@@ -490,7 +490,11 @@
                 return;
             }
 
-            const filteredStudents = students.filter(s => s.name.toLowerCase().includes(filterQuery));
+            const filteredStudents = students.filter(s => 
+                s.name.toLowerCase().includes(filterQuery) || 
+                (s.gender && s.gender.toLowerCase() === filterQuery) ||
+                (s.score && s.score.toString().includes(filterQuery))
+            );
 
             if (filteredStudents.length === 0) {
                 container.innerHTML = `<div class="p-6 text-center text-xs font-bold text-slate-400 uppercase tracking-widest">Siswa tidak ditemukan</div>`;
@@ -502,10 +506,10 @@
                     <thead class="bg-speedWhite text-slate-400 font-bold sticky top-0 z-10 text-[10px] uppercase tracking-wider border-b border-slate-100 shadow-sm">
                         <tr>
                             <th class="px-2 py-2.5 w-8 text-center">NO</th>
-                            <th class="px-2 py-2.5">NAMA LENGKAP</th>
-                            <th class="px-1 py-2.5 text-center w-10">JK</th>
-                            <th class="px-1 py-2.5 text-center w-12">NILAI</th>
-                            <th class="px-2 py-2.5 w-10 text-center">AKSI</th>
+                            <th class="px-3 py-2.5">NAMA LENGKAP</th>
+                            <th class="px-2 py-2.5 w-12 text-center">L/P</th>
+                            <th class="px-2 py-2.5 w-14 text-center">NILAI</th>
+                            <th class="px-2 py-2.5 w-12 text-center">AKSI</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-50 text-xs">
@@ -517,20 +521,22 @@
                 const btnClass = student.excluded ? 'text-redbull hover:bg-redbull hover:text-speedWhite hover:shadow-md' : 'text-slate-300 hover:text-speedWhite hover:bg-petronas hover:shadow-md';
                 const icon = student.excluded ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' : '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
 
-                const genderBadge = student.gender === 'L' 
-                    ? `<span class="bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded text-[10px]">L</span>`
-                    : (student.gender === 'P' ? `<span class="bg-pink-100 text-pink-700 font-bold px-1.5 py-0.5 rounded text-[10px]">P</span>` : `<span class="text-slate-300">-</span>`);
+                const genderTag = student.gender === 'L' 
+                    ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 font-extrabold">L</span>` 
+                    : student.gender === 'P' 
+                    ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-pink-100 text-pink-700 font-extrabold">P</span>` 
+                    : `<span class="text-slate-300">-</span>`;
 
-                const scoreBadge = student.score > 0 
-                    ? `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold px-1.5 py-0.5 rounded text-[10px]">${student.score}</span>`
+                const scoreTag = student.score > 0 
+                    ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono font-bold">${student.score}</span>` 
                     : `<span class="text-slate-300">-</span>`;
 
                 html += `
                     <tr class="transition-colors ${rowClass}">
                         <td class="px-2 py-2 text-center text-slate-400 font-mono text-[11px]">${idx + 1}</td>
-                        <td class="px-2 py-2 transition-colors ${nameClass} uppercase text-[11px]">${student.name}</td>
-                        <td class="px-1 py-2 text-center">${genderBadge}</td>
-                        <td class="px-1 py-2 text-center">${scoreBadge}</td>
+                        <td class="px-3 py-2 transition-colors ${nameClass} uppercase text-[11px] font-extrabold truncate max-w-[150px] sm:max-w-none" title="${student.name}">${student.name}</td>
+                        <td class="px-2 py-2 text-center">${genderTag}</td>
+                        <td class="px-2 py-2 text-center">${scoreTag}</td>
                         <td class="px-2 py-2 text-center">
                             <button onclick="toggleExclusion(${student.id})" class="w-6 h-6 rounded flex items-center justify-center transition-colors duration-300 mx-auto ${btnClass}">${icon}</button>
                         </td>
@@ -613,26 +619,22 @@
             const group = groups[currentlyViewingGroupIndex];
             let text = shuffleMode === 'pick' ? `*SISWA TERPILIH*\n` : `*KELOMPOK ${currentlyViewingGroupIndex + 1}*\n`;
             group.forEach((s, idx) => {
-                let detail = [];
-                if(s.gender !== '-') detail.push(s.gender);
-                if(s.score > 0) detail.push(`Nilai: ${s.score}`);
-                const extra = detail.length ? ` (${detail.join(', ')})` : '';
-                text += `${idx + 1}. ${s.name}${extra}\n`;
+                const gStr = s.gender !== '-' ? ` (${s.gender})` : '';
+                const scStr = s.score > 0 ? ` - Nilai: ${s.score}` : '';
+                text += `${idx + 1}. ${s.name}${gStr}${scStr}\n`;
             });
             copyToClipboard(text);
         }
 
         function copyAllResults() {
             if(groups.length === 0) return;
-            let text = `*HASIL PEMBAGIAN*\n${selectedClass ? `Kelas: ${selectedClass}\n` : ''}\n`;
+            let text = `*HASIL PEMBAGIAN KELOMPOK*\n${selectedClass ? `Kelas: ${selectedClass}\n` : ''}\n`;
             groups.forEach((group, groupIndex) => {
                 text += shuffleMode === 'pick' ? `*SISWA TERPILIH*\n` : `*KELOMPOK ${groupIndex + 1}*\n`;
                 group.forEach((student, studentIndex) => {
-                    let detail = [];
-                    if(student.gender !== '-') detail.push(student.gender);
-                    if(student.score > 0) detail.push(`Nilai: ${student.score}`);
-                    const extra = detail.length ? ` (${detail.join(', ')})` : '';
-                    text += `${studentIndex + 1}. ${student.name}${extra}\n`;
+                    const gStr = student.gender !== '-' ? ` (${student.gender})` : '';
+                    const scStr = student.score > 0 ? ` - Nilai: ${student.score}` : '';
+                    text += `${studentIndex + 1}. ${student.name}${gStr}${scStr}\n`;
                 });
                 text += '\n';
             });
@@ -653,19 +655,24 @@
             
             let listHtml = '';
             group.forEach((student, sIdx) => {
-                const gBadge = student.gender === 'L' ? `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-1.5 py-0.5 rounded">L</span>`
-                    : (student.gender === 'P' ? `<span class="bg-pink-100 text-pink-700 text-[10px] font-bold px-1.5 py-0.5 rounded">P</span>` : '');
-                
-                const sBadge = student.score > 0 ? `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold px-1.5 py-0.5 rounded">Nilai: ${student.score}</span>` : '';
+                const genderBadge = student.gender === 'L' 
+                    ? `<span class="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 font-black shrink-0">L</span>` 
+                    : student.gender === 'P' 
+                    ? `<span class="text-xs px-2 py-0.5 rounded bg-pink-100 text-pink-700 font-black shrink-0">P</span>` 
+                    : '';
+                const scoreBadge = student.score > 0 
+                    ? `<span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono font-bold shrink-0">Nilai: ${student.score}</span>` 
+                    : '';
 
                 listHtml += `
                     <li class="flex items-center justify-between bg-slate-50 p-3 rounded border border-slate-200 shadow-sm transition-colors hover:bg-speedWhite">
-                        <div class="flex items-center gap-3">
+                        <div class="flex items-center gap-3 truncate">
                             <div class="w-7 h-7 rounded bg-petronas text-speedWhite font-bold flex items-center justify-center text-xs shrink-0 shadow-sm">${sIdx + 1}</div>
                             <span class="font-extrabold text-slate-700 text-sm uppercase truncate">${student.name}</span>
                         </div>
-                        <div class="flex items-center gap-1.5 shrink-0">
-                            ${gBadge} ${sBadge}
+                        <div class="flex items-center gap-1.5 shrink-0 ml-2">
+                            ${genderBadge}
+                            ${scoreBadge}
                         </div>
                     </li>`;
             });
@@ -734,23 +741,13 @@
                 const isPickMode = shuffleMode === 'pick';
                 const cardScale = isShuffling ? 'opacity-80' : 'opacity-100 hover:shadow-md hover:border-petronas cursor-pointer';
 
-                // Hitung Statistik Kelompok
-                const countL = group.filter(s => s.gender === 'L').length;
-                const countP = group.filter(s => s.gender === 'P').length;
-                const scores = group.filter(s => s.score > 0).map(s => s.score);
-                const avgScore = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : null;
-
                 html += `
                     <div onclick="event.stopPropagation(); openGroupDetail(${idx})" class="bg-speedWhite rounded-md shadow-sm border border-slate-200 border-t-[4px] border-t-sauber transition-all duration-300 flex flex-col ${cardScale}">
                         <div class="px-3 py-2 border-b border-slate-100 bg-slate-50 transition-colors flex justify-between items-center">
                             <h4 class="font-extrabold text-sauber uppercase tracking-widest text-[11px] sm:text-xs">
                                 ${isPickMode ? 'SISWA TERPILIH' : 'KELOMPOK ' + (idx + 1)}
                             </h4>
-                            <div class="flex items-center gap-1 text-[9px] font-bold">
-                                ${countL ? `<span class="text-blue-600 bg-blue-50 px-1 rounded">${countL}L</span>` : ''}
-                                ${countP ? `<span class="text-pink-600 bg-pink-50 px-1 rounded">${countP}P</span>` : ''}
-                                ${avgScore ? `<span class="text-emerald-700 bg-emerald-50 border border-emerald-200 px-1 rounded" title="Rata-rata Nilai">⭐ ${avgScore}</span>` : ''}
-                            </div>
+                            <span class="text-[9px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">${group.length} Siswa</span>
                         </div>
                         <div class="p-2 sm:p-3 flex-1 rounded-b-md">
                             <ul class="space-y-1">
@@ -759,17 +756,25 @@
                 for (let sIdx = 0; sIdx < maxSlots; sIdx++) {
                     const student = group[sIdx];
                     if (student) {
-                        const gTag = student.gender === 'L' ? '<span class="text-blue-600 font-bold ml-1 text-[9px]">L</span>'
-                            : (student.gender === 'P' ? '<span class="text-pink-600 font-bold ml-1 text-[9px]">P</span>' : '');
-                        
-                        const sTag = student.score > 0 ? `<span class="text-slate-400 font-normal ml-auto text-[9px]">${student.score}</span>` : '';
+                        const genderBadge = student.gender === 'L' 
+                            ? `<span class="text-[9px] px-1 py-0.5 rounded bg-blue-100 text-blue-700 font-black shrink-0">L</span>` 
+                            : student.gender === 'P' 
+                            ? `<span class="text-[9px] px-1 py-0.5 rounded bg-pink-100 text-pink-700 font-black shrink-0">P</span>` 
+                            : '';
+                        const scoreBadge = student.score > 0 
+                            ? `<span class="text-[9px] px-1 py-0.5 rounded bg-slate-100 text-slate-600 font-mono font-bold shrink-0">${student.score}</span>` 
+                            : '';
 
                         html += `
-                            <li class="flex items-center font-bold text-slate-600 hover:bg-slate-50 transition-colors rounded text-[10px] sm:text-[11px] p-1.5 gap-1.5">
-                                <div class="w-5 h-5 text-[10px] rounded-sm bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200">${sIdx + 1}</div>
-                                <span class="truncate uppercase font-extrabold text-slate-700">${student.name}</span>
-                                ${gTag}
-                                ${sTag}
+                            <li class="flex items-center justify-between font-bold text-slate-600 hover:bg-slate-50 transition-colors rounded text-[10px] sm:text-[11px] p-1.5 gap-1.5">
+                                <div class="flex items-center gap-1.5 truncate">
+                                    <div class="w-5 h-5 text-[10px] rounded-sm bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200">${sIdx + 1}</div>
+                                    <span class="truncate uppercase font-extrabold text-slate-700">${student.name}</span>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0 ml-1">
+                                    ${genderBadge}
+                                    ${scoreBadge}
+                                </div>
                             </li>`;
                     } else if(!isPickMode) {
                         html += `
@@ -958,38 +963,48 @@
             const modal = document.getElementById('result-modal');
             const modalTitle = document.getElementById('modal-title');
             if (modal) modal.classList.remove('hidden');
-            if (modalTitle) modalTitle.innerText = "SISTEM MENGACAK...";
+            if (modalTitle) modalTitle.innerText = "MENGACAK NAMA SISWA...";
             
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = `MEMPROSES...`;
+                btn.innerHTML = `MENGACAK...`;
             }
             if (overlay) overlay.classList.remove('hidden');
-            
-            let currentDelay = 40;
-            const maxDelay = 350;
-            const slowDownFactor = 1.15;
 
-            const doShuffleStep = () => {
+            const startTime = Date.now();
+            const totalDuration = 7000; // Total 7 detik pengacakan nama animasi
+
+            function doShuffleStep() {
+                const elapsedTime = Date.now() - startTime;
                 playTickSound();
-                let tempGroups = [];
 
+                let tempGroups = [];
                 if (shuffleMode === 'pick') {
                     let array = [...activeStudents];
                     shuffleArr(array);
                     tempGroups.push(array.slice(0, groupCount));
                 } else {
-                    tempGroups = generateAutoBalancedGroups(activeStudents, groupCount);
+                    let array = [...activeStudents];
+                    shuffleArr(array);
+                    tempGroups = Array.from({ length: groupCount }, () => []);
+                    array.forEach((student, i) => tempGroups[i % groupCount].push(student));
                 }
 
                 groups = tempGroups;
                 renderGroups(groups, 'main-groups-grid');
                 renderGroups(groups, 'modal-groups-grid');
 
-                if (currentDelay < maxDelay) {
-                    currentDelay = Math.floor(currentDelay * slowDownFactor);
-                    setTimeout(doShuffleStep, currentDelay);
+                if (elapsedTime < totalDuration) {
+                    // Kalkulasi jeda waktu: Cepat di awal (~50ms), lalu melambat menuju akhir (~350ms)
+                    const progress = elapsedTime / totalDuration;
+                    let nextDelay = 50;
+                    if (progress > 0.6) {
+                        const slowProgress = (progress - 0.6) / 0.4;
+                        nextDelay = 50 + Math.pow(slowProgress, 2) * 300;
+                    }
+                    setTimeout(doShuffleStep, nextDelay);
                 } else {
+                    // Penghentian dan pengurutan akhir secara alfabetis
                     groups.forEach(group => group.sort((a, b) => a.name.localeCompare(b.name, 'id', { sensitivity: 'base' })));
                     
                     renderGroups(groups, 'main-groups-grid');
@@ -1004,22 +1019,21 @@
                         btn.innerHTML = `<svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> ACAK SEKARANG`;
                     }
                     if (overlay) overlay.classList.add('hidden');
-                    
                     if (modalTitle) modalTitle.innerText = "HASIL PENGACAKAN";
                 }
-            };
-            
+            }
+
             doShuffleStep();
         }
 
         function downloadCSV() {
             if (groups.length === 0) return;
-            let csvContent = "Status,No,Nama Siswa,Gender,Nilai\n";
+            let csvContent = "Kelompok,No,Nama Siswa\n";
             groups.forEach((group, groupIndex) => {
                 group.forEach((student, studentIndex) => {
                     const safeName = student.name.replace(/"/g, '""');
                     const label = shuffleMode === 'pick' ? 'Terpilih' : `Kelompok ${groupIndex + 1}`;
-                    csvContent += `${label},${studentIndex + 1},"${safeName}",${student.gender},${student.score}\n`;
+                    csvContent += `${label},${studentIndex + 1},"${safeName}"\n`;
                 });
             });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
