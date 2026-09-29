@@ -50,6 +50,12 @@
         .animate-fade-in { animation: fadeIn 0.2s ease-out forwards; }
         .animate-zoom-in { animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-slide-in-down { animation: slideInDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes doneGlow {
+            0%   { box-shadow: 0 0 0 0 rgba(0, 161, 156, 0.55); border-color: #00A19C; transform: translateY(4px); }
+            60%  { box-shadow: 0 0 0 8px rgba(0, 161, 156, 0); border-color: #00A19C; transform: translateY(0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 161, 156, 0); }
+        }
+        .animate-done { animation: doneGlow 0.9s ease-out 1; }
         .animate-spin-custom { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
@@ -282,6 +288,8 @@
         let isImportOpen = false;
         let isShuffling = false;
         let currentlyViewingGroupIndex = -1;
+        let shuffleDone = false; // true setelah pengacakan selesai: garis atas kartu kelompok jadi cyan
+        let lockedRows = []; // per kelompok: Set nomor urut (indeks baris) yang sudah terkunci selama pengacakan
 
         document.addEventListener('DOMContentLoaded', () => {
             renderClassButtons();
@@ -479,7 +487,11 @@
             document.getElementById('result-modal')?.classList.remove('hidden');
             
             const modalTitle = document.getElementById('modal-title');
-            if (modalTitle) modalTitle.innerText = "HASIL PENGACAKAN";
+            if (modalTitle) {
+                modalTitle.innerText = "HASIL PENGACAKAN";
+                modalTitle.classList.remove('text-petronas');
+                modalTitle.classList.add('text-sauber');
+            }
             
             renderGroups(groups, 'modal-groups-grid');
         }
@@ -538,7 +550,7 @@
                 const cardScale = isShuffling ? 'opacity-80' : 'opacity-100 hover:shadow-md hover:border-petronas cursor-pointer';
 
                 html += `
-                    <div onclick="event.stopPropagation(); openGroupDetail(${idx})" class="bg-speedWhite rounded-md shadow-sm border border-slate-200 border-t-[4px] border-t-sauber transition-all duration-300 flex flex-col ${cardScale}">
+                    <div onclick="event.stopPropagation(); openGroupDetail(${idx})" class="bg-speedWhite rounded-md shadow-sm border border-slate-200 border-t-[4px] ${shuffleDone ? 'border-t-petronas' : 'border-t-sauber'} transition-all duration-300 flex flex-col ${cardScale}">
                         <div class="px-3 py-2.5 border-b border-slate-100 bg-slate-50 transition-colors flex justify-between items-center">
                             <h4 class="font-extrabold text-sauber uppercase tracking-widest text-[11px] sm:text-xs">
                                 ${isPickMode ? 'SISWA TERPILIH' : 'KELOMPOK ' + (idx + 1)}
@@ -551,9 +563,10 @@
                 for (let sIdx = 0; sIdx < maxSlots; sIdx++) {
                     const student = group[sIdx];
                     if (student) {
+                        const isLocked = shuffleDone || (lockedRows[idx] && lockedRows[idx].has(sIdx));
                         html += `
                             <li class="flex items-center font-bold text-slate-600 hover:bg-slate-50 transition-colors rounded text-[10px] sm:text-[11px] p-1.5 gap-2">
-                                <div class="w-5 h-5 text-[10px] rounded-sm bg-slate-100 text-slate-400 flex items-center justify-center shrink-0 border border-slate-200">${sIdx + 1}</div>
+                                <div class="w-5 h-5 text-[10px] rounded-sm ${isLocked ? 'bg-petronas text-speedWhite border-petronas' : 'bg-slate-100 text-slate-400 border-slate-200'} flex items-center justify-center shrink-0 border transition-colors duration-300">${sIdx + 1}</div>
                                 <span class="truncate uppercase font-extrabold text-slate-700">${student.name}</span>
                             </li>`;
                     } else if(!isPickMode) {
@@ -767,6 +780,8 @@
             }
 
             isShuffling = true;
+            shuffleDone = false;
+            lockedRows = [];
             const btn = document.getElementById('shuffle-btn');
             const overlay = document.getElementById('shuffle-overlay');
             
@@ -774,7 +789,11 @@
             const modal = document.getElementById('result-modal');
             const modalTitle = document.getElementById('modal-title');
             if (modal) modal.classList.remove('hidden');
-            if (modalTitle) modalTitle.innerText = "SISTEM MENGACAK...";
+            if (modalTitle) {
+                modalTitle.innerText = "SISTEM MENGACAK...";
+                modalTitle.classList.remove('text-petronas');
+                modalTitle.classList.add('text-sauber');
+            }
             
             if (btn) {
                 btn.disabled = true;
@@ -782,10 +801,6 @@
             }
             if (overlay) overlay.classList.remove('hidden');
             
-            let currentDelay = 50;
-            const maxDelay = 400;
-            const slowDownFactor = 1.15;
-
             const shuffleArr = (arr) => {
                 let curr = arr.length, rand;
                 while (curr !== 0) {
@@ -799,15 +814,16 @@
             // Seimbangkan hanya jika ada data gender/nilai pada siswa aktif
             const useBalance = activeStudents.some(s => s.gender === 'L' || s.gender === 'P' || typeof s.score === 'number');
 
-            const doShuffleStep = () => {
-                let tempGroups = [];
+            // 1) Susunan kelompok final ditentukan SEKALI di awal (animasi hanya tampilan)
+            const buildFinalGroups = () => {
+                let result = [];
 
                 if (shuffleMode === 'pick') {
                     let array = [...activeStudents];
                     shuffleArr(array);
-                    tempGroups.push(array.slice(0, groupCount));
+                    result.push(array.slice(0, groupCount));
                 } else {
-                    tempGroups = Array.from({ length: groupCount }, () => []);
+                    result = Array.from({ length: groupCount }, () => []);
                     let array = [...activeStudents];
                     shuffleArr(array);
                     
@@ -818,46 +834,92 @@
                     for(let i=0; i<remainder; i++) targetSizes[extraIndices[i]]++;
 
                     if (useBalance) {
-                        tempGroups = buildBalancedGroups(array, targetSizes, shuffleArr);
+                        result = buildBalancedGroups(array, targetSizes, shuffleArr);
                     } else {
                         let sIdx = 0;
                         for (let g = 0; g < groupCount; g++) {
                             for (let i = 0; i < targetSizes[g]; i++) {
                                 if (sIdx < array.length) {
-                                    tempGroups[g].push(array[sIdx++]);
+                                    result[g].push(array[sIdx++]);
                                 }
                             }
                         }
                     }
                 }
 
-                groups = tempGroups;
-                renderGroups(groups, 'main-groups-grid');
-                renderGroups(groups, 'modal-groups-grid'); // Render animasi live ke dalam modal
+                result.forEach(group => group.sort((a, b) => a.name.localeCompare(b.name, 'id', { sensitivity: 'base' })));
+                return result;
+            };
+            const finalGroups = buildFinalGroups();
 
-                if (currentDelay < maxDelay) {
-                    currentDelay = Math.floor(currentDelay * slowDownFactor);
-                    setTimeout(doShuffleStep, currentDelay);
-                } else {
-                    groups.forEach(group => group.sort((a, b) => a.name.localeCompare(b.name, 'id', { sensitivity: 'base' })));
-                    
-                    renderGroups(groups, 'main-groups-grid');
-                    renderGroups(groups, 'modal-groups-grid'); // Render hasil akhir ke modal
-                    updateResultHeader();
-                    
-                    isShuffling = false;
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerHTML = `<svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> ACAK SEKARANG`;
-                    }
-                    if (overlay) overlay.classList.add('hidden');
-                    
-                    // Kembalikan judul modal setelah selesai
-                    if (modalTitle) modalTitle.innerText = "HASIL PENGACAKAN";
+            // 2) Tiap kelompok punya urutan kunci acaknya sendiri; tiap langkah, SEMUA kelompok mengunci satu nomor urut
+            const totalSteps = Math.max(...finalGroups.map(g => g.length));
+            const lockOrder = finalGroups.map(group => shuffleArr(Array.from({ length: group.length }, (_, i) => i)));
+
+            const introMs = 5000; // 5 detik pertama: semua nama berubah-ubah
+            const stepMs = 1000;  // lalu 1 nomor urut terkunci tiap 1 detik
+            const tickMs = 80;    // kecepatan nama berganti
+            const startTime = Date.now();
+            let lockedCount = 0;
+            let lastMainRender = -1;
+            let timer = null;
+
+            // Nomor urut yang sudah terkunci menampilkan nama final, sisanya nama acak
+            const buildDisplayGroups = () => {
+                lockedRows = lockOrder.map(order => new Set(order.slice(0, lockedCount)));
+                return finalGroups.map((group, g) => group.map((student, r) =>
+                    lockedRows[g].has(r) ? student : activeStudents[Math.floor(Math.random() * activeStudents.length)]
+                ));
+            };
+
+            const finishShuffling = () => {
+                clearInterval(timer);
+                groups = finalGroups;
+                shuffleDone = true;
+                
+                renderGroups(groups, 'main-groups-grid');
+                renderGroups(groups, 'modal-groups-grid'); // Render hasil akhir ke modal
+                updateResultHeader();
+                
+                isShuffling = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> ACAK SEKARANG`;
+                }
+                if (overlay) overlay.classList.add('hidden');
+                
+                // Tanda pengacakan selesai: kartu bersinar halus bergantian, lalu garis atas kartu tetap cyan
+                document.querySelectorAll('#main-groups-grid > div, #modal-groups-grid > div').forEach((card, i) => {
+                    card.style.animationDelay = `${(i % 12) * 50}ms`;
+                    card.classList.add('animate-done');
+                });
+                if (modalTitle) {
+                    modalTitle.innerText = "HASIL PENGACAKAN";
+                    modalTitle.classList.remove('text-petronas');
+                    modalTitle.classList.add('text-sauber');
                 }
             };
-            
-            doShuffleStep();
+
+            const tick = () => {
+                const elapsed = Date.now() - startTime;
+                lockedCount = elapsed < introMs + stepMs ? 0 : Math.min(totalSteps, Math.floor((elapsed - introMs) / stepMs));
+
+                if (lockedCount >= totalSteps) {
+                    finishShuffling();
+                    return;
+                }
+
+                groups = buildDisplayGroups();
+                renderGroups(groups, 'modal-groups-grid');
+                // Panel utama (tertutup modal) cukup diperbarui saat ada nama yang terkunci
+                if (lockedCount !== lastMainRender) {
+                    renderGroups(groups, 'main-groups-grid');
+                    lastMainRender = lockedCount;
+                }
+            };
+
+            timer = setInterval(tick, tickMs);
+            tick();
         }
 
         function downloadCSV() {
