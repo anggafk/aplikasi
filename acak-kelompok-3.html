@@ -235,12 +235,12 @@
         </div>
     </div>
 
-    <!-- Modal Overlay Pengacakan (Popup Non-Blur) -->
-    <div id="result-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 p-4 md:p-6 hidden animate-fade-in" onclick="closeModal()">
-        <div class="bg-slate-100 w-full max-w-6xl h-[90vh] rounded-md shadow-2xl flex flex-col overflow-hidden relative animate-zoom-in border border-sauber border-t-[4px]" id="modal-content" onclick="event.stopPropagation()">
+    <!-- Modal Hasil Pengacakan (layar penuh) -->
+    <div id="result-modal" class="fixed inset-0 z-[60] flex bg-slate-100 hidden animate-fade-in" onclick="closeModal()">
+        <div class="bg-slate-100 w-full h-full flex flex-col overflow-hidden relative border-t-[4px] border-sauber" id="modal-content" onclick="event.stopPropagation()">
             
             <!-- Header Modal -->
-            <div class="px-6 py-4 flex justify-between items-center border-b border-slate-200 bg-speedWhite shrink-0 h-16">
+            <div class="px-4 flex justify-between items-center border-b border-slate-200 bg-speedWhite shrink-0 h-12">
                 <h3 id="modal-title" class="text-sm font-extrabold text-sauber uppercase tracking-widest">HASIL PENGACAKAN</h3>
                 <div class="flex items-center gap-2">
                     <button onclick="closeModal()" class="text-slate-400 hover:text-redbull transition-colors p-1 bg-speedWhite rounded border border-slate-200">
@@ -248,11 +248,9 @@
                     </button>
                 </div>
             </div>
-            <div class="flex-1 p-4 bg-slate-100 overflow-hidden relative">
-                <div class="h-full w-full overflow-y-auto custom-scrollbar px-2 pb-10">
-                    <div id="modal-groups-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-start">
-                        <!-- Groups injected here -->
-                    </div>
+            <div id="modal-fit-host" class="flex-1 min-h-0 p-2 bg-slate-100 overflow-hidden relative">
+                <div id="modal-groups-grid" class="w-full h-full">
+                    <!-- Groups injected here -->
                 </div>
             </div>
         </div>
@@ -295,6 +293,13 @@
             renderClassButtons();
             renderGroupCountOptions();
             setMode('group'); 
+        });
+
+        window.addEventListener('resize', () => {
+            const modal = document.getElementById('result-modal');
+            if (modal && !modal.classList.contains('hidden') && groups.length > 0 && !isShuffling) {
+                renderGroups(groups, 'modal-groups-grid');
+            }
         });
 
         function showToast(message, type = 'error') {
@@ -501,6 +506,91 @@
             document.getElementById('result-modal')?.classList.add('hidden');
         }
 
+        // ===== Susunan kartu di modal layar penuh: dipilih otomatis agar muat tanpa scroll =====
+        // Ukuran dasar (px) pada skala 1; semua ikut diperbesar/diperkecil oleh skala s.
+        const FIT = { gap: 10, pad: 6, header: 30, row: 26, border: 5, minColW: 180, maxColW: 300, sMax: 3, sMin: 0.5, keepRatio: 0.8 };
+        let fitCache = { key: '', layout: null };
+
+        // Mencoba semua kombinasi: jumlah baris kartu (R, dibagi seimbang mis. 9 kelompok = 5 + 4)
+        // dan jumlah kolom nama di dalam satu kartu (k). Kartu boleh lebih sempit (nama terpotong sedikit)
+        // asalkan skalanya minimal 80% dari yang terbaik; dari yang lolos dipilih baris paling sedikit.
+        function computeFitLayout(n, maxRows, W, H) {
+            const key = [n, maxRows, W, H].join('|');
+            if (fitCache.key === key) return fitCache.layout;
+            const cands = [];
+            for (let R = 1; R <= n; R++) {
+                const c = Math.ceil(n / R);
+                if (Math.ceil(n / c) !== R) continue; // lewati susunan yang menghasilkan baris kosong
+                const cardW = (W - (c - 1) * FIT.gap) / c;
+                for (let k = 1; k <= Math.min(4, maxRows); k++) {
+                    const rowsPerCol = Math.ceil(maxRows / k);
+                    const sW = ((cardW - 2 * FIT.pad) / k) / FIT.minColW;
+                    const cardH = FIT.header + rowsPerCol * FIT.row + 2 * FIT.pad;
+                    const sH = (H - (R - 1) * FIT.gap - R * FIT.border) / (R * cardH);
+                    const s = Math.min(sW, sH, FIT.sMax);
+                    cands.push({ R, c, k, s, rowsPerCol, cardW });
+                }
+            }
+            const bestS = Math.max(...cands.map(x => x.s));
+            const ok = cands.filter(x => x.s >= bestS * FIT.keepRatio);
+            ok.sort((a, b) => a.R - b.R || a.k - b.k || b.s - a.s);
+            const best = ok[0];
+            fitCache = { key, layout: best };
+            return best;
+        }
+
+        function fitCardHtml(group, idx, L, s, isPick) {
+            const cardW = Math.min(L.cardW, (L.k * FIT.maxColW + 2 * FIT.pad) * s);
+            const cardScale = isShuffling ? 'opacity-80' : 'opacity-100 hover:shadow-md hover:border-petronas cursor-pointer';
+            const topColor = shuffleDone ? 'border-t-petronas' : 'border-t-sauber';
+
+            let rowsHtml = '';
+            group.forEach((student, sIdx) => {
+                const isLocked = shuffleDone || (lockedRows[idx] && lockedRows[idx].has(sIdx));
+                rowsHtml += `
+                    <div style="display:flex;align-items:center;gap:${8 * s}px;height:${FIT.row * s}px;min-width:0">
+                        <div class="${isLocked ? 'bg-petronas text-speedWhite border-petronas' : 'bg-slate-100 text-slate-400 border-slate-200'} border rounded-sm flex items-center justify-center shrink-0 font-bold transition-colors duration-300" style="width:${20 * s}px;height:${20 * s}px;font-size:${10 * s}px">${sIdx + 1}</div>
+                        <span class="truncate uppercase font-extrabold text-slate-700" style="font-size:${12 * s}px;min-width:0">${student.name}</span>
+                    </div>`;
+            });
+
+            return `
+                <div onclick="event.stopPropagation(); openGroupDetail(${idx})" class="fit-card bg-speedWhite rounded-md shadow-sm border border-slate-200 border-t-[4px] ${topColor} transition-all duration-300 flex flex-col ${cardScale}" style="width:${cardW}px">
+                    <div class="bg-slate-50 border-b border-slate-100 font-extrabold text-sauber uppercase tracking-widest flex items-center" style="height:${FIT.header * s}px;padding:0 ${FIT.pad * s}px;font-size:${11 * s}px">
+                        ${isPick ? 'SISWA TERPILIH' : 'KELOMPOK ' + (idx + 1)}
+                    </div>
+                    <div style="display:grid;grid-auto-flow:column;grid-template-columns:repeat(${L.k},minmax(0,1fr));grid-template-rows:repeat(${L.rowsPerCol},${FIT.row * s}px);column-gap:${10 * s}px;padding:${FIT.pad * s}px">
+                        ${rowsHtml}
+                    </div>
+                </div>`;
+        }
+
+        function renderFitGroups(groupsToRender, container) {
+            const host = document.getElementById('modal-fit-host');
+            const W = Math.max(200, (host && host.clientWidth ? host.clientWidth : window.innerWidth) - 16);
+            const H = Math.max(200, (host && host.clientHeight ? host.clientHeight : window.innerHeight) - 16);
+            const n = groupsToRender.length;
+            const maxRows = Math.max(1, ...groupsToRender.map(g => g.length));
+            const L = computeFitLayout(n, maxRows, W, H);
+            const s = Math.max(L.s, FIT.sMin);
+            // Scroll hanya muncul jika terpaksa (skala sudah di batas terkecil)
+            if (host) host.style.overflow = L.s < FIT.sMin ? 'auto' : 'hidden';
+
+            const isPick = shuffleMode === 'pick';
+            const base = Math.floor(n / L.R);
+            const extra = n % L.R;
+            let html = `<div style="min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:${FIT.gap}px">`;
+            let gi = 0;
+            for (let r = 0; r < L.R; r++) {
+                const cnt = base + (r < extra ? 1 : 0);
+                html += `<div style="display:flex;justify-content:center;align-items:flex-start;gap:${FIT.gap}px;width:100%">`;
+                for (let j = 0; j < cnt; j++, gi++) html += fitCardHtml(groupsToRender[gi], gi, L, s, isPick);
+                html += `</div>`;
+            }
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
         function renderGroups(groupsToRender, containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -513,6 +603,11 @@
                         </div>
                         <span class="text-xs font-bold uppercase tracking-widest text-slate-400">PILIH KELAS & ACAK</span>
                     </div>`;
+                return;
+            }
+
+            if (containerId === 'modal-groups-grid') {
+                renderFitGroups(groupsToRender, container);
                 return;
             }
 
@@ -856,7 +951,7 @@
             const totalSteps = Math.max(...finalGroups.map(g => g.length));
             const lockOrder = finalGroups.map(group => shuffleArr(Array.from({ length: group.length }, (_, i) => i)));
 
-            const introMs = 5000; // 5 detik pertama: semua nama berubah-ubah
+            const introMs = 3000; // 3 detik pertama: semua nama berubah-ubah
             const stepMs = 1000;  // lalu 1 nomor urut terkunci tiap 1 detik
             const tickMs = 80;    // kecepatan nama berganti
             const startTime = Date.now();
@@ -889,7 +984,7 @@
                 if (overlay) overlay.classList.add('hidden');
                 
                 // Tanda pengacakan selesai: kartu bersinar halus bergantian, lalu garis atas kartu tetap cyan
-                document.querySelectorAll('#main-groups-grid > div, #modal-groups-grid > div').forEach((card, i) => {
+                document.querySelectorAll('#main-groups-grid > div, #modal-groups-grid .fit-card').forEach((card, i) => {
                     card.style.animationDelay = `${(i % 12) * 50}ms`;
                     card.classList.add('animate-done');
                 });
