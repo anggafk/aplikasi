@@ -508,7 +508,10 @@
 
         // ===== Susunan kartu di modal layar penuh: dipilih otomatis agar muat tanpa scroll =====
         // Ukuran dasar (px) pada skala 1; semua ikut diperbesar/diperkecil oleh skala s.
-        const FIT = { gap: 10, pad: 6, header: 30, row: 26, border: 5, minColW: 180, maxColW: 300, sMax: 3, sMin: 0.5, keepRatio: 0.8 };
+        const FIT = { gap: 10, pad: 6, header: 30, row: 26, border: 5, minColW: 180, maxColW: 300, sMax: 3, sMin: 0.5, keepRatio: 0.8,
+                      // Jumlah baris kartu yang diinginkan untuk jumlah kelompok tertentu (sisanya otomatis).
+                      // Dipakai selama skalanya tidak jauh lebih buruk dari susunan terbaik (layar kecil -> otomatis).
+                      rowsFor: { 9: 3, 10: 3, 11: 3, 12: 3, 16: 4, 17: 4, 18: 5 }, minPrefRatio: 0.5 };
         let fitCache = { key: '', layout: null };
 
         // Mencoba semua kombinasi: jumlah baris kartu (R, dibagi seimbang mis. 9 kelompok = 5 + 4)
@@ -532,7 +535,15 @@
                 }
             }
             const bestS = Math.max(...cands.map(x => x.s));
-            const ok = cands.filter(x => x.s >= bestS * FIT.keepRatio);
+            let pool = cands;
+            const wantR = FIT.rowsFor[n];
+            if (wantR) {
+                const pref = cands.filter(x => x.R === wantR);
+                const prefBest = pref.length ? Math.max(...pref.map(x => x.s)) : 0;
+                if (prefBest >= bestS * FIT.minPrefRatio) pool = pref;
+            }
+            const poolBest = Math.max(...pool.map(x => x.s));
+            const ok = pool.filter(x => x.s >= poolBest * FIT.keepRatio);
             ok.sort((a, b) => a.R - b.R || a.k - b.k || b.s - a.s);
             const best = ok[0];
             fitCache = { key, layout: best };
