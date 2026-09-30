@@ -243,6 +243,10 @@
             <div class="px-4 flex justify-between items-center border-b border-slate-200 bg-speedWhite shrink-0 h-12">
                 <h3 id="modal-title" class="text-sm font-extrabold text-sauber uppercase tracking-widest">HASIL PENGACAKAN</h3>
                 <div class="flex items-center gap-2">
+                    <button id="reorder-btn" onclick="startReorder()" class="hidden bg-petronas hover:bg-sauber text-speedWhite px-3 py-1.5 rounded text-[10px] font-bold transition-colors duration-300 uppercase tracking-wider flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg>
+                        ACAK URUTAN
+                    </button>
                     <button onclick="closeModal()" class="text-slate-400 hover:text-redbull transition-colors p-1 bg-speedWhite rounded border border-slate-200">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
@@ -287,6 +291,7 @@
         let isShuffling = false;
         let currentlyViewingGroupIndex = -1;
         let shuffleDone = false; // true setelah pengacakan selesai: garis atas kartu kelompok jadi cyan
+        let isReordering = false; // true saat animasi ACAK URUTAN berjalan
         let lockedRows = []; // per kelompok: Set nomor urut (indeks baris) yang sudah terkunci selama pengacakan
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -459,7 +464,7 @@
         }
 
         function openGroupDetail(groupIndex) {
-            if (isShuffling) return;
+            if (isShuffling || isReordering) return;
             const group = groups[groupIndex];
             if (!group) return;
             
@@ -490,6 +495,7 @@
         function openResultModal() {
             if(groups.length === 0 || isShuffling) return;
             document.getElementById('result-modal')?.classList.remove('hidden');
+            updateReorderButton();
             
             const modalTitle = document.getElementById('modal-title');
             if (modalTitle) {
@@ -502,7 +508,7 @@
         }
 
         function closeModal() {
-            if(isShuffling) return; // Mencegah popup ditutup saat sedang mengacak
+            if(isShuffling || isReordering) return; // Mencegah popup ditutup saat sedang mengacak
             document.getElementById('result-modal')?.classList.add('hidden');
         }
 
@@ -873,6 +879,57 @@
             return result;
         }
 
+        function shuffleInPlace(arr) {
+            let curr = arr.length, rand;
+            while (curr !== 0) {
+                rand = Math.floor(Math.random() * curr);
+                curr--;
+                [arr[curr], arr[rand]] = [arr[rand], arr[curr]];
+            }
+            return arr;
+        }
+
+        // Tombol ACAK URUTAN hanya tampil di mode BAGI KELOMPOK setelah pembagian selesai
+        function updateReorderButton() {
+            const btn = document.getElementById('reorder-btn');
+            if (!btn) return;
+            const show = shuffleMode === 'group' && groups.length > 0 && !isShuffling;
+            btn.classList.toggle('hidden', !show);
+        }
+
+        // Mengacak urutan nama di dalam tiap kelompok (anggota kelompok tidak berubah).
+        // Animasi singkat: nama berganti-ganti sebentar lalu semua berhenti bersamaan.
+        function startReorder() {
+            if (isShuffling || isReordering || shuffleMode !== 'group' || groups.length === 0) return;
+            isReordering = true;
+            const btn = document.getElementById('reorder-btn');
+            if (btn) btn.disabled = true;
+
+            const sameOrder = (a, b) => a.every((x, i) => x === b[i]);
+            const newGroups = groups.map(group => {
+                const next = shuffleInPlace([...group]);
+                // pastikan urutannya benar-benar berubah (jika anggotanya lebih dari 1)
+                for (let t = 0; t < 10 && group.length > 1 && sameOrder(next, group); t++) shuffleInPlace(next);
+                return next;
+            });
+
+            const spinMs = 1200;
+            const tickMs = 80;
+            const startTime = Date.now();
+            const timer = setInterval(() => {
+                if (Date.now() - startTime >= spinMs) {
+                    clearInterval(timer);
+                    groups = newGroups;
+                    isReordering = false;
+                    if (btn) btn.disabled = false;
+                    renderGroups(groups, 'main-groups-grid');
+                    renderGroups(groups, 'modal-groups-grid');
+                    return;
+                }
+                renderGroups(groups.map(group => shuffleInPlace([...group])), 'modal-groups-grid');
+            }, tickMs);
+        }
+
         function startShuffling() {
             const activeStudents = students.filter(s => !s.excluded);
             if (activeStudents.length === 0) {
@@ -888,6 +945,7 @@
             isShuffling = true;
             shuffleDone = false;
             lockedRows = [];
+            updateReorderButton();
             const btn = document.getElementById('shuffle-btn');
             const overlay = document.getElementById('shuffle-overlay');
             
@@ -988,6 +1046,7 @@
                 updateResultHeader();
                 
                 isShuffling = false;
+                updateReorderButton();
                 if (btn) {
                     btn.disabled = false;
                     btn.innerHTML = `<svg class="w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg> ACAK SEKARANG`;
