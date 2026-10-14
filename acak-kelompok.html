@@ -243,6 +243,10 @@
             <div class="px-4 flex justify-between items-center border-b border-slate-200 bg-speedWhite shrink-0 h-12">
                 <h3 id="modal-title" class="text-sm font-extrabold text-sauber uppercase tracking-widest">HASIL PENGACAKAN</h3>
                 <div class="flex items-center gap-2">
+                    <button id="reshuffle-btn" onclick="startReshuffle()" class="hidden bg-sauber hover:bg-petronas text-speedWhite px-3 py-1.5 rounded text-[10px] font-bold transition-colors duration-300 uppercase tracking-wider flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        ACAK ULANG
+                    </button>
                     <button id="reorder-btn" onclick="startReorder()" class="hidden bg-petronas hover:bg-sauber text-speedWhite px-3 py-1.5 rounded text-[10px] font-bold transition-colors duration-300 uppercase tracking-wider flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg>
                         ACAK URUTAN
@@ -889,12 +893,20 @@
             return arr;
         }
 
-        // Tombol ACAK URUTAN hanya tampil di mode BAGI KELOMPOK setelah pembagian selesai
+        // Tombol ACAK ULANG & ACAK URUTAN hanya tampil di mode BAGI KELOMPOK setelah pembagian selesai
         function updateReorderButton() {
-            const btn = document.getElementById('reorder-btn');
-            if (!btn) return;
             const show = shuffleMode === 'group' && groups.length > 0 && !isShuffling;
-            btn.classList.toggle('hidden', !show);
+            ['reorder-btn', 'reshuffle-btn'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.classList.toggle('hidden', !show);
+            });
+        }
+
+        // Mengacak ulang komposisi anggota kelompok dari awal (pengaturan sama: kelas, jumlah kelompok, siswa dicoret).
+        // Memakai animasi yang sama dengan ACAK SEKARANG, tanpa menutup modal.
+        function startReshuffle() {
+            if (isShuffling || isReordering || shuffleMode !== 'group' || groups.length === 0) return;
+            startShuffling();
         }
 
         // Mengacak urutan nama di dalam tiap kelompok (anggota kelompok tidak berubah).
@@ -903,7 +915,9 @@
             if (isShuffling || isReordering || shuffleMode !== 'group' || groups.length === 0) return;
             isReordering = true;
             const btn = document.getElementById('reorder-btn');
+            const reshuffleBtn = document.getElementById('reshuffle-btn');
             if (btn) btn.disabled = true;
+            if (reshuffleBtn) reshuffleBtn.disabled = true;
 
             const sameOrder = (a, b) => a.every((x, i) => x === b[i]);
             const newGroups = groups.map(group => {
@@ -922,6 +936,7 @@
                     groups = newGroups;
                     isReordering = false;
                     if (btn) btn.disabled = false;
+                    if (reshuffleBtn) reshuffleBtn.disabled = false;
                     renderGroups(groups, 'main-groups-grid');
                     renderGroups(groups, 'modal-groups-grid');
                     return;
