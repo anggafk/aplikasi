@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Timer Praktikum</title>
+    <title>Projek KK TKJ - Timer Praktikum</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -52,6 +52,12 @@
         };
 
         const safeParse = (v) => { try { return JSON.parse(v); } catch (e) { return null; } };
+
+        const DEFAULT_NAMES = [
+            "Siswa A1\nSiswa A2\nSiswa A3\nSiswa A4\nSiswa A5\nSiswa A6",
+            "Siswa B1\nSiswa B2\nSiswa B3\nSiswa B4\nSiswa B5\nSiswa B6",
+            "Siswa C1\nSiswa C2\nSiswa C3\nSiswa C4\nSiswa C5\nSiswa C6"
+        ];
 
         const MAX_STUDENTS = 6;
         const LETTERS = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -298,6 +304,17 @@
                 setGroupTimes([0, 0, 0]);
                 setGroupIsRunning([true, true, true]);
 
+                // Kembalikan daftar nama siswa & urutan A-F ke bawaan
+                setGroup1NamesInput(DEFAULT_NAMES[0]);
+                setGroup2NamesInput(DEFAULT_NAMES[1]);
+                setGroup3NamesInput(DEFAULT_NAMES[2]);
+                setShuffledLists(DEFAULT_NAMES.map(n => n.split("\n")));
+                setShufflingGroups([false, false, false]);
+
+                safeStore.remove('kk_tkj_group1NamesInput6');
+                safeStore.remove('kk_tkj_group2NamesInput6');
+                safeStore.remove('kk_tkj_group3NamesInput6');
+                safeStore.remove('kk_tkj_shuffledLists6');
                 safeStore.remove('kk_tkj_groupTimes_v2');
                 safeStore.remove('kk_tkj_groupIsRunning_v2');
                 safeStore.remove('kk_tkj_isRunning_v2');
@@ -421,7 +438,7 @@
                                     <h2 className="font-black text-lg uppercase tracking-wider">KONFIRMASI RESET</h2>
                                 </div>
                                 <p className="text-sm font-bold text-[#002D72] mb-6">
-                                    Apakah Anda yakin ingin menghentikan ujian global dan mereset timer semua kelompok? Tindakan ini tidak dapat dibatalkan.
+                                    Apakah Anda yakin ingin menghentikan ujian global dan mereset timer serta daftar nama siswa semua kelompok? Tindakan ini tidak dapat dibatalkan.
                                 </p>
                                 <div className="flex gap-3 justify-end">
                                     <button
