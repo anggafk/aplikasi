@@ -392,6 +392,14 @@
                 }, 200);
             };
 
+            // Simpan daftar nama sesuai urutan input (tanpa diacak), lalu tutup panel
+            const handleSaveNames = (groupIdx, inputString) => {
+                const names = inputString.split(/\r?\n/).map(n => n.trim()).filter(Boolean).slice(0, MAX_STUDENTS);
+                while (names.length < MAX_STUDENTS) names.push("---");
+                setShuffledLists(prev => prev.map((list, idx) => idx === groupIdx ? names : list));
+                setOverlay(groupIdx, false);
+            };
+
             const setOverlay = (sIdx, value) => {
                 const next = [...openOverlays];
                 next[sIdx] = value;
@@ -605,10 +613,10 @@
                                             </div>
 
                                             <button
-                                                onClick={() => setOverlay(sIdx, false)}
+                                                onClick={() => handleSaveNames(sIdx, getInputs[sIdx])}
                                                 className="w-full mt-2 bg-slate-100 hover:bg-slate-200 text-[#002D72] font-black py-2.5 text-xs uppercase tracking-wider transition-all rounded shrink-0 border-2 border-slate-200"
                                             >
-                                                TUTUP
+                                                SIMPAN &amp; TUTUP
                                             </button>
                                         </div>
                                     )}
